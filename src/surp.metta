@@ -78,11 +78,22 @@
            )
         )
         )
+
+
+        (+ )
     )
 )
 
 
 
+
+((total-counts $db $pattern-id  -> $out)
+    (,  ((count-db $db -> db-size ) $p $t)  ((count-conjuncts $pattern-id -> num-of-conjuncts) $p $t))
+    (, (exec 0 $p 
+                 (, $t 
+                     (exec 0 ))))
+    
+)
 
 (db2 db 100000 )
 (num-of-conjuncts p1 3)
@@ -98,74 +109,5 @@
 
 
 
-
-
-; ;; total_counts(pattern, db) = C(db_size(db), n_conjuncts_new(pattern))
-; (exec 2
-;     (, (db-size $db $n) (num-conjuncts $pattern-id 1))
-;     (O
-;         (+ (total_counts $pattern-id $db $n))
-;     )
-; )
-
-; (exec 2
-;     (, (db-size $db $n) (num-conjuncts $pattern-id 2))
-;     (O
-;         (pure
-;             (total_counts $pattern-id $db $total)
-;             $total
-;             (i64_to_string
-;                 (div_i64
-;                     (product_i64
-;                         (i64_from_string $n)
-;                         (sub_i64 (i64_from_string $n) (i64_from_string 1))
-;                     )
-;                     (i64_from_string 2)
-;                 )
-;             )
-;         )
-;     )
-; )
-
-; (exec 2
-;     (, (db-size $db $n) (num-conjuncts $pattern-id 3))
-;     (O
-;         (pure
-;             (total_counts $pattern-id $db $total)
-;             $total
-;             (i64_to_string
-;                 (div_i64
-;                     (product_i64
-;                         (i64_from_string $n)
-;                         (sub_i64 (i64_from_string $n) (i64_from_string 1))
-;                         (sub_i64 (i64_from_string $n) (i64_from_string 2))
-;                     )
-;                     (i64_from_string 6)
-;                 )
-;             )
-;         )
-;     )
-; )
-
-; (exec 2
-;     (, (db-size $db $n) (num-conjuncts $pattern-id 4))
-;     (O
-;         (pure
-;             (total_counts $pattern-id $db $total)
-;             $total
-;             (i64_to_string
-;                 (div_i64
-;                     (product_i64
-;                         (i64_from_string $n)
-;                         (sub_i64 (i64_from_string $n) (i64_from_string 1))
-;                         (sub_i64 (i64_from_string $n) (i64_from_string 2))
-;                         (sub_i64 (i64_from_string $n) (i64_from_string 3))
-;                     )
-;                     (i64_from_string 24)
-;                 )
-;             )
-;         )
-;     )
-; )
 
 
