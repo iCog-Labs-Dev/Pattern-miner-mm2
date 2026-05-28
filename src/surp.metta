@@ -24,7 +24,7 @@
 
 ;; Count conjuncts in apattern.
 ((count-conjuncts  $pattern -> $out ) 
-    (, (INPUT PATTERN $pattern))
+    (, (INPUT PATTERN ($pattern $support)))
     (O
           (pure ($out $pattern $count) $count (i64_to_string (length (' (cdr (' $pattern))))))
       
@@ -39,7 +39,7 @@
     (, (db-size $db $n) (num-of-conjuncts $pattern $k))
     (O
         (pure
-           ($out $pattern  $total)
+           (total-count-of $pattern  $total)
             $total
         (i64_to_string
             (div_i64
@@ -55,24 +55,40 @@
     )
 )
 
+;; Compute the probability of a pattern by dividing the support of the pattern by the total counts.
+
+((prob $pattern $db -> $out)
+      (, (INPUT PATTERN ($pattern $support)) (total-count-of $pattern $count))
+      (O
+          (pure
+              ($out $pattern $prob)
+              $prob
+              (f64_to_string 
+               (div_f64 
+                    (f64_from_string $support) 
+                    (f64_from_string $count)))
+          )
+      ))
 
 
 (exec (STEP1)
-    (, (INPUT DB $db-name) (INPUT PATTERN $pattern) 
+    (, (INPUT DB $db-name) (INPUT PATTERN ($pattern $support) ) 
         ((count-db $db-name -> db-size ) $src-of-count $sink-of-count)  
          ((count-conjuncts $pattern -> num-of-conjuncts) $src-of-cnj $sink-of-cnj)
-         ((total-counts $db-name $pattern  -> total-count-of) $src-of-tc $sink-of-tc))
+         ((total-counts $db-name $pattern  -> total-count-of) $src-of-tc $sink-of-tc)
+         ((prob $pattern $db-name -> prob-of) $src-of-prob $sink-of-prob))
 
     (O (+ (exec 0 $src-of-count $sink-of-count) )
         (+ (exec 0 $src-of-cnj $sink-of-cnj))
-        (+ (exec 1 $src-of-tc $sink-of-tc)))
+        (+ (exec 1 $src-of-tc $sink-of-tc))
+        (+ (exec 2 $src-of-prob $sink-of-prob)))
 
 )
 
 
 
 (INPUT DB db)
-(INPUT PATTERN (, (Inheritance $x sodaDrinker) (Inheritance $x ugly)))
+(INPUT PATTERN ((, (Inheritance $x sodaDrinker) (Inheritance $x ugly)) 4))
 
 
 
