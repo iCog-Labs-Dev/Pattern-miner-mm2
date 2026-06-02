@@ -1,16 +1,11 @@
-(exec 0 (, $x)
-        (, 0
-           (exec 0 (, 0)
-                   (O 
-                      (+ (yes))
-                      (+ (exec 0 (, (yes)) 
-                              (, 2
-                                 (exec 0 (, 2)
-                                         (, 3)
-                                 )
-                              )
-                      ))
-                   )
-           )
-        )
-)
+(INPUT PATTERN ( ))
+
+
+(exec 0 (, (INPUT $x $y) ) (
+    O (
+        pure  (cdr-of $cdr) $cdr (cdr (' $y))  
+    )
+))
+
+
+

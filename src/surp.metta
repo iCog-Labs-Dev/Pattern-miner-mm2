@@ -56,7 +56,6 @@
 )
 
 ;; Compute the probability of a pattern by dividing the support of the pattern by the total counts.
-
 ((prob $pattern $db -> $out)
       (, (INPUT PATTERN ($pattern $support)) (total-count-of $pattern $count))
       (O
@@ -71,8 +70,11 @@
       ))
 
 
-(exec (STEP1)
-    (, (INPUT DB $db-name) (INPUT PATTERN ($pattern $support) ) 
+
+
+
+(exec (Z)
+    (, (INPUT DB $db-name) (INPUT PATTERN ($pattern $support) )  
         ((count-db $db-name -> db-size ) $src-of-count $sink-of-count)  
          ((count-conjuncts $pattern -> num-of-conjuncts) $src-of-cnj $sink-of-cnj)
          ((total-counts $db-name $pattern  -> total-count-of) $src-of-tc $sink-of-tc)
@@ -81,16 +83,41 @@
     (O (+ (exec 0 $src-of-count $sink-of-count) )
         (+ (exec 0 $src-of-cnj $sink-of-cnj))
         (+ (exec 1 $src-of-tc $sink-of-tc))
-        (+ (exec 2 $src-of-prob $sink-of-prob)))
-
+        (+ (exec 2 $src-of-prob $sink-of-prob))
+        (pure (partition-of $pattern $partition) $partition  (partitions  (cdr ('  $pattern)))) 
+    )
 )
 
 
 
+(exec  (S Z)
+    (, (partition-of $pattern $partition)  (exec (S Z) $src $sink))
+    (O 
+        
+        (pure (block-of-partition $car) $car (car (' $partition)))
+        (pure (partition-of $pattern $cdr) $cdr (cdr (' $partition)))
+        (-  (partition-of $pattern $partition))
+        (+ (exec (S Z) $src $sink))
+        (+ (exec (Z)  (, (partition-of $pattern ()) (exec (S Z) $src $sink))
+                    (O (- (exec (S Z) $src $sink)))))
+ 
+ ))
+
+
+
+; (exec (STEP2)
+;     (, (INPUT PATTERN ($pattern $support)) (partition-of $pattern $partition))
+;     (O
+;         (pure
+;             ($out $pattern $partition $est-prob)
+;             $est-prob
+;             (mul_f64_list (map (fn ($p) (block-probability $p))) $partition))
+;     )
+; )
+
+
 (INPUT DB db)
-(INPUT PATTERN ((, (Inheritance $x sodaDrinker) (Inheritance $x ugly)) 4))
-
-
+(INPUT PATTERN ((, (Inheritance $x sodaDrinker) (Inheritance $x ugly) (Inheritance $x man)) 4))
 
 
 
@@ -114,3 +141,10 @@
 (db (Inheritance Lily man))
 (db (Inheritance Allen man))
 (db (Inheritance cason man))
+
+
+
+
+
+
+
