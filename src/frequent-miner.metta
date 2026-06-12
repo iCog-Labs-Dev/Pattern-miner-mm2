@@ -32,7 +32,14 @@
   )
 )
 
-(exec (GV 0)
+; Reusable variable-extraction function.
+;
+; To call it from another miner stage, match/create:
+;   (get-vars-for-tree $id $tree)
+;   (DEF get-vars-for-tree-fn $gv-p $gv-t)
+; then emit:
+;   (+ (exec (GV 0 run-get-vars) $gv-p $gv-t))
+(DEF get-vars-for-tree-fn
   (, (get-vars-for-tree $id $tree)
      (DEF gv-expand $expand-p $expand-t))
   (O
@@ -41,5 +48,9 @@
     (+ (exec (GV 2) $expand-p $expand-t)))
 )
 
-; Example triple with nested pair/triple nodes.
+; Example call, kept inactive so this file can be loaded as a library:
 (get-vars-for-tree sample (Inheritance $x (Evaluation $x $y)))
+(exec (GV 0 call-example)
+  (, (get-vars-for-tree sample (Inheritance $x (Evaluation $x $y)))
+     (DEF get-vars-for-tree-fn $gv-p $gv-t))
+  (O (+ (exec (GV 0 run-get-vars) $gv-p $gv-t))))
