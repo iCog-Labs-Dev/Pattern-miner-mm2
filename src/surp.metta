@@ -26,7 +26,7 @@
 ((count-conjuncts  $pattern -> $out ) 
     (, (INPUT PATTERN ($pattern $support)))
     (O
-          (pure ($out $pattern $count) $count (i64_to_string (length (' (cdr (' $pattern))))))
+          (pure ($out $pattern $count) $count (size-atom (cdr-atom (' $pattern))))
       
     )
 )
@@ -73,7 +73,7 @@
 
 
 
-(exec (Z)
+(exec 1
     (, (INPUT DB $db-name) (INPUT PATTERN ($pattern $support) )  
         ((count-db $db-name -> db-size ) $src-of-count $sink-of-count)  
          ((count-conjuncts $pattern -> num-of-conjuncts) $src-of-cnj $sink-of-cnj)
@@ -84,36 +84,110 @@
         (+ (exec 0 $src-of-cnj $sink-of-cnj))
         (+ (exec 1 $src-of-tc $sink-of-tc))
         (+ (exec 2 $src-of-prob $sink-of-prob))
-        (pure (partition-of $pattern $partition) $partition  (partitions  (cdr ('  $pattern)))) 
+        (pure
+            (indexed-pattern $indexed-copy)
+            $indexed-copy
+            (vars_to_indices (cdr-atom (' $pattern))))
     )
 )
 
+(exec 2
+    (, (indexed-pattern $indexed-pattern))
+    (O
+        (pure
+            (partitions-of $indexed-pattern $indexed-partition)
+            $indexed-partition
+            (partitions (' $indexed-pattern)))))
 
 
-(exec  (S Z)
-    (, (partition-of $pattern $partition)  (exec (S Z) $src $sink))
+
+(exec  3
+    (, (partitions-of $indexed-pattern $indexed-partition)  (exec 3 $src $sink))
     (O 
         
-        (pure (block-of-partition $car) $car (car (' $partition)))
-        (pure (partition-of $pattern $cdr) $cdr (cdr (' $partition)))
-        (-  (partition-of $pattern $partition))
-        (+ (exec (S Z) $src $sink))
-        (+ (exec (Z)  (, (partition-of $pattern ()) (exec (S Z) $src $sink))
-                    (O (- (exec (S Z) $src $sink)))))
- 
+        (pure (partition $car) $car (car-atom (' $indexed-partition)))
+        (pure (partitions-of $indexed-pattern $cdr) $cdr (cdr-atom (' $indexed-partition)))
+        (-  (partitions-of $indexed-pattern $indexed-partition))
+        (+ (exec 3 $src $sink))
  ))
 
+;; compute support of the component
+;; copy blocks
+(exec 4 (, (partition $partition) )
+              (, (copy-of-partition $partition $partition )))
+
+(exec 5 (, (copy-of-partition $partition $partition-copy )  (exec 5 $src $sink))
+    (O 
+        (pure (block $partition $block) $block (car-atom (' $partition-copy)))
+        (pure (copy-of-partition $partition $cdr) $cdr (cdr-atom (' $partition-copy)))
+        (- (copy-of-partition $partition $partition-copy))
+        (+ (exec 5 $src $sink))
+     )
+)
+
+;; Convert each indexed block back to a real variable pattern and count its support.
+(exec 6
+    (, (block $partition $indexed-block))
+    (O
+        (pure
+            (exec 6
+                $query
+                (O (count (block-support $partition $indexed-block $support) $support $query)))
+            $query
+            (indices_to_vars (cons , (' $indexed-block))))))
+
+;; Current partition shapes have either two or three blocks.
+(exec 7
+    (, (partition ($b1 $b2))
+       (block-support ($b1 $b2) $b1 $s1)
+       (block-support ($b1 $b2) $b2 $s2))
+    (O
+        (pure
+            (partition-product ($b1 $b2) $product)
+            $product
+            (i64_to_string
+                (product_i64
+                    (i64_from_string $s1)
+                    (i64_from_string $s2))))))
+
+(exec 7
+    (, (partition ($b1 $b2 $b3))
+       (block-support ($b1 $b2 $b3) $b1 $s1)
+       (block-support ($b1 $b2 $b3) $b2 $s2)
+       (block-support ($b1 $b2 $b3) $b3 $s3))
+    (O
+        (pure
+            (partition-product ($b1 $b2 $b3) $product)
+            $product
+            (i64_to_string
+                (product_i64
+                    (product_i64
+                        (i64_from_string $s1)
+                        (i64_from_string $s2))
+                    (i64_from_string $s3))))))
 
 
-; (exec (STEP2)
-;     (, (INPUT PATTERN ($pattern $support)) (partition-of $pattern $partition))
-;     (O
-;         (pure
-;             ($out $pattern $partition $est-prob)
-;             $est-prob
-;             (mul_f64_list (map (fn ($p) (block-probability $p))) $partition))
-;     )
+
+; (exec 5 (, (block-copy-of $block $copy) (partition-of $pattern $partition))
+;        (O 
+;           (- (block-copy-of $block $copy))
+;            (- (partition-of $pattern $partition))))
+
+
+
+; ((compute-support $block $pattern -> $out) 
+;      $pattern 
+;      (O 
+;        ( count ($out $block $sup) $sup  $pattern)))
+
+
+; (exec 6 (, (block-im $block $im ) ((compute-support $block $im -> im-support-of) $src $sink) ) 
+;         (exec 7 $src $sink)
 ; )
+
+
+
+
 
 
 (INPUT DB db)
@@ -143,8 +217,20 @@
 (db (Inheritance cason man))
 
 
+ (Inheritance Allen sodaDrinker)
+ (Inheritance Lily sodaDrinker)
+ (Inheritance Cason sodaDrinker)
+
+ (Inheritance Lily ugly)
+ (Inheritance Allen ugly)
+ (Inheritance Abe ugly)
+
+ (Inheritance Lily man)
+ (Inheritance Allen man)
+ (Inheritance cason man)
 
 
-
-
-
+; (block-of-partition (((Inheritance $a sodaDrinker)) ((Inheritance $b ugly) (Inheritance $b man))))
+; (block-of-partition (((Inheritance $a sodaDrinker) (Inheritance $b man)) ((Inheritance $b ugly))))
+; (block-of-partition (((Inheritance $a sodaDrinker) (Inheritance $b ugly)) ((Inheritance $b man))))
+; (block-of-partition (((Inheritance $a sodaDrinker)) ((Inheritance $b ugly)) ((Inheritance $b man))))
