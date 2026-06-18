@@ -136,35 +136,49 @@
             $query
             (indices_to_vars (cons , (' $indexed-block))))))
 
-;; Current partition shapes have either two or three blocks.
+;; Convert block support into block probability: support / db-size.
 (exec 7
+    (, (INPUT DB $db-name)
+       (db-size $db-name $db-size)
+       (block-support $partition $indexed-block $support))
+    (O
+        (pure
+            (block-prob $partition $indexed-block $prob)
+            $prob
+            (f64_to_string
+                (div_f64
+                    (f64_from_string $support)
+                    (f64_from_string $db-size))))))
+
+;; Current partition shapes have either two or three blocks.
+(exec 8
     (, (partition ($b1 $b2))
-       (block-support ($b1 $b2) $b1 $s1)
-       (block-support ($b1 $b2) $b2 $s2))
+       (block-prob ($b1 $b2) $b1 $p1)
+       (block-prob ($b1 $b2) $b2 $p2))
     (O
         (pure
             (partition-product ($b1 $b2) $product)
             $product
-            (i64_to_string
-                (product_i64
-                    (i64_from_string $s1)
-                    (i64_from_string $s2))))))
+            (f64_to_string
+                (product_f64
+                    (f64_from_string $p1)
+                    (f64_from_string $p2))))))
 
-(exec 7
+(exec 8
     (, (partition ($b1 $b2 $b3))
-       (block-support ($b1 $b2 $b3) $b1 $s1)
-       (block-support ($b1 $b2 $b3) $b2 $s2)
-       (block-support ($b1 $b2 $b3) $b3 $s3))
+       (block-prob ($b1 $b2 $b3) $b1 $p1)
+       (block-prob ($b1 $b2 $b3) $b2 $p2)
+       (block-prob ($b1 $b2 $b3) $b3 $p3))
     (O
         (pure
             (partition-product ($b1 $b2 $b3) $product)
             $product
-            (i64_to_string
-                (product_i64
-                    (product_i64
-                        (i64_from_string $s1)
-                        (i64_from_string $s2))
-                    (i64_from_string $s3))))))
+            (f64_to_string
+                (product_f64
+                    (product_f64
+                        (f64_from_string $p1)
+                        (f64_from_string $p2))
+                    (f64_from_string $p3))))))
 
 
 
