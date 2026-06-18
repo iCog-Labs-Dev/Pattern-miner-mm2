@@ -66,8 +66,40 @@
                (div_f64 
                     (f64_from_string $support) 
                     (f64_from_string $count)))
-          )
-      ))
+	          )
+	      ))
+
+;; Distance from an empirical value to an interval [emin, emax].
+;; Cases are materialized as facts so the three execs below stay easy to read.
+((dst-from-interval $pattern $emin $emax $emp -> $out)
+    (, (dst-request $pattern $emin $emax $emp $out))
+    (O
+        (pure
+            (dst-above? $pattern $emin $emax $emp $out $above)
+            $above
+            (gt_f64
+                (f64_from_string $emp)
+                (f64_from_string $emax)))
+        (pure
+            (dst-below? $pattern $emin $emax $emp $out $below)
+            $below
+            (lt_f64
+                (f64_from_string $emp)
+                (f64_from_string $emin)))
+        (pure
+            (dst-inside? $pattern $emin $emax $emp $out $inside)
+            $inside
+            (and_bool
+                (le_f64
+                    (f64_from_string $emin)
+                    (f64_from_string $emp))
+                (le_f64
+                    (f64_from_string $emp)
+                    (f64_from_string $emax))))))
+
+
+
+
 
 
 
@@ -180,16 +212,102 @@
                         (f64_from_string $p2))
                     (f64_from_string $p3))))))
 
+;; Take [min, max] over the current three-conjunct partition products.
+(exec 9
+    (, (indexed-pattern ($c1 $c2 $c3))
+       (partition-product (($c1) ($c2 $c3)) $p1)
+       (partition-product (($c1 $c3) ($c2)) $p2)
+       (partition-product (($c1 $c2) ($c3)) $p3)
+       (partition-product (($c1) ($c2) ($c3)) $p4))
+    (O
+        (pure
+            (min-partition-product $min)
+            $min
+            (min-atom (' ($p1 $p2 $p3 $p4))))
+        (pure
+            (max-partition-product $max)
+            $max
+            (max-atom (' ($p1 $p2 $p3 $p4))))))
+
+(exec 10
+    (, (min-partition-product $min)
+       (max-partition-product $max))
+    (, (partition-product-range $min $max)))
+
+(exec 11
+    (, (partition-product-range $emin $emax)
+       (prob-of $pattern $emp)
+       ((dst-from-interval $pattern $emin $emax $emp -> dst-of) $src $sink))
+    (,
+        (dst-request $pattern $emin $emax $emp dst-of)
+        (exec 11 $src $sink)))
 
 
 
+;; emp > emax: distance = emp - emax
+(exec 12
+    (, (dst-above? $pattern $emin $emax $emp $out true))
+    (O
+        (pure
+            ($out $pattern $distance)
+            $distance
+            (f64_to_string
+                (sub_f64
+                    (f64_from_string $emp)
+                    (f64_from_string $emax))))
+        (- (dst-request $pattern $emin $emax $emp $out))
+        (- (dst-above? $pattern $emin $emax $emp $out true))))
 
+;; emp < emin: distance = emin - emp
+(exec 12
+    (, (dst-below? $pattern $emin $emax $emp $out true))
+    (O
+        (pure
+            ($out $pattern $distance)
+            $distance
+            (f64_to_string
+                (sub_f64
+                    (f64_from_string $emin)
+                    (f64_from_string $emp))))
+        (- (dst-request $pattern $emin $emax $emp $out))
+        (- (dst-below? $pattern $emin $emax $emp $out true))))
 
+;; emin <= emp <= emax: distance = 0.0
+(exec 12
+    (, (dst-inside? $pattern $emin $emax $emp $out true))
+    (O
+        (+ ($out $pattern 0.0))
+        (- (dst-request $pattern $emin $emax $emp $out))
+        (- (dst-inside? $pattern $emin $emax $emp $out true))))
+
+;; If normalization is enabled, surprisingness = distance / empirical probability.
+(exec 13
+    (, (INPUT NORMALIZATION TRUE)
+       (dst-of $pattern $dst)
+       (prob-of $pattern $prob))
+    (O
+        (pure
+            (surprisingess-of $pattern $value)
+            $value
+            (f64_to_string
+                (div_f64
+                    (f64_from_string $dst)
+                    (f64_from_string $prob))))
+        (- (dst-of $pattern $dst))))
+
+;; Otherwise, surprisingness is just the distance from the interval.
+(exec 14
+    (, (dst-of $pattern $dst))
+    (O
+        (+ (surprisingess-of $pattern $dst))
+        (- (dst-of $pattern $dst))))
 
 
 
 (INPUT DB db)
+(INPUT NORMALIZATION FALSE)
 (INPUT PATTERN ((, (Inheritance $x sodaDrinker) (Inheritance $x ugly) (Inheritance $x man)) 4))
+; (INPUT NORMALIZATION TRUE)
 
 
 
@@ -228,7 +346,3 @@
  (Inheritance cason man)
 
 
-; (block-of-partition (((Inheritance $a sodaDrinker)) ((Inheritance $b ugly) (Inheritance $b man))))
-; (block-of-partition (((Inheritance $a sodaDrinker) (Inheritance $b man)) ((Inheritance $b ugly))))
-; (block-of-partition (((Inheritance $a sodaDrinker) (Inheritance $b ugly)) ((Inheritance $b man))))
-; (block-of-partition (((Inheritance $a sodaDrinker)) ((Inheritance $b ugly)) ((Inheritance $b man))))
