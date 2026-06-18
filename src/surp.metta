@@ -168,22 +168,6 @@
 
 
 
-; (exec 5 (, (block-copy-of $block $copy) (partition-of $pattern $partition))
-;        (O 
-;           (- (block-copy-of $block $copy))
-;            (- (partition-of $pattern $partition))))
-
-
-
-; ((compute-support $block $pattern -> $out) 
-;      $pattern 
-;      (O 
-;        ( count ($out $block $sup) $sup  $pattern)))
-
-
-; (exec 6 (, (block-im $block $im ) ((compute-support $block $im -> im-support-of) $src $sink) ) 
-;         (exec 7 $src $sink)
-; )
 
 
 
