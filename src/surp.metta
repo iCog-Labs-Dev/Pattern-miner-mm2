@@ -33,7 +33,7 @@
 ;; total-counts(pattern, db) = db_size! / (num_conjuncts! * (db_size - num_conjuncts)!)
 ;; C(n, k) = falling_factorial(n, k) / k!
 ((total-counts $db $pattern -> $out)
-    (, (db-size $db $n)
+    (, (INPUT DB-SIZE $n)
        (num-of-conjuncts $pattern $k))
     (O
         (pure
@@ -46,6 +46,7 @@
                         (i64_from_string $k))
                     (factorial
                         (i64_from_string $k)))))))
+                        
 
 ;; Compute the probability of a pattern by dividing the support by total counts.
 ((prob $pattern $db -> $out)
@@ -170,10 +171,10 @@
             (indices_to_vars
                 (cons , (' $indexed-block))))))
 
-;; Convert block support into block probability: support / db-size.
+;; Convert block support into block probability using the full pattern total count.
 (exec 7
-    (, (INPUT DB $db-name)
-       (db-size $db-name $db-size)
+    (, (INPUT PATTERN ($pattern $pattern-support))
+       (total-count-of $pattern $total-count)
        (block-support $partition $indexed-block $support))
     (O
         (pure
@@ -182,7 +183,7 @@
             (f64_to_string
                 (div_f64
                     (f64_from_string $support)
-                    (f64_from_string $db-size))))))
+                    (f64_from_string $total-count))))))
 
 ;; Current partition shapes have either two or three blocks.
 (exec 8
@@ -280,32 +281,63 @@
         (- (dst-request $pattern $emin $emax $emp $out))
         (- (dst-inside? $pattern $emin $emax $emp $out true))))
 
-;; If normalization is enabled, surprisingness = distance / empirical probability.
+
+;; If normalization is enabled, surprisingness = min(dst / max(emax, empirical probability), 1.0).
 (exec 13
     (, (INPUT NORMALIZATION TRUE)
        (dst-of $pattern $dst)
-       (prob-of $pattern $prob))
+       (prob-of $pattern $prob)
+       (partition-product-range $emin $emax))
+    (O
+        (pure
+            (normalization-denom $pattern $dst $denom)
+            $denom
+            (max-atom (' ($emax $prob))))))
+
+(exec 14
+    (, (INPUT NORMALIZATION TRUE)
+       (dst-of $pattern $dst)
+       (normalization-denom $pattern $dst $denom))
+    (O
+        (pure
+            (normalization-candidate $pattern $dst $candidate)
+            $candidate
+            (f64_to_string
+                (div_f64
+                    (f64_from_string $dst)
+                    (f64_from_string $denom))))))
+
+(exec 15
+    (, (INPUT NORMALIZATION TRUE)
+       (dst-of $pattern $dst)
+       (normalization-denom $pattern $dst $denom)
+       (normalization-candidate $pattern $dst $candidate))
     (O
         (pure
             (surprisingess-of $pattern $value)
             $value
-            (f64_to_string
-                (div_f64
-                    (f64_from_string $dst)
-                    (f64_from_string $prob))))
+            (min-atom (' ($candidate 1.0))))
+        (- (normalization-denom $pattern $dst $denom))
+        (- (normalization-candidate $pattern $dst $candidate))
         (- (dst-of $pattern $dst))))
 
+
+
 ;; Otherwise, surprisingness is just the distance from the interval.
-(exec 14
-    (, (dst-of $pattern $dst))
+(exec 16
+    (, (INPUT NORMALIZATION FALSE)
+       (dst-of $pattern $dst))
     (O
         (+ (surprisingess-of $pattern $dst))
         (- (dst-of $pattern $dst))))
 
-;; Final cleanup: once surprisingness exists, create cleanup tasks for
-;; intermediate mining facts. We intentionally keep db-size,
-;; num-of-conjuncts, total-count-of, prob-of, and partitions-of.
-(exec 15
+
+
+
+
+
+;; Final cleanup: 
+(exec 17
     (, (surprisingess-of $pattern $value))
     (,
         (cleanup (block $partition $block))
@@ -324,26 +356,31 @@
         (cleanup (dst-request $p $emin $emax $emp $out))))
 
 ;; One cleanup matcher removes any fact selected by the cleanup task.
-(exec 16
+(exec 18
     (, (cleanup $fact) $fact)
     (O
         (- (cleanup $fact))
         (- $fact)
-        (+ (exec 16
+        (+ (exec 18
             (, (cleanup $f) $f)
             (O
                 (- (cleanup $f))
                 (- $f))))))
 
 ;; Remove the generic cleanup tasks after they are no longer useful.
-(exec 17
+(exec 19
     (, (cleanup $fact))
     (O
         (- (cleanup $fact))
-        (+ (exec 17
+        (+ (exec 19
             (, (cleanup $f))
             (O
                 (- (cleanup $f)))))))
+
+
+
+
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;
@@ -351,31 +388,74 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;
 
 (INPUT DB db)
-(INPUT NORMALIZATION FALSE)
-(INPUT PATTERN ((, (Inheritance $x sodaDrinker) (Inheritance $x ugly) (Inheritance $x man)) 4))
+(INPUT DB-SIZE 60)
+(INPUT NORMALIZATION TRUE)
+(INPUT PATTERN ((, (Inheritance $x man) (Inheritance $x ugly) (Inheritance $x sodaDrinker)) 5))
 
-;; DB facts used for db-size.
-(db (Inheritance Allen sodaDrinker))
-(db (Inheritance Lily sodaDrinker))
-(db (Inheritance Cason sodaDrinker))
 
-(db (Inheritance Lily ugly))
-(db (Inheritance Allen ugly))
-(db (Inheritance Abe ugly))
-
-(db (Inheritance Lily man))
-(db (Inheritance Allen man))
-(db (Inheritance cason man))
 
 ;; Raw facts used by the dynamic support-count queries.
-(Inheritance Allen sodaDrinker)
-(Inheritance Lily sodaDrinker)
-(Inheritance Cason sodaDrinker)
+(Inheritance Allen human)
+(Inheritance Abe human)
+(Inheritance Cason human)
+(Inheritance Davion human)
+(Inheritance Hessley human)
+(Inheritance Jadrian human)
+(Inheritance Rio human)
+(Inheritance Bob human)
+(Inheritance Mike human)
+(Inheritance Zac human)
+(Inheritance Lily human)
+(Inheritance Emily human)
+(Inheritance Lucy human)
+(Inheritance Sophia human)
+(Inheritance Alaura human)
+(Inheritance Breonna human)
+(Inheritance Jaleesa human)
+(Inheritance Jassy human)
+(Inheritance Jenica human)
+(Inheritance Kecia human)
 
-(Inheritance Lily ugly)
+(Inheritance Allen man)
+(Inheritance Abe man)
+(Inheritance Cason man)
+(Inheritance Davion man)
+(Inheritance Hessley man)
+(Inheritance Jadrian man)
+(Inheritance Rio man)
+(Inheritance Bob man)
+(Inheritance Mike man)
+(Inheritance Zac man)
+
+(Inheritance Lily woman)
+(Inheritance Emily woman)
+(Inheritance Lucy woman)
+(Inheritance Sophia woman)
+(Inheritance Alaura woman)
+(Inheritance Breonna woman)
+(Inheritance Jaleesa woman)
+(Inheritance Jassy woman)
+(Inheritance Jenica woman)
+(Inheritance Kecia woman)
+
 (Inheritance Allen ugly)
 (Inheritance Abe ugly)
+(Inheritance Cason ugly)
+(Inheritance Davion ugly)
+(Inheritance Hessley ugly)
+(Inheritance Lily ugly)
+(Inheritance Emily ugly)
+(Inheritance Lucy ugly)
+(Inheritance Sophia ugly)
+(Inheritance Alaura ugly)
 
-(Inheritance Lily man)
-(Inheritance Allen man)
-(Inheritance cason man)
+(Inheritance Allen sodaDrinker)
+(Inheritance Abe sodaDrinker)
+(Inheritance Cason sodaDrinker)
+(Inheritance Davion sodaDrinker)
+(Inheritance Hessley sodaDrinker)
+(Inheritance Breonna sodaDrinker)
+(Inheritance Jaleesa sodaDrinker)
+(Inheritance Jassy sodaDrinker)
+(Inheritance Jenica sodaDrinker)
+(Inheritance Kecia sodaDrinker)
