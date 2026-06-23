@@ -33,7 +33,7 @@
 ;; total-counts(pattern, db) = db_size! / (num_conjuncts! * (db_size - num_conjuncts)!)
 ;; C(n, k) = falling_factorial(n, k) / k!
 ((total-counts $db $pattern -> $out)
-    (, (db-size $db $n)
+    (, (INPUT DB-SIZE $n)
        (num-of-conjuncts $pattern $k))
     (O
         (pure
@@ -46,6 +46,7 @@
                         (i64_from_string $k))
                     (factorial
                         (i64_from_string $k)))))))
+                        
 
 ;; Compute the probability of a pattern by dividing the support by total counts.
 ((prob $pattern $db -> $out)
@@ -170,10 +171,10 @@
             (indices_to_vars
                 (cons , (' $indexed-block))))))
 
-;; Convert block support into block probability: support / db-size.
+;; Convert block support into block probability using the full pattern total count.
 (exec 7
-    (, (INPUT DB $db-name)
-       (db-size $db-name $db-size)
+    (, (INPUT PATTERN ($pattern $pattern-support))
+       (total-count-of $pattern $total-count)
        (block-support $partition $indexed-block $support))
     (O
         (pure
@@ -182,7 +183,7 @@
             (f64_to_string
                 (div_f64
                     (f64_from_string $support)
-                    (f64_from_string $db-size))))))
+                    (f64_from_string $total-count))))))
 
 ;; Current partition shapes have either two or three blocks.
 (exec 8
@@ -346,36 +347,84 @@
                 (- (cleanup $f)))))))
 
 
+
+
+
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;
 ;; INPUTS AND DB FACTS;;
 ;;;;;;;;;;;;;;;;;;;;;;;;
 
 (INPUT DB db)
+(INPUT DB-SIZE 60)
 (INPUT NORMALIZATION FALSE)
-(INPUT PATTERN ((, (Inheritance $x sodaDrinker) (Inheritance $x ugly) (Inheritance $x man)) 4))
+(INPUT PATTERN ((, (Inheritance $x man) (Inheritance $x ugly) (Inheritance $x sodaDrinker)) 5))
 
-;; DB facts used for db-size.
-(db (Inheritance Allen sodaDrinker))
-(db (Inheritance Lily sodaDrinker))
-(db (Inheritance Cason sodaDrinker))
 
-(db (Inheritance Lily ugly))
-(db (Inheritance Allen ugly))
-(db (Inheritance Abe ugly))
-
-(db (Inheritance Lily man))
-(db (Inheritance Allen man))
-(db (Inheritance cason man))
 
 ;; Raw facts used by the dynamic support-count queries.
-(Inheritance Allen sodaDrinker)
-(Inheritance Lily sodaDrinker)
-(Inheritance Cason sodaDrinker)
+(Inheritance Allen human)
+(Inheritance Abe human)
+(Inheritance Cason human)
+(Inheritance Davion human)
+(Inheritance Hessley human)
+(Inheritance Jadrian human)
+(Inheritance Rio human)
+(Inheritance Bob human)
+(Inheritance Mike human)
+(Inheritance Zac human)
+(Inheritance Lily human)
+(Inheritance Emily human)
+(Inheritance Lucy human)
+(Inheritance Sophia human)
+(Inheritance Alaura human)
+(Inheritance Breonna human)
+(Inheritance Jaleesa human)
+(Inheritance Jassy human)
+(Inheritance Jenica human)
+(Inheritance Kecia human)
 
-(Inheritance Lily ugly)
+(Inheritance Allen man)
+(Inheritance Abe man)
+(Inheritance Cason man)
+(Inheritance Davion man)
+(Inheritance Hessley man)
+(Inheritance Jadrian man)
+(Inheritance Rio man)
+(Inheritance Bob man)
+(Inheritance Mike man)
+(Inheritance Zac man)
+
+(Inheritance Lily woman)
+(Inheritance Emily woman)
+(Inheritance Lucy woman)
+(Inheritance Sophia woman)
+(Inheritance Alaura woman)
+(Inheritance Breonna woman)
+(Inheritance Jaleesa woman)
+(Inheritance Jassy woman)
+(Inheritance Jenica woman)
+(Inheritance Kecia woman)
+
 (Inheritance Allen ugly)
 (Inheritance Abe ugly)
+(Inheritance Cason ugly)
+(Inheritance Davion ugly)
+(Inheritance Hessley ugly)
+(Inheritance Lily ugly)
+(Inheritance Emily ugly)
+(Inheritance Lucy ugly)
+(Inheritance Sophia ugly)
+(Inheritance Alaura ugly)
 
-(Inheritance Lily man)
-(Inheritance Allen man)
-(Inheritance cason man)
+(Inheritance Allen sodaDrinker)
+(Inheritance Abe sodaDrinker)
+(Inheritance Cason sodaDrinker)
+(Inheritance Davion sodaDrinker)
+(Inheritance Hessley sodaDrinker)
+(Inheritance Breonna sodaDrinker)
+(Inheritance Jaleesa sodaDrinker)
+(Inheritance Jassy sodaDrinker)
+(Inheritance Jenica sodaDrinker)
+(Inheritance Kecia sodaDrinker)
