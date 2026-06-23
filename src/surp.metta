@@ -281,32 +281,63 @@
         (- (dst-request $pattern $emin $emax $emp $out))
         (- (dst-inside? $pattern $emin $emax $emp $out true))))
 
-;; If normalization is enabled, surprisingness = distance / empirical probability.
+
+;; If normalization is enabled, surprisingness = min(dst / max(emax, empirical probability), 1.0).
 (exec 13
     (, (INPUT NORMALIZATION TRUE)
        (dst-of $pattern $dst)
-       (prob-of $pattern $prob))
+       (prob-of $pattern $prob)
+       (partition-product-range $emin $emax))
+    (O
+        (pure
+            (normalization-denom $pattern $dst $denom)
+            $denom
+            (max-atom (' ($emax $prob))))))
+
+(exec 14
+    (, (INPUT NORMALIZATION TRUE)
+       (dst-of $pattern $dst)
+       (normalization-denom $pattern $dst $denom))
+    (O
+        (pure
+            (normalization-candidate $pattern $dst $candidate)
+            $candidate
+            (f64_to_string
+                (div_f64
+                    (f64_from_string $dst)
+                    (f64_from_string $denom))))))
+
+(exec 15
+    (, (INPUT NORMALIZATION TRUE)
+       (dst-of $pattern $dst)
+       (normalization-denom $pattern $dst $denom)
+       (normalization-candidate $pattern $dst $candidate))
     (O
         (pure
             (surprisingess-of $pattern $value)
             $value
-            (f64_to_string
-                (div_f64
-                    (f64_from_string $dst)
-                    (f64_from_string $prob))))
+            (min-atom (' ($candidate 1.0))))
+        (- (normalization-denom $pattern $dst $denom))
+        (- (normalization-candidate $pattern $dst $candidate))
         (- (dst-of $pattern $dst))))
 
+
+
 ;; Otherwise, surprisingness is just the distance from the interval.
-(exec 14
-    (, (dst-of $pattern $dst))
+(exec 16
+    (, (INPUT NORMALIZATION FALSE)
+       (dst-of $pattern $dst))
     (O
         (+ (surprisingess-of $pattern $dst))
         (- (dst-of $pattern $dst))))
 
-;; Final cleanup: once surprisingness exists, create cleanup tasks for
-;; intermediate mining facts. We intentionally keep db-size,
-;; num-of-conjuncts, total-count-of, prob-of, and partitions-of.
-(exec 15
+
+
+
+
+
+;; Final cleanup: 
+(exec 17
     (, (surprisingess-of $pattern $value))
     (,
         (cleanup (block $partition $block))
@@ -325,23 +356,23 @@
         (cleanup (dst-request $p $emin $emax $emp $out))))
 
 ;; One cleanup matcher removes any fact selected by the cleanup task.
-(exec 16
+(exec 18
     (, (cleanup $fact) $fact)
     (O
         (- (cleanup $fact))
         (- $fact)
-        (+ (exec 16
+        (+ (exec 18
             (, (cleanup $f) $f)
             (O
                 (- (cleanup $f))
                 (- $f))))))
 
 ;; Remove the generic cleanup tasks after they are no longer useful.
-(exec 17
+(exec 19
     (, (cleanup $fact))
     (O
         (- (cleanup $fact))
-        (+ (exec 17
+        (+ (exec 19
             (, (cleanup $f))
             (O
                 (- (cleanup $f)))))))
@@ -358,7 +389,7 @@
 
 (INPUT DB db)
 (INPUT DB-SIZE 60)
-(INPUT NORMALIZATION FALSE)
+(INPUT NORMALIZATION TRUE)
 (INPUT PATTERN ((, (Inheritance $x man) (Inheritance $x ugly) (Inheritance $x sodaDrinker)) 5))
 
 
