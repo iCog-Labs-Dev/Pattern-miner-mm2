@@ -49,8 +49,30 @@
 )
 
 ; Example call, kept inactive so this file can be loaded as a library:
-(get-vars-for-tree sample (Inheritance $x (Evaluation $x $y)))
-(exec (GV 0 call-example)
-  (, (get-vars-for-tree sample (Inheritance $x (Evaluation $x $y)))
-     (DEF get-vars-for-tree-fn $gv-p $gv-t))
-  (O (+ (exec (GV 0 run-get-vars) $gv-p $gv-t))))
+; (get-vars-for-tree sample (Inheritance $x (Evaluation $x $y)))
+; (exec (GV 0 call-example)
+;   (, (get-vars-for-tree sample (Inheritance $x (Evaluation $x $y)))
+;      (DEF get-vars-for-tree-fn $gv-p $gv-t))
+;   (O (+ (exec (GV 0 run-get-vars) $gv-p $gv-t))))
+
+; get-value-at-position
+;
+; Recursive positional lookup. It walks only the requested path:
+;   root                      -> the whole expression
+;   ($parent arg/0)           -> first child of value at $parent
+;   ($parent arg/1)           -> second child of value at $parent
+;   ($parent arg/2)           -> third child of value at $parent
+;
+; Request:
+;   (get-value-at-position $id $expr $path)
+;
+; Result:
+;   (get-value-at-position-result $id $path $value)
+;
+; Internal:
+;   (gap-task $id $expr $path)
+;   (gap-wait $id $path $parent $arg)
+;   (gap-value $id $path $value)
+
+
+
