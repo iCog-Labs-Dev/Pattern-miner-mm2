@@ -362,24 +362,24 @@
 
 
 
-;; Final cleanup: 
-; (exec 17
-;     (, (surprisingess-of $pattern $value))
-;     (,
-;         (cleanup (block $partition $block))
-;         (cleanup (partition $partition))
-;         (cleanup (block-support $partition $block $support))
-;         (cleanup (block-prob $partition $block $prob))
-;         (cleanup (partition-product $partition $product))
-;         (cleanup (min-partition-product $min))
-;         (cleanup (max-partition-product $max))
-;         (cleanup (partition-product-range $min $max))
-;         (cleanup (indexed-pattern $indexed-pattern))
-;         (cleanup (copy-of-partition $partition $partition-copy))
-;         (cleanup (dst-above? $p $emin $emax $emp $out $above))
-;         (cleanup (dst-below? $p $emin $emax $emp $out $below))
-;         (cleanup (dst-inside? $p $emin $emax $emp $out $inside))
-;         (cleanup (dst-request $p $emin $emax $emp $out))))
+; Final cleanup: 
+(exec 17
+    (, (surprisingess-of $pattern $value))
+    (,
+        (cleanup (block $partition $block))
+        (cleanup (partition $partition))
+        (cleanup (block-support $partition $block $support))
+        (cleanup (block-prob $partition $block $prob))
+        (cleanup (partition-product $partition $product))
+        (cleanup (min-partition-product $min))
+        (cleanup (max-partition-product $max))
+        (cleanup (partition-product-range $min $max))
+        (cleanup (indexed-pattern $indexed-pattern))
+        (cleanup (copy-of-partition $partition $partition-copy))
+        (cleanup (dst-above? $p $emin $emax $emp $out $above))
+        (cleanup (dst-below? $p $emin $emax $emp $out $below))
+        (cleanup (dst-inside? $p $emin $emax $emp $out $inside))
+        (cleanup (dst-request $p $emin $emax $emp $out))))
 
 ;; One cleanup matcher removes any fact selected by the cleanup task.
 (exec 18
