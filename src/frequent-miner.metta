@@ -1,0 +1,56 @@
+(DEF gv-expand
+  (, (gv-visit $id $path $node))
+  (O
+    (- (gv-visit $id $path $node))
+    (pure (gv-var-check $id $path $node $is-var) $is-var
+      (i8_to_string (is_var (' $node))))
+
+    (+ (exec (GV 3 0 record)
+         (, (gv-var-check $record-id $record-path $var-node 1))
+         (O
+           (- (gv-var-check $record-id $record-path $var-node 1))
+           (+ (get-vars-for-tree-result $record-id $record-path $var-node)))))
+
+    (+ (exec (GV 3 1 split-pair)
+         (, (gv-var-check $split-id $split-path ($a $b) 0)
+            (DEF gv-expand $expand-p $expand-t))
+         (O
+           (- (gv-var-check $split-id $split-path ($a $b) 0))
+           (+ (gv-visit $split-id ($split-path arg/0) $a))
+           (+ (gv-visit $split-id ($split-path arg/1) $b))
+           (+ (exec (GV 2) $expand-p $expand-t)))))
+
+    (+ (exec (GV 3 1 split-triplet)
+         (, (gv-var-check $split-id $split-path ($a $b $c) 0)
+            (DEF gv-expand $expand-p $expand-t))
+         (O
+           (- (gv-var-check $split-id $split-path ($a $b $c) 0))
+           (+ (gv-visit $split-id ($split-path arg/0) $a))
+           (+ (gv-visit $split-id ($split-path arg/1) $b))
+           (+ (gv-visit $split-id ($split-path arg/2) $c))
+           (+ (exec (GV 2) $expand-p $expand-t)))))
+  )
+)
+
+; Reusable variable-extraction function.
+;
+; To call it from another miner stage, match/create:
+;   (get-vars-for-tree $id $tree)
+;   (DEF get-vars-for-tree-fn $gv-p $gv-t)
+; then emit:
+;   (+ (exec (GV 0 run-get-vars) $gv-p $gv-t))
+(DEF get-vars-for-tree-fn
+  (, (get-vars-for-tree $id $tree)
+     (DEF gv-expand $expand-p $expand-t))
+  (O
+    (pure (gv-visit $id root $indexed-tree) $indexed-tree
+      (vars_to_indices (' $tree)))
+    (+ (exec (GV 2) $expand-p $expand-t)))
+)
+
+; Example call, kept inactive so this file can be loaded as a library:
+(get-vars-for-tree sample (Inheritance $x (Evaluation $x $y)))
+(exec (GV 0 call-example)
+  (, (get-vars-for-tree sample (Inheritance $x (Evaluation $x $y)))
+     (DEF get-vars-for-tree-fn $gv-p $gv-t))
+  (O (+ (exec (GV 0 run-get-vars) $gv-p $gv-t))))
