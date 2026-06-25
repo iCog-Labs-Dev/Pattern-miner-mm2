@@ -74,5 +74,31 @@
 ;   (gap-wait $id $path $parent $arg)
 ;   (gap-value $id $path $value)
 
+(gap-arg-index arg/0 0)
+(gap-arg-index arg/1 1)
+(gap-arg-index arg/2 2)
+
+
+(DEF get-value-at-position-step
+  (, (gap-task $id $expr $path))
+  (O
+    (+ (exec (GAP 1 root)
+         (, (gap-task $root-id $expr root)
+            (DEF get-value-at-position-select $select-p $select-t))
+         (O
+           (- (gap-task $root-id $expr root))
+           (+ (gap-value $root-id root $expr))
+           (+ (exec (GAP 0 select) $select-p $select-t)))))
+
+    (+ (exec (GAP 2 descend)
+         (, (gap-task $desc-id $expr ($parent $arg))
+            (DEF get-value-at-position-step $step-p $step-t))
+         (O
+           (- (gap-task $desc-id $expr ($parent $arg)))
+           (+ (gap-wait $desc-id ($parent $arg) $parent $arg))
+           (+ (gap-task $desc-id $expr $parent))
+           (+ (exec (GAP 0 step) $step-p $step-t)))))
+  )
+)
 
 
