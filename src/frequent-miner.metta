@@ -123,4 +123,19 @@
   )
 )
 
+; Reusable get-value-at-position function.
+;
+; To call it from another miner stage, match/create:
+;   (get-value-at-position $id $expr $path)
+;   (DEF get-value-at-position-fn $gap-p $gap-t)
+; then emit:
+;   (+ (exec (GAP 0 run-get-value-at-position) $gap-p $gap-t))
+(DEF get-value-at-position-fn
+  (, (get-value-at-position $id $expr $path)
+     (DEF get-value-at-position-step $step-p $step-t))
+  (O
+    (+ (gap-target $id $path))
+    (+ (gap-task $id $expr $path))
+    (+ (exec (GAP 0 step) $step-p $step-t)))
+)
 
