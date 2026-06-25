@@ -78,6 +78,28 @@
 (gap-arg-index arg/1 1)
 (gap-arg-index arg/2 2)
 
+(DEF get-value-at-position-select
+  (, (gap-value $id $parent $parent-value))
+  (O
+    (+ (exec (GAP 3 select-by-index)
+         (, (gap-wait $sel-id $path $parent $arg)
+            (gap-value $sel-id $parent $parent-value)
+            (gap-arg-index $arg $index)
+            (DEF get-value-at-position-select $select-p $select-t))
+         (O
+           (- (gap-wait $sel-id $path $parent $arg))
+           (pure (gap-value $sel-id $path $value) $value
+             (index-atom $index (' $parent-value)))
+           (+ (exec (GAP 0 select) $select-p $select-t)))))
+
+    (+ (exec (GAP 9 result)
+         (, (gap-value $result-id $result-path $result-value)
+            (gap-target $result-id $result-path))
+         (O
+           (- (gap-target $result-id $result-path))
+           (+ (get-value-at-position-result $result-id $result-path $result-value)))))
+  )
+)
 
 (DEF get-value-at-position-step
   (, (gap-task $id $expr $path))
