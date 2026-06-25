@@ -139,3 +139,15 @@
     (+ (exec (GAP 0 step) $step-p $step-t)))
 )
 
+; Example call, kept inactive:
+; (get-value-at-position gap-example
+;   (Inheritance Allen (Evaluation (Var 1) (like (we sodaDrinker) dean)))
+;   (((root arg/2) arg/1) arg/0))
+; (exec (GAP 0 call-example)
+;   (, (get-value-at-position gap-example
+;        (Inheritance Allen (Evaluation (Var 1) (like (we sodaDrinker) dean)))
+;        (((root arg/2) arg/1) arg/0))
+;      (DEF get-value-at-position-fn $gap-p $gap-t))
+;   (O (+ (exec (GAP 0 run-get-value-at-position) $gap-p $gap-t))))
+
+
