@@ -150,4 +150,73 @@
 ;      (DEF get-value-at-position-fn $gap-p $gap-t))
 ;   (O (+ (exec (GAP 0 run-get-value-at-position) $gap-p $gap-t))))
 
+; valuation
+;
+; Valuation pipeline:
+;   1. Extract variables and their paths from the pattern.
+;   2. Match the pattern against a knowledge base.
+;   3. For each satisfying expression and each variable path, get the value at
+;      that path.
+;   4. Emit variable bindings for the satisfying expression.
+;
+; Request:
+;   (valuation $id $kb $pattern)
+;
+; Knowledge base facts:
+;   (knowledge-base $kb $candidate-id $expr)
+;
+; Results:
+;   (valuation-satisfying-set $id $candidate-id $candidate-expr)
+;   (valuation-binding $id $candidate-id $path $var $value)
+
+(DEF valuation-start
+  (, (valuation $id $kb $pattern))
+  (O
+    (+ (get-vars-for-tree (VAL-VARS $id) $pattern))
+    (+ (valuation-pattern $id $kb $pattern)))
+)
+
+(DEF valuation-match
+  (, (valuation-pattern $id $kb $pattern)
+     (knowledge-base $kb $candidate-id $pattern))
+  (O
+    (+ (valuation-satisfying-set $id $candidate-id $pattern))
+  )
+)
+
+(DEF valuation-bind
+  (, (valuation-satisfying-set $id $candidate-id $candidate-expr)
+     (get-vars-for-tree-result (VAL-VARS $id) $path $var)
+     (DEF get-value-at-position-fn $gap-p $gap-t))
+  (O
+    (+ (gap-valuation-binding (VAL-VALUE $id $candidate-id $path)
+         $id
+         $candidate-id
+         $path
+         $var))
+    (+ (get-value-at-position (VAL-VALUE $id $candidate-id $path)
+         $candidate-expr
+         $path))
+    (+ (exec (VAL 4 get-value) $gap-p $gap-t)))
+)
+
+(DEF valuation-binding-finish
+  (, (gap-valuation-binding (VAL-VALUE $id $candidate-id $path)
+       $id
+       $candidate-id
+       $path
+       $var)
+     (get-value-at-position-result (VAL-VALUE $id $candidate-id $path)
+       $path
+       $value))
+  (O
+    (- (gap-valuation-binding (VAL-VALUE $id $candidate-id $path)
+         $id
+         $candidate-id
+         $path
+         $var))
+    (+ (valuation-binding $id $candidate-id $path $var $value))
+    (+ (valuation-binding $id v $path $var $var)))
+)
+
 
