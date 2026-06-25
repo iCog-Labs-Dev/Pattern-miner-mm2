@@ -219,4 +219,27 @@
     (+ (valuation-binding $id v $path $var $var)))
 )
 
+; Reusable valuation function.
+;
+; To call it from another miner stage, match/create:
+;   (valuation $id $kb $pattern)
+;   (knowledge-base $kb $candidate-id $candidate-expr)
+;   (DEF valuation-fn $val-p $val-t)
+; then emit:
+;   (+ (exec (VAL 0 run-valuation) $val-p $val-t))
+(DEF valuation-fn
+  (, (valuation $id $kb $pattern)
+     (DEF valuation-start $start-p $start-t)
+     (DEF valuation-match $match-p $match-t)
+     (DEF valuation-bind $bind-p $bind-t)
+     (DEF valuation-binding-finish $finish-p $finish-t)
+     (DEF get-vars-for-tree-fn $gv-p $gv-t))
+  (O
+    (+ (exec (VAL 0 start) $start-p $start-t))
+    (+ (exec (VAL 1 get-vars) $gv-p $gv-t))
+    (+ (exec (VAL 2 match) $match-p $match-t))
+    (+ (exec (GV 9 0 valuation-bind-after-get-vars) $bind-p $bind-t))
+    (+ (exec (GAP 9 0 valuation-finish-after-get-value) $finish-p $finish-t)))
+)
+
 
