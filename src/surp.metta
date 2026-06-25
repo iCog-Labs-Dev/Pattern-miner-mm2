@@ -61,33 +61,59 @@
                     (f64_from_string $support)
                     (f64_from_string $count))))))
 
-;; Distance from an empirical value to an interval [emin, emax].
-;; Cases are materialized as facts so the three execs below stay easy to read.
+
+
+;; Function: dst-from-interval
+;; - first finds the distance of emp from emin and emax, then returns the minimum of those two distances.
+;; - if the sum of these two distances is equal to the distance between emin and emax, then emp is inside the interval and the distance is 0.0.
+;; - else the distance is the minimum of the two distances.
 ((dst-from-interval $pattern $emin $emax $emp -> $out)
-    (, (dst-request $pattern $emin $emax $emp $out))
+    (,)
     (O
         (pure
-            (dst-above? $pattern $emin $emax $emp $out $above)
-            $above
-            (gt_f64
-                (f64_from_string $emp)
-                (f64_from_string $emax)))
-        (pure
-            (dst-below? $pattern $emin $emax $emp $out $below)
-            $below
-            (lt_f64
-                (f64_from_string $emp)
-                (f64_from_string $emin)))
-        (pure
-            (dst-inside? $pattern $emin $emax $emp $out $inside)
-            $inside
-            (and_bool
-                (le_f64
-                    (f64_from_string $emin)
-                    (f64_from_string $emp))
-                (le_f64
-                    (f64_from_string $emp)
-                    (f64_from_string $emax))))))
+            (exec (0) (, (check-for-dst $tuple -> $dst)) (, ($out $pattern $dst)))
+            $tuple
+            (tuple 
+                (min-atom (tuple (f64_to_string (abs_f64 (sub_f64 (f64_from_string $emin) (f64_from_string $emp)))) (f64_to_string (abs_f64 (sub_f64 (f64_from_string $emax) (f64_from_string $emp))))))
+                (eq_f64
+                (sub_f64 (f64_from_string $emax) (f64_from_string $emin))
+                (f64_from_string (max-atom (tuple (f64_to_string (abs_f64 (sub_f64 (f64_from_string $emin) (f64_from_string $emp)))) (f64_to_string (abs_f64 (sub_f64 (f64_from_string $emax) (f64_from_string $emp)))) (f64_to_string (sub_f64 (f64_from_string $emax) (f64_from_string $emin))))))
+                )
+            )
+        )
+    )
+)
+;; Check for the dst value. If the min-atom is true, then return 0, else return the min-atom value
+(check-for-dst ($min true) -> 0)
+(check-for-dst ($min false) -> $min)
+
+;; Distance from an empirical value to an interval [emin, emax].
+;; Cases are materialized as facts so the three execs below stay easy to read.
+; ((dst-from-interval $pattern $emin $emax $emp -> $out)
+;     (, (dst-request $pattern $emin $emax $emp $out))
+;     (O
+;         (pure
+;             (dst-above? $pattern $emin $emax $emp $out $above)
+;             $above
+;             (gt_f64
+;                 (f64_from_string $emp)
+;                 (f64_from_string $emax)))
+;         (pure
+;             (dst-below? $pattern $emin $emax $emp $out $below)
+;             $below
+;             (lt_f64
+;                 (f64_from_string $emp)
+;                 (f64_from_string $emin)))
+;         (pure
+;             (dst-inside? $pattern $emin $emax $emp $out $inside)
+;             $inside
+;             (and_bool
+;                 (le_f64
+;                     (f64_from_string $emin)
+;                     (f64_from_string $emp))
+;                 (le_f64
+;                     (f64_from_string $emp)
+;                     (f64_from_string $emax))))))
 
 
 ;;===============================================================
@@ -242,44 +268,44 @@
        (prob-of $pattern $emp)
        ((dst-from-interval $pattern $emin $emax $emp -> dst-of) $src $sink))
     (,
-        (dst-request $pattern $emin $emax $emp dst-of)
+        ; (dst-request $pattern $emin $emax $emp dst-of)
         (exec 11 $src $sink)))
 
-;; emp > emax: distance = emp - emax.
-(exec 12
-    (, (dst-above? $pattern $emin $emax $emp $out true))
-    (O
-        (pure
-            ($out $pattern $distance)
-            $distance
-            (f64_to_string
-                (sub_f64
-                    (f64_from_string $emp)
-                    (f64_from_string $emax))))
-        (- (dst-request $pattern $emin $emax $emp $out))
-        (- (dst-above? $pattern $emin $emax $emp $out true))))
+; ;; emp > emax: distance = emp - emax.
+; (exec 12
+;     (, (dst-above? $pattern $emin $emax $emp $out true))
+;     (O
+;         (pure
+;             ($out $pattern $distance)
+;             $distance
+;             (f64_to_string
+;                 (sub_f64
+;                     (f64_from_string $emp)
+;                     (f64_from_string $emax))))
+;         (- (dst-request $pattern $emin $emax $emp $out))
+;         (- (dst-above? $pattern $emin $emax $emp $out true))))
 
-;; emp < emin: distance = emin - emp.
-(exec 12
-    (, (dst-below? $pattern $emin $emax $emp $out true))
-    (O
-        (pure
-            ($out $pattern $distance)
-            $distance
-            (f64_to_string
-                (sub_f64
-                    (f64_from_string $emin)
-                    (f64_from_string $emp))))
-        (- (dst-request $pattern $emin $emax $emp $out))
-        (- (dst-below? $pattern $emin $emax $emp $out true))))
+; ;; emp < emin: distance = emin - emp.
+; (exec 12
+;     (, (dst-below? $pattern $emin $emax $emp $out true))
+;     (O
+;         (pure
+;             ($out $pattern $distance)
+;             $distance
+;             (f64_to_string
+;                 (sub_f64
+;                     (f64_from_string $emin)
+;                     (f64_from_string $emp))))
+;         (- (dst-request $pattern $emin $emax $emp $out))
+;         (- (dst-below? $pattern $emin $emax $emp $out true))))
 
-;; emin <= emp <= emax: distance = 0.0.
-(exec 12
-    (, (dst-inside? $pattern $emin $emax $emp $out true))
-    (O
-        (+ ($out $pattern 0.0))
-        (- (dst-request $pattern $emin $emax $emp $out))
-        (- (dst-inside? $pattern $emin $emax $emp $out true))))
+; ;; emin <= emp <= emax: distance = 0.0.
+; (exec 12
+;     (, (dst-inside? $pattern $emin $emax $emp $out true))
+;     (O
+;         (+ ($out $pattern 0.0))
+;         (- (dst-request $pattern $emin $emax $emp $out))
+;         (- (dst-inside? $pattern $emin $emax $emp $out true))))
 
 
 ;; If normalization is enabled, surprisingness = min(dst / max(emax, empirical probability), 1.0).
@@ -337,23 +363,23 @@
 
 
 ;; Final cleanup: 
-(exec 17
-    (, (surprisingess-of $pattern $value))
-    (,
-        (cleanup (block $partition $block))
-        (cleanup (partition $partition))
-        (cleanup (block-support $partition $block $support))
-        (cleanup (block-prob $partition $block $prob))
-        (cleanup (partition-product $partition $product))
-        (cleanup (min-partition-product $min))
-        (cleanup (max-partition-product $max))
-        (cleanup (partition-product-range $min $max))
-        (cleanup (indexed-pattern $indexed-pattern))
-        (cleanup (copy-of-partition $partition $partition-copy))
-        (cleanup (dst-above? $p $emin $emax $emp $out $above))
-        (cleanup (dst-below? $p $emin $emax $emp $out $below))
-        (cleanup (dst-inside? $p $emin $emax $emp $out $inside))
-        (cleanup (dst-request $p $emin $emax $emp $out))))
+; (exec 17
+;     (, (surprisingess-of $pattern $value))
+;     (,
+;         (cleanup (block $partition $block))
+;         (cleanup (partition $partition))
+;         (cleanup (block-support $partition $block $support))
+;         (cleanup (block-prob $partition $block $prob))
+;         (cleanup (partition-product $partition $product))
+;         (cleanup (min-partition-product $min))
+;         (cleanup (max-partition-product $max))
+;         (cleanup (partition-product-range $min $max))
+;         (cleanup (indexed-pattern $indexed-pattern))
+;         (cleanup (copy-of-partition $partition $partition-copy))
+;         (cleanup (dst-above? $p $emin $emax $emp $out $above))
+;         (cleanup (dst-below? $p $emin $emax $emp $out $below))
+;         (cleanup (dst-inside? $p $emin $emax $emp $out $inside))
+;         (cleanup (dst-request $p $emin $emax $emp $out))))
 
 ;; One cleanup matcher removes any fact selected by the cleanup task.
 (exec 18
