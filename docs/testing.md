@@ -25,15 +25,20 @@ The runner reads `TEST-AUX` comments, runs MORK, then checks that every
 1. Create a test file under `tests/<module>/`.
 
 ```text
-tests/frequent-miner/basic-test.metta
+tests/frequent-miner/conjunction-expansion-test.metta
 ```
 
 2. Add the required data and source files as aux paths.
 
 ```metta
-;; TEST-AUX data/frequent-miner-basic.metta
-;; TEST-AUX src/frequent-miner.metta
+;; TEST-AUX data/ugly-sodaDrinker.metta
+;; TEST-AUX src/common-utils/utils.metta
+;; TEST-AUX src/conjunction-expansion-triplet.metta
 ```
+
+List shared utilities before the implementation that calls them. The current
+conjunction-expansion test uses the existing `ugly-sodaDrinker.metta` fixture;
+it does not maintain a separate copy of the database.
 
 3. Add the input facts expected by the module.
 
@@ -45,7 +50,8 @@ tests/frequent-miner/basic-test.metta
 4. Add one or more expected results.
 
 ```metta
-(EXPECTED-RESULT frequent-miner-basic (frequent-pattern (, (Inheritance $x human)) 10))
+(EXPECTED-RESULT conjunction-expansion-singleton
+  (expanded-conjunct 1 ((Inheritance (var 0) human)) 10))
 ```
 
 The first argument after `EXPECTED-RESULT` is the test identifier. The second
@@ -60,7 +66,7 @@ scripts/run-tests.sh
 6. Or run only the new test.
 
 ```sh
-scripts/run-tests.sh tests/frequent-miner/basic-test.metta
+scripts/run-tests.sh tests/frequent-miner/conjunction-expansion-test.metta
 ```
 
 ## Optional Step Limit
@@ -76,4 +82,3 @@ If a test needs a custom maximum number of MM2 execution transitions, add:
 
 Use this only when the default runner behavior is not enough for that specific
 test.
-

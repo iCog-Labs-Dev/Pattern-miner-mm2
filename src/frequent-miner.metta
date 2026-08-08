@@ -252,3 +252,163 @@
 ;   (, (valuation val-example (Inheritance $x human))
 ;      (DEF valuation-fn $val-p $val-t))
 ;   (O (+ (exec (freq 001 run-valuation) $val-p $val-t))))
+
+
+; shallow abstraction for valuation bindings
+;
+; This is intentionally shallow:
+;   - symbols/atoms stay unchanged
+;   - variables stay unchanged
+;   - pair/triplet expressions keep their link unchanged
+;   - only direct arguments are replaced by split variables
+;
+; Example:
+;   (valuation-binding $id $path (var 0) (Eval Allen soda))
+; becomes:
+;   (shallow-abstraction-binding $id $path (var 0)
+;      (Eval (var (0 1)) (var (0 2))))
+;
+; Nested expression arguments are treated as one shallow child for now.
+(sae-index-next 1 2)
+(sae-index-next 2 3)
+(sae-index-next 3 4)
+(sae-index-next 4 5)
+(sae-index-next 5 6)
+(sae-index-next 6 7)
+(sae-index-next 7 8)
+(sae-index-next 8 9)
+
+(DEF sae-start
+  (, (shallow-abstract-expression $id (var $source-index) $expr))
+  (O
+    (pure (sae-link $id $link) $link (car-atom (' $expr)))
+    (pure (sae-args $id (var $source-index) $args) $args (cdr-atom (' $expr)))))
+
+(DEF sae-start-walk
+  (, (sae-args $id (var $source-index) $args))
+  (O
+    (+ (sae-walk $id (var $source-index) $args 1 ()))))
+
+(DEF sae-step
+  (, (sae-walk $id (var $source-index) $args $pos $acc)
+     (sae-index-next $pos $next-pos)
+     (DEF sae-history-resolve $hist-p $hist-t))
+  (O
+    (pure (sae-current $id $pos $value) $value (car-atom (' $args)))
+    (pure (sae-step-rest $id (var $source-index) $pos $rest) $rest (cdr-atom (' $args)))
+    (- (sae-walk $id (var $source-index) $args $pos $acc))
+    (+ (sae-history-pending $id (var $source-index) $pos $next-pos $acc))
+    (+ (exec (freq 320 sae-resolve-history) $hist-p $hist-t))))
+
+(DEF sae-history-resolve
+  (, (sae-history-pending $id (var $source-index) $pos $next-pos $acc)
+     (sae-current $id $pos $value)
+     (sae-step-rest $id (var $source-index) $pos $rest)
+     (DEF sae-continue $cont-p $cont-t))
+  (O
+    (+ (exec (freq 321 sae-reuse-history)
+         (, (sae-history-pending $reuse-id (var $reuse-source-index) $reuse-pos $reuse-next-pos $reuse-acc)
+            (sae-current $reuse-id $reuse-pos $reuse-value)
+            (sae-step-rest $reuse-id (var $reuse-source-index) $reuse-pos $reuse-rest)
+            (sae-pos-history $reuse-id (var $reuse-source-index) $reuse-value $first-pos))
+         (O
+           (- (sae-history-pending $reuse-id (var $reuse-source-index) $reuse-pos $reuse-next-pos $reuse-acc))
+           (pure (sae-step-acc $reuse-id (var $reuse-source-index) $reuse-next-pos $reuse-next-acc) $reuse-next-acc
+             (append (' ($reuse-acc ((var ($reuse-source-index $first-pos)))))))
+           (+ (exec (freq 330 sae-continue) $cont-p $cont-t)))))
+    (+ (exec (freq 322 sae-new-history)
+         (, (sae-history-pending $new-id (var $new-source-index) $new-pos $new-next-pos $new-acc)
+            (sae-current $new-id $new-pos $new-value)
+            (sae-step-rest $new-id (var $new-source-index) $new-pos $new-rest))
+         (O
+           (- (sae-history-pending $new-id (var $new-source-index) $new-pos $new-next-pos $new-acc))
+           (+ (sae-pos-history $new-id (var $new-source-index) $new-value $new-pos))
+           (pure (sae-step-acc $new-id (var $new-source-index) $new-next-pos $new-next-acc) $new-next-acc
+             (append (' ($new-acc ((var ($new-source-index $new-pos)))))))
+           (+ (exec (freq 330 sae-continue) $cont-p $cont-t)))))))
+
+(DEF sae-continue
+  (, (sae-step-rest $id (var $source-index) $pos $rest)
+     (sae-step-acc $id (var $source-index) $next-pos $next-acc)
+     (DEF sae-finish $finish-p $finish-t)
+     (DEF sae-step $step-p $step-t))
+  (O
+    (- (sae-step-rest $id (var $source-index) $pos $rest))
+    (- (sae-step-acc $id (var $source-index) $next-pos $next-acc))
+    (+ (sae-walk $id (var $source-index) $rest $next-pos $next-acc))
+    (+ (exec (freq 305 sae-finish) $finish-p $finish-t))
+    (+ (exec (freq 310 sae-step) $step-p $step-t))))
+
+(DEF sae-finish
+  (, (sae-walk $id (var $source-index) () $pos $acc)
+     (sae-link $id $link)
+     (sae-current $rid $rpos $rvalue)
+     (sae-pos-history $rid $rs-index $rvalue $rfirst-pos))
+  (O
+    (- (sae-walk $id (var $source-index) () $pos $acc))
+    (- (sae-link $id $link))
+    (- (sae-current $rid $rpos $rvalue))
+    (- (sae-pos-history $rid $rs-index $rvalue $rfirst-pos))
+    (pure (sae-step-result $id (var $source-index) $res) $res (append (' (($link) $acc))))))
+
+(DEF shallow-abstract-expression-fn
+  (, (shallow-abstract-expression $id (var $source-index) $expr)
+     (DEF sae-start $start-p $start-t)
+     (DEF sae-start-walk $walk-p $walk-t)
+     (DEF sae-step $step-p $step-t))
+  (O
+    (+ (exec (freq 300 sae-start) $start-p $start-t))
+    (+ (exec (freq 301 sae-start-walk) $walk-p $walk-t))
+    (+ (exec (freq 310 sae-step) $step-p $step-t))))
+
+
+
+(DEF shallow-abstraction-start
+  (, (run-shallow-abstraction $id) (valuation-binding $id $path (var $source-index) $value))
+  (O (pure (shallow-abstraction-request-var $id $path (var $source-index) $value $is-var)
+       $is-var (i8_to_string (is_var (' $value))))
+     (pure (shallow-abstraction-request-expr $id $path (var $source-index) $value $is-exp)
+       $is-exp (i8_to_string (is_exp (' $value))))))
+
+(DEF shallow-abstraction-step
+  (, (shallow-abstraction-request-var $id $path (var $source-index) $value $is-var)
+     (shallow-abstraction-request-expr $id $path (var $source-index) $value $is-exp))
+  (O
+    (+ (exec (freq 351 shallow-keep-var)
+         (, (shallow-abstraction-request-var $keep-id $keep-path (var $keep-source-index) $keep-value 1))
+         (O (- (shallow-abstraction-request-var $keep-id $keep-path (var $keep-source-index) $keep-value 1))
+            (+ (shallow-abstraction-binding $keep-id $keep-path (var $keep-source-index) $keep-value)))))
+    (+ (exec (freq 352 shallow-abstract-expression)
+         (, (shallow-abstraction-request-var $expr-id $expr-path (var $expr-source-index) $expr-value 0)
+            (shallow-abstraction-request-expr $expr-id $expr-path (var $expr-source-index) $expr-value 1)
+            (DEF shallow-abstract-expression-fn $sae-p $sae-t)
+            (DEF shallow-abstraction-expression-finish $finish-p $finish-t))
+         (O
+            (- (shallow-abstraction-request-expr $expr-id $expr-path (var $expr-source-index) $expr-value 1))
+            (+ (shallow-abstract-expression (SAE $expr-id $expr-path) (var $expr-source-index) $expr-value))
+            (+ (shallow-abstraction-wait $expr-id $expr-path (var $expr-source-index) (SAE $expr-id $expr-path)))
+            (+ (exec (freq 353 shallow-run-sae) $sae-p $sae-t))
+            (+ (exec (freq 390 shallow-finish-expression) $finish-p $finish-t)))))
+    (+ (exec (freq 359 shallow-keep-atom)
+         (, (shallow-abstraction-request-var $atom-id $atom-path (var $atom-source-index) $atom-value 0)
+           (shallow-abstraction-request-expr $atom-id $atom-path (var $atom-source-index) $atom-value 0))
+         (O (- (shallow-abstraction-request-expr $atom-id $atom-path (var $atom-source-index) $atom-value 0))
+            (- (shallow-abstraction-request-var $atom-id $atom-path (var $atom-source-index) $atom-value 0))
+            (+ (shallow-abstraction-binding $atom-id $atom-path (var $atom-source-index) $atom-value)))))))
+
+
+
+(DEF shallow-abstraction-expression-finish
+  (, (shallow-abstraction-wait $id $path (var $source-index) $sae-id)
+     (sae-step-result $sae-id (var $source-index) $abstracted-value))
+  (O
+    (- (shallow-abstraction-wait $id $path (var $source-index) $sae-id))
+    (+ (shallow-abstraction-binding $id $path (var $source-index) $abstracted-value))))
+
+(DEF shallow-abstraction-fn
+  (, (run-shallow-abstraction $id)
+     (DEF shallow-abstraction-start $start-p $start-t)
+     (DEF shallow-abstraction-step $step-p $step-t))
+  (O
+    (+ (exec (freq 350 shallow-start) $start-p $start-t))
+    (+ (exec (freq 360 shallow-step) $step-p $step-t))))
