@@ -10,8 +10,8 @@
 ;; TEST-AUX src/isurp_modules/08_emp_prob_pbs.metta
 ;; TEST-AUX src/truth-values/est/00_truth_value_defs.metta
 ;; TEST-AUX src/truth-values/est/01_average_tv.metta
-;; TEST-AUX src/truth-values/est/02_emp_tv.metta
-;; TEST-AUX src/truth-values/est/03_block_tv.metta
+;; TEST-AUX src/truth-values/emp/00_emp_tv.metta
+;; TEST-AUX src/truth-values/emp/01_block_tv.metta
 ;; TEST-AUX src/truth-values/est/04_pro_tv_wout_joint.metta
 ;; TEST-AUX src/truth-values/est/05_ji_tv_est.metta
 ;; TEST-AUX src/truth-values/est/06_do_ji_tv_est.metta

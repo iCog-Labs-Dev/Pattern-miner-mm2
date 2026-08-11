@@ -21,6 +21,8 @@ scripts/run-tests.sh tests/isurp/abstractness-sort-test.metta \
   tests/isurp/ji-prob-est-test.metta \
   tests/isurp/do-ji-prob-test.metta \
   tests/isurp/emp-prob-pbs-test.metta \
+  tests/truth-values/emp/emp-tv-test.metta \
+  tests/truth-values/emp/block-tv-test.metta \
   tests/truth-values/est/truth-value-defs-test.metta \
   tests/truth-values/est/average-tv-test.metta \
   tests/truth-values/est/est-tv-pipeline-test.metta \
@@ -59,8 +61,8 @@ mork run Pattern-miner-mm2/src/common-utils/utils.metta \
   --aux-path Pattern-miner-mm2/src/isurp_modules/09_isurp_new.metta \
   --aux-path Pattern-miner-mm2/src/truth-values/est/00_truth_value_defs.metta \
   --aux-path Pattern-miner-mm2/src/truth-values/est/01_average_tv.metta \
-  --aux-path Pattern-miner-mm2/src/truth-values/est/02_emp_tv.metta \
-  --aux-path Pattern-miner-mm2/src/truth-values/est/03_block_tv.metta \
+  --aux-path Pattern-miner-mm2/src/truth-values/emp/00_emp_tv.metta \
+  --aux-path Pattern-miner-mm2/src/truth-values/emp/01_block_tv.metta \
   --aux-path Pattern-miner-mm2/src/truth-values/est/04_pro_tv_wout_joint.metta \
   --aux-path Pattern-miner-mm2/src/truth-values/est/05_ji_tv_est.metta \
   --aux-path Pattern-miner-mm2/src/truth-values/est/06_do_ji_tv_est.metta \
@@ -96,8 +98,8 @@ ISurp stages use readable tuple priorities:
 | `09_isurp_new.metta` | Connects the newer helper facts into `ji-prob-est-interval-of`, distance, and final `isurp-new-of`. |
 | `src/truth-values/est/00_truth_value_defs.metta` | Defines truth-value constants, count/confidence conversion, beta-distribution conversion, and `mk-stv-of`. |
 | `src/truth-values/est/01_average_tv.metta` | Implements PeTTa-style `avrg_tv`: TV to beta distribution, average beta moments, then convert back to STV. |
-| `src/truth-values/est/02_emp_tv.metta` | Computes direct empirical truth value facts `emp-tv-of` without sampling/bootstrap logic. |
-| `src/truth-values/est/03_block_tv.metta` | Computes empirical truth values for partition blocks. |
+| `src/truth-values/emp/00_emp_tv.metta` | Computes direct empirical truth value facts `emp-tv-of` without sampling/bootstrap logic. |
+| `src/truth-values/emp/01_block_tv.metta` | Computes empirical truth values for partition blocks. |
 | `src/truth-values/est/04_pro_tv_wout_joint.metta` | Averages block TVs for a partition before joint-variable correction. |
 | `src/truth-values/est/05_ji_tv_est.metta` | Applies `eq-prob-of` to partition TV strength and lowers confidence for estimated TV. |
 | `src/truth-values/est/06_do_ji_tv_est.metta` | Collects partition estimated TVs into `do-ji-tv-est-of`. |
