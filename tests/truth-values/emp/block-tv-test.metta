@@ -19,4 +19,4 @@
     ((Inheritance (var 0) ugly))
     2)
 
-(EXPECTED-RESULT block-tv-man (block-tv-of (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly))) ((Inheritance (var 0) man)) (EMPTV 0.5 0.0004975124378109453)))
+(EXPECTED-RESULT block-tv-man (block-tv-of (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly))) ((Inheritance (var 0) man)) (EMPTV 0.5 0.0004975124378109452)))
