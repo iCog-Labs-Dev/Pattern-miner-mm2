@@ -4,19 +4,19 @@
 
 ;; Count all db facts in the main db.
 ((count-db $db-name -> $out)
-    (, ($db-name $fact))
+    (, (db-fact $db-name $fact))
     (O
         (count ($out $db-name $count) $count $fact)))
 
 ;; Count conjuncts in a pattern.
 ((count-conjuncts $pattern -> $out)
-    (, (INPUT PATTERN ($pattern $support)))
+    (,)
     (O
         (pure
             ($out $pattern $count)
             $count
             (size-atom
-                (cdr-atom (' $pattern))))))
+                (exclude-item , (' $pattern))))))
 
 ;; Count matches for an indexed conjunction. The caller supplies both an
 ;; opaque context value and the complete three-field priority for the count
@@ -190,3 +190,53 @@
                 (le_f64
                     (f64_from_string $emp)
                     (f64_from_string $emax))))))
+
+
+
+
+;; Constructs a support-count query for a pattern, then executes it to get the support count. The
+;; caller supplies the priority of the exec that will run the query, so this template does not
+;; own any pipeline scheduling.
+
+;; Parameters:
+;; $pattern: the pattern to count support for
+;; $priority: the priority of the exec that will run the generated query
+;; $db: the database to count support in (Must be in the format of a db-fact)
+;; Note: must add a comma before using as an exec query.
+
+;; Example returned query: ((db-fact db1 (inheritance (var 0) woman)) (db-fact db1 (inheritance (var 0) ugly))) 
+((sup-num-query $pattern $priority $db)
+    (, (sup-num-query $pattern $db $query) (exec $priority $src (O (pure $out $var (tuple db-fact $db (car $q))))))
+    (O
+        (pure
+            (exec $priority
+                (,)
+                (O
+                    (pure
+                        (sup-num-query $pattern $db $new-query)
+                        $new-query
+                        (cons (' ($n $query)))
+                    )
+                    (- (sup-num-query $pattern $db $query))
+                    (+ (exec $priority $src (O (pure $out $var (tuple db-fact $db (car (cdr $q)))))))
+                )
+            )
+            $n
+            (tuple db-fact $db (car (' $pattern)))
+        )
+        
+    )
+)
+
+
+;; Get total relevant items
+((universe-count $db $pattern -> $out)
+    (, (num-of-conjuncts $pattern $pattern-count) (db-size $db $db-count)) 
+    (O 
+        (pure 
+            ($out $pattern $db $universe-count)
+            $universe-count
+            (i64_to_string (pow_i64 (i64_from_string $db-count) (i64_from_string $pattern-count)))
+        )
+    )
+)
