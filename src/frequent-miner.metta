@@ -524,3 +524,22 @@
   (O
     (+ (exec (freq 610 run-support-count) $support-p $support-t))
     (+ (exec (freq 621 run-candidate-pattern-check) $min-p $min-t))))
+
+
+(exec (freq 600 call-candidate-pattern)
+  (, (support-count support-smoke $pattern)
+     (DEF candidate-pattern-fn $candidate-p $candidate-t))
+  (O
+    (+ (exec (freq 601 run-candidate-pattern) $candidate-p $candidate-t))))
+
+
+(support-count support-smoke (Inheritance $x sodaDrinker))
+
+(FACT (Inheritance Allen sodaDrinker))
+(FACT (Inheritance Abe sodaDrinker))
+(FACT (Inheritance Cason sodaDrinker))
+(FACT (Inheritance Casogn sodaDrinker))
+(FACT (Inheritance Casogcn sodaDrinker))
+(FACT (Inheritance Lily ugly))
+
+(INPUT MIN-SUPPORT 3)
