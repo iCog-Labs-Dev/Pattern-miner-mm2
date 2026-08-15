@@ -506,3 +506,14 @@
      (FACT $pattern))
   (O
     (count (support-count-result $id $patt $count) $count $pattern)))
+
+(DEF candidate-pattern-check-fn
+  (, (support-count-result $id $pattern $support)
+     (INPUT MIN-SUPPORT $min-support))
+  (O
+    (pure (minimum-support-check-result $id $pattern $support $min-support $passes) $passes
+      (le_f64 (f64_from_string $min-support) (f64_from_string $support)))
+    (+ (exec (freq 630 minimum-support-pass)
+         (, (minimum-support-check-result $pass-id $pass-pattern $pass-support $pass-min true))
+         (O (- (minimum-support-check-result $pass-id $pass-pattern $pass-support $pass-min true))
+            (+ (candidate-pattern $pass-id $pass-pattern $pass-support)))))))
