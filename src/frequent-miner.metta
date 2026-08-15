@@ -517,3 +517,10 @@
          (, (minimum-support-check-result $pass-id $pass-pattern $pass-support $pass-min true))
          (O (- (minimum-support-check-result $pass-id $pass-pattern $pass-support $pass-min true))
             (+ (candidate-pattern $pass-id $pass-pattern $pass-support)))))))
+        
+(DEF candidate-pattern-fn
+  (, (DEF support-count-fn $support-p $support-t)
+     (DEF candidate-pattern-check-fn $min-p $min-t))
+  (O
+    (+ (exec (freq 610 run-support-count) $support-p $support-t))
+    (+ (exec (freq 621 run-candidate-pattern-check) $min-p $min-t))))
