@@ -1,7 +1,7 @@
-;; TEST-AUX src/isurp_modules/03_abstractness_sort.metta
-;; TEST-AUX src/isurp_modules/04_eq_prob.metta
-;; TEST-AUX src/isurp_modules/05_pro_prob_wout_joint.metta
-;; TEST-AUX src/isurp_modules/06_ji_prob_est.metta
+;; TEST-AUX src/isurp-modules/abstractness-sort.metta
+;; TEST-AUX src/isurp-modules/eq-prob.metta
+;; TEST-AUX src/isurp-modules/pro-prob-wout-joint.metta
+;; TEST-AUX src/isurp-modules/ji-prob-est.metta
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ji-prob-est component test

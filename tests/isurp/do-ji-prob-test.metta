@@ -1,4 +1,4 @@
-;; TEST-AUX src/isurp_modules/07_do_ji_prob.metta
+;; TEST-AUX src/isurp-modules/do-ji-prob.metta
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; do-ji-prob component test

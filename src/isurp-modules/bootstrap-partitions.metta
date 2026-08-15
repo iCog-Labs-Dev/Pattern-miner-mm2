@@ -3,7 +3,7 @@
 ;;
 ;; This module is intentionally only about partitioning.
 ;;
-;; Input fact expected from `00_input_bootstrap.metta`:
+;; Input fact expected from `input-bootstrap.metta`:
 ;;
 ;;   (indexed-pattern ($c1 $c2 ...))
 ;;

@@ -412,3 +412,87 @@
   (O
     (+ (exec (freq 350 shallow-start) $start-p $start-t))
     (+ (exec (freq 360 shallow-step) $step-p $step-t))))
+
+; specialization
+;
+; This stage builds all combinations of shallow abstraction choices across the
+; variable positions of a pattern. It does not yet rewrite the original pattern;
+; it emits complete binding combinations that the replacement stage can consume.
+;
+; Request:
+;   (run-specialization $id $pattern)
+;
+; Inputs:
+;   (specialization-position $id $pos $path $var)
+;   (specialization-final-position $id $final-pos)
+;   (shallow-abstraction-binding $id $path $var $value)
+;
+; Result:
+;   (specialization-combination $id $bindings)
+;
+; Binding list item shape:
+;   (binding $path $var $value)
+(spec-index-next 1 2)
+(spec-index-next 2 3)
+(spec-index-next 3 4)
+(spec-index-next 4 5)
+(spec-index-next 5 6)
+(spec-index-next 6 7)
+(spec-index-next 7 8)
+(spec-index-next 8 9)
+
+(DEF specialization-start
+  (, (run-specialization $id $pattern))
+  (O
+    (+ (specialization-position spec-test 1 (var 0)))
+    (+ (specialization-partial $id 1 ()))))
+
+(DEF specialization-extend
+  (, (specialization-partial $id $pos $partial)
+     (specialization-position $id $pos $var)
+     (shallow-abstraction-binding $id $path $var $value)
+     (spec-index-next $pos $next-pos)
+     (DEF specialization-extend $extend-p $extend-t)
+     (DEF specialization-finish $finish-p $finish-t))
+  (O
+    (- (specialization-partial $id $pos $partial))
+    (- (specialization-position $id $pos $var))
+    (pure (specialization-partial $id $next-pos $next-partial) $next-partial
+      (append (' ($partial ($value)))))
+    (+ (specialization-position $id $next-pos (var $pos)))
+    (+ (exec (freq 510 specialization-extend) $extend-p $extend-t))
+    (+ (exec (freq 590 specialization-finish) $finish-p $finish-t))))
+
+(DEF specialization-finish
+  (, (specialization-partial $id $pos $partial)
+     (run-specialization $id $pattern))
+  (O
+    (- (specialization-partial $id $pos $partial))
+    (+ (specialization-combination $id $partial))
+    (pure (specialization-result $id $specialized-pattern) $specialized-pattern
+      (substitute (' ($pattern $partial))))))
+
+(DEF specialization-combinations-fn
+  (, (run-specialization $id $pattern)
+     (DEF specialization-start $start-p $start-t)
+     (DEF specialization-extend $extend-p $extend-t)
+     (DEF specialization-finish $finish-p $finish-t))
+  (O
+    (+ (exec (freq 500 specialization-start) $start-p $start-t))
+    (+ (exec (freq 510 specialization-extend) $extend-p $extend-t))
+    (+ (exec (freq 590 specialization-finish) $finish-p $finish-t))))
+
+; specialization cross-product smoke
+; (run-specialization spec-test (Inheritance $x $y))
+
+; (shallow-abstraction-binding spec-test (root arg/1) (var 0) Allen)
+; (shallow-abstraction-binding spec-test (root arg/1) (var 0) Lily)
+; (shallow-abstraction-binding spec-test (root arg/1) (var 0) (var 0))
+; (shallow-abstraction-binding spec-test (root arg/2) (var 1) human)
+; (shallow-abstraction-binding spec-test (root arg/2) (var 1) sodaDrinker)
+; (shallow-abstraction-binding spec-test (root arg/2) (var 1) (var 1))
+
+; (exec (freq 000 call-specialization-combinations)
+;   (, (run-specialization spec-test (Inheritance $x $y))
+;      (DEF specialization-combinations-fn $spec-p $spec-t))
+;   (O (+ (exec (freq 001 run-specialization-combinations) $spec-p $spec-t))))

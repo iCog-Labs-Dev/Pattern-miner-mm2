@@ -25,7 +25,7 @@
 ;;   (partition $partition)
 ;;   (block-support $partition $block $support)
 ;;
-;; `block-support` can be produced by `02_block_support.metta`, or provided
+;; `block-support` can be produced by `block-support.metta`, or provided
 ;; directly by a small test DB.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

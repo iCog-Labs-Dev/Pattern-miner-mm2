@@ -9,27 +9,33 @@
 ;; TEST-AUX src/isurp-modules/do-ji-prob.metta
 ;; TEST-AUX src/isurp-modules/emp-prob-pbs.metta
 ;; TEST-AUX src/isurp-modules/isurp-new.metta
+;; TEST-AUX data/isurp-mock-coupled.metta
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Full modular ISurp pipeline test
+;; PeTTa coupled corpus validation.
+;;
+;; Mirrors:
+;;   hyperon-miner/experiments/validation/isurp-validation.metta
+;;
+;; PeTTa assertion:
+;;   (isurp
+;;     (, (Inheritance (Person $x) man)
+;;        (Inheritance (Person $x) ugly)
+;;        (Inheritance (Person $x) sodaDrinker))
+;;     &dbc
+;;     False
+;;     0.2)
+;;   => 1.9290123456790123e-5
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (INPUT DB db)
-(INPUT DB-SIZE 4)
+(INPUT DB-SIZE 60)
 (INPUT NORMALIZATION FALSE)
 
 (INPUT PATTERN
-    ((, (Inheritance $x man)
-        (Inheritance $x ugly))
-     1))
+    ((, (Inheritance (Person $x) man)
+        (Inheritance (Person $x) ugly)
+        (Inheritance (Person $x) sodaDrinker))
+     5))
 
-(Inheritance Allen man)
-(Inheritance Bob man)
-(Inheritance Allen ugly)
-(Inheritance Lily ugly)
-
-(EXPECTED-RESULT indexed-pattern (indexed-pattern-of (, (Inheritance $a man) (Inheritance $a ugly)) ((Inheritance (var 0) man) (Inheritance (var 0) ugly))))
-
-(EXPECTED-RESULT ji-interval (ji-prob-est-interval-of ((((Inheritance (var 0) man)) ((Inheritance (var 0) ugly)))) 0.0625 0.0625))
-
-(EXPECTED-RESULT isurp-pipeline (isurp-new-of (, (Inheritance $a man) (Inheritance $a ugly)) 0.0))
+(EXPECTED-RESULT isurp-coupled-three-raw (isurp-new-of (, (Inheritance (Person $a) man) (Inheritance (Person $a) ugly) (Inheritance (Person $a) sodaDrinker)) 1.9290123456790123e-5))

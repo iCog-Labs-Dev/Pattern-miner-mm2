@@ -1,5 +1,5 @@
 ;; TEST-AUX src/common-utils/utils.metta
-;; TEST-AUX src/isurp_modules/00_input_bootstrap.metta
+;; TEST-AUX src/isurp-modules/input-bootstrap.metta
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Input bootstrap component test
