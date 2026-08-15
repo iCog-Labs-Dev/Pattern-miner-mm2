@@ -496,3 +496,13 @@
 ;   (, (run-specialization spec-test (Inheritance $x $y))
 ;      (DEF specialization-combinations-fn $spec-p $spec-t))
 ;   (O (+ (exec (freq 001 run-specialization-combinations) $spec-p $spec-t))))
+
+
+
+
+(DEF support-count-fn
+  (, (support-count $id $pattern)
+     (support-count $id $patt)
+     (FACT $pattern))
+  (O
+    (count (support-count-result $id $patt $count) $count $pattern)))
