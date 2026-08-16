@@ -505,11 +505,12 @@
       (indices_to_vars (' $specialized-pattern)))))
 
 (DEF support-count-fn
-  (, (candidate-specialization $id $pattern)
-     (candidate-specialization $id $patt)
-     (FACT $pattern))
+  (, (candidate-specialization $id $display-pattern $match-pattern)
+     (FACT $match-pattern))
   (O
-    (count (support-count-result $id $patt $count) $count $pattern)))
+    (- (candidate-specialization $id $display-pattern $match-pattern))
+    (count (support-count-result $id $display-pattern $count) $count $match-pattern)
+    ))
 
 (DEF candidate-pattern-check-fn
   (, (support-count-result $id $pattern $support)
