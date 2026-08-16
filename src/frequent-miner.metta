@@ -498,11 +498,15 @@
 ;   (O (+ (exec (freq 001 run-specialization-combinations) $spec-p $spec-t))))
 
 
-
+(DEF var-conversion-fn
+  (, (specialization-result $id $specialized-pattern))
+  (O
+    (pure (candidate-specialization $id $specialized-pattern $converted-pattern) $converted-pattern
+      (indices_to_vars (' $specialized-pattern)))))
 
 (DEF support-count-fn
-  (, (support-count $id $pattern)
-     (support-count $id $patt)
+  (, (candidate-specialization $id $pattern)
+     (candidate-specialization $id $patt)
      (FACT $pattern))
   (O
     (count (support-count-result $id $patt $count) $count $pattern)))
@@ -519,10 +523,12 @@
             (+ (candidate-pattern $pass-id $pass-pattern $pass-support)))))))
         
 (DEF candidate-pattern-fn
-  (, (DEF support-count-fn $support-p $support-t)
+  (, (DEF var-conversion-fn $conv-p $conv-t)
+     (DEF support-count-fn $support-p $support-t)
      (DEF candidate-pattern-check-fn $min-p $min-t))
   (O
-    (+ (exec (freq 610 run-support-count) $support-p $support-t))
+    (+ (exec (freq 610 run-var-conversion) $conv-p $conv-t))
+    (+ (exec (freq 620 run-support-count) $support-p $support-t))
     (+ (exec (freq 621 run-candidate-pattern-check) $min-p $min-t))))
 
 
