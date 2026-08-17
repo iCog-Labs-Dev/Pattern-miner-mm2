@@ -10,13 +10,37 @@
 ;; MM2 public result:
 ;;
 ;;   (block-tv-of $partition $block (EMPTV $strength $confidence))
+;;
+;; The universe count is computed from the block length, so this is not limited
+;; to blocks of size 1/2/3.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(exec (surp 160 block-tv-universe-1)
+(exec (surp 160 block-tv-universe)
     (, (INPUT DB-SIZE $db-size)
-       (block-support $partition ($c1) $support))
-    (, (pro-block-universe-count $partition ($c1) $db-size)))
+       (block-support $partition $block $support))
+    (O
+        (pure
+            (pro-block-universe-count $partition $block $universe-count)
+            $universe-count
+            (i64_to_string
+                (pow_i64
+                    (i64_from_string $db-size)
+                    (i64_from_string
+                        (size-atom (' $block))))))))
+
+
+(exec (surp 161 block-tv-strength)
+    (, (block-support $partition $block $support)
+       (pro-block-universe-count $partition $block $universe-count))
+    (O
+        (pure
+            (pro-block-prob $partition $block $strength)
+            $strength
+            (f64_to_string
+                (div_f64
+                    (f64_from_string $support)
+                    (f64_from_string $universe-count))))))
 
 
 (exec (surp 162 block-tv-final)
