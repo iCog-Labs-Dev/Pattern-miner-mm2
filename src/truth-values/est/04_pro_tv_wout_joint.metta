@@ -11,44 +11,64 @@
 ;; MM2 public result:
 ;;
 ;;   (pro-tv-wout-joint-of $partition (STV $strength $confidence))
+;;
+;; This implementation iterates over any number of blocks in a partition.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(exec (surp 170 pro-tv-request-1)
-    (, (partition ($b1))
-       (block-tv-of ($b1) $b1 $tv1))
-    (, (avrg-tv-request ($tv1))
-       (pro-tv-request ($b1) ($tv1))))
+(exec (surp 170 pro-tv-start)
+    (, (partition $partition)
+       (DEF pro-tv-step $step-p $step-t))
+    (O
+        (+ (pro-tv-acc $partition $partition ()))
+        (+ (exec (surp 171 pro-tv-step) $step-p $step-t))))
 
 
-(exec (surp 170 pro-tv-request-2)
-    (, (partition ($b1 $b2))
-       (block-tv-of ($b1 $b2) $b1 $tv1)
-       (block-tv-of ($b1 $b2) $b2 $tv2))
-    (, (avrg-tv-request ($tv1 $tv2))
-       (pro-tv-request ($b1 $b2) ($tv1 $tv2))))
+(DEF pro-tv-step
+    (, (pro-tv-acc $partition $remaining $tv-list)
+       (DEF pro-tv-resolve $resolve-p $resolve-t))
+    (O
+        (pure
+            (pro-tv-current $partition $remaining $block)
+            $block
+            (car-atom (' $remaining)))
+        (pure
+            (pro-tv-rest $partition $remaining $rest)
+            $rest
+            (cdr-atom (' $remaining)))
+        (- (pro-tv-acc $partition $remaining $tv-list))
+        (+ (pro-tv-pending $partition $remaining $tv-list))
+        (+ (exec (surp 172 pro-tv-resolve) $resolve-p $resolve-t))))
 
 
-(exec (surp 170 pro-tv-request-3)
-    (, (partition ($b1 $b2 $b3))
-       (block-tv-of ($b1 $b2 $b3) $b1 $tv1)
-       (block-tv-of ($b1 $b2 $b3) $b2 $tv2)
-       (block-tv-of ($b1 $b2 $b3) $b3 $tv3))
-    (, (avrg-tv-request ($tv1 $tv2 $tv3))
-       (pro-tv-request ($b1 $b2 $b3) ($tv1 $tv2 $tv3))))
+(DEF pro-tv-resolve
+    (, (pro-tv-pending $partition $remaining $tv-list)
+       (pro-tv-current $partition $remaining $block)
+       (pro-tv-rest $partition $remaining $rest)
+       (block-tv-of $partition $block $tv)
+       (DEF pro-tv-step $step-p $step-t)
+       (DEF pro-tv-final $final-p $final-t))
+    (O
+        (pure
+            (pro-tv-acc $partition $rest $new-tv-list)
+            $new-tv-list
+            (append (' ($tv-list ($tv)))))
+        (- (pro-tv-pending $partition $remaining $tv-list))
+        (- (pro-tv-current $partition $remaining $block))
+        (- (pro-tv-rest $partition $remaining $rest))
+        (+ (exec (surp 170 pro-tv-final) $final-p $final-t))
+        (+ (exec (surp 171 pro-tv-step) $step-p $step-t))))
 
 
-(exec (surp 170 pro-tv-request-4)
-    (, (partition ($b1 $b2 $b3 $b4))
-       (block-tv-of ($b1 $b2 $b3 $b4) $b1 $tv1)
-       (block-tv-of ($b1 $b2 $b3 $b4) $b2 $tv2)
-       (block-tv-of ($b1 $b2 $b3 $b4) $b3 $tv3)
-       (block-tv-of ($b1 $b2 $b3 $b4) $b4 $tv4))
-    (, (avrg-tv-request ($tv1 $tv2 $tv3 $tv4))
-       (pro-tv-request ($b1 $b2 $b3 $b4) ($tv1 $tv2 $tv3 $tv4))))
+(DEF pro-tv-final
+    (, (pro-tv-acc $partition () $tv-list))
+    (O
+        (- (pro-tv-acc $partition () $tv-list))
+        (+ (pro-tv-request $partition $tv-list))
+        (+ (avrg-tv-request $tv-list))))
 
 
-(exec (surp 193 pro-tv-final)
+(exec (surp 193 pro-tv-assemble)
     (, (pro-tv-request $partition $tv-list)
        (avrg-tv-of $tv-list $stv))
     (, (pro-tv-wout-joint-of $partition $stv)))
