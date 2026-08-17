@@ -24,7 +24,6 @@ scripts/run-tests.sh tests/isurp/abstractness-sort-test.metta \
   tests/truth-values/emp/emp-tv-test.metta \
   tests/truth-values/emp/block-tv-test.metta \
   tests/truth-values/est/truth-value-defs-test.metta \
-  tests/truth-values/est/average-tv-test.metta \
   tests/truth-values/est/est-tv-pipeline-test.metta \
   tests/isurp/isurp-validation-test.metta \
   tests/isurp/isurp-coupled-validation-test.metta \
@@ -64,7 +63,6 @@ mork run Pattern-miner-mm2/src/common-utils/utils.metta \
   --aux-path Pattern-miner-mm2/src/isurp-modules/emp-prob-pbs.metta \
   --aux-path Pattern-miner-mm2/src/isurp-modules/isurp-new.metta \
   --aux-path Pattern-miner-mm2/src/truth-values/est/00_truth_value_defs.metta \
-  --aux-path Pattern-miner-mm2/src/truth-values/est/01_average_tv.metta \
   --aux-path Pattern-miner-mm2/src/truth-values/emp/00_emp_tv.metta \
   --aux-path Pattern-miner-mm2/src/truth-values/emp/01_block_tv.metta \
   --aux-path Pattern-miner-mm2/src/truth-values/est/04_pro_tv_wout_joint.metta \

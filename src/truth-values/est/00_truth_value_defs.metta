@@ -175,6 +175,126 @@
     (, (tv-beta-of $tv (Beta (mean $mean) (variance $variance)))))
 
 
+;; Late beta conversion pass for TV requests created after the first average
+;; pass, mainly from `do-ji-tv-est`.
+(exec (surp 203 tv-beta-count-request-stv-late)
+    (, (tv-beta-request (STV $strength $confidence)))
+    (, (confidence-count-request-late $confidence)))
+
+(exec (surp 203 tv-beta-count-request-emptv-late)
+    (, (tv-beta-request (EMPTV $strength $confidence)))
+    (, (confidence-count-request-late $confidence)))
+
+(exec (surp 204 confidence-count-late)
+    (, (confidence-count-request-late $confidence))
+    (O
+        (pure
+            (confidence-count-of-late $confidence $count)
+            $count
+            (f64_to_string
+                (div_f64
+                    (product_f64
+                        (f64_from_string 800.0)
+                        (min_f64
+                            (f64_from_string $confidence)
+                            (f64_from_string 0.9999998)))
+                    (sub_f64
+                        (f64_from_string 1.0)
+                        (min_f64
+                            (f64_from_string $confidence)
+                            (f64_from_string 0.9999998))))))))
+
+(exec (surp 205 tv-beta-stv-late)
+    (, (tv-beta-request (STV $strength $confidence))
+       (confidence-count-of-late $confidence $count))
+    (O
+        (pure
+            (tv-beta-alpha-late (STV $strength $confidence) $alpha)
+            $alpha
+            (f64_to_string
+                (sum_f64
+                    (f64_from_string 1.0)
+                    (product_f64
+                        (f64_from_string $strength)
+                        (f64_from_string $count)))))
+        (pure
+            (tv-beta-beta-late (STV $strength $confidence) $beta)
+            $beta
+            (f64_to_string
+                (sum_f64
+                    (f64_from_string 1.0)
+                    (sub_f64
+                        (f64_from_string $count)
+                        (product_f64
+                            (f64_from_string $strength)
+                            (f64_from_string $count))))))))
+
+(exec (surp 205 tv-beta-emptv-late)
+    (, (tv-beta-request (EMPTV $strength $confidence))
+       (confidence-count-of-late $confidence $count))
+    (O
+        (pure
+            (tv-beta-alpha-late (EMPTV $strength $confidence) $alpha)
+            $alpha
+            (f64_to_string
+                (sum_f64
+                    (f64_from_string 1.0)
+                    (product_f64
+                        (f64_from_string $strength)
+                        (f64_from_string $count)))))
+        (pure
+            (tv-beta-beta-late (EMPTV $strength $confidence) $beta)
+            $beta
+            (f64_to_string
+                (sum_f64
+                    (f64_from_string 1.0)
+                    (sub_f64
+                        (f64_from_string $count)
+                        (product_f64
+                            (f64_from_string $strength)
+                            (f64_from_string $count))))))))
+
+(exec (surp 206 tv-beta-final-late)
+    (, (tv-beta-alpha-late $tv $alpha)
+       (tv-beta-beta-late $tv $beta))
+    (O
+        (pure
+            (tv-beta-mean-late $tv $mean)
+            $mean
+            (f64_to_string
+                (div_f64
+                    (f64_from_string $alpha)
+                    (sum_f64
+                        (f64_from_string $alpha)
+                        (f64_from_string $beta)))))
+        (pure
+            (tv-beta-variance-late $tv $variance)
+            $variance
+            (f64_to_string
+                (div_f64
+                    (product_f64
+                        (f64_from_string $alpha)
+                        (f64_from_string $beta))
+                    (product_f64
+                        (product_f64
+                            (sum_f64
+                                (f64_from_string $alpha)
+                                (f64_from_string $beta))
+                            (sum_f64
+                                (f64_from_string $alpha)
+                                (f64_from_string $beta)))
+                        (sum_f64
+                            (sum_f64
+                                (f64_from_string $alpha)
+                                (f64_from_string $beta))
+                            (f64_from_string 1.0))))))))
+
+(exec (surp 206 tv-beta-assemble-late)
+    (, (tv-beta-mean-late $tv $mean)
+       (tv-beta-variance-late $tv $variance))
+    (, (tv-beta-of $tv (Beta (mean $mean) (variance $variance)))))
+
+
 ;; mk_stv, part 1: compute alpha and beta from mean + variance.
 (exec (surp 188 mk-stv-alpha-beta)
     (, (mk-stv-request $mean $variance))
@@ -299,15 +419,23 @@
     (, (mk-stv-of $mean $variance (STV $mode $confidence))))
 
 
-;; Edge fallback used for degenerate beta distributions.  This keeps the
-;; executable path stable for zero/one means without introducing a Python-style
-;; nested `if`.
-(exec (surp 191 mk-stv-result-edge)
+;; Edge branches for degenerate beta distributions.  These keep the executable
+;; path stable for zero/one means without introducing a Python-style nested
+;; `if`.
+(exec (surp 191 mk-stv-result-edge-alpha)
     (, (mk-stv-alpha-gt-one $mean $variance false)
+       (mk-stv-beta-gt-one $mean $variance true)
        (mk-stv-confidence $mean $variance $confidence))
-    (, (mk-stv-of $mean $variance (STV $mean $confidence))))
+    (, (mk-stv-of $mean $variance (STV 0 $confidence))))
 
 (exec (surp 191 mk-stv-result-edge-beta)
-    (, (mk-stv-beta-gt-one $mean $variance false)
+    (, (mk-stv-alpha-gt-one $mean $variance true)
+       (mk-stv-beta-gt-one $mean $variance false)
+       (mk-stv-confidence $mean $variance $confidence))
+    (, (mk-stv-of $mean $variance (STV 1 $confidence))))
+
+(exec (surp 191 mk-stv-result-edge-both)
+    (, (mk-stv-alpha-gt-one $mean $variance false)
+       (mk-stv-beta-gt-one $mean $variance false)
        (mk-stv-confidence $mean $variance $confidence))
     (, (mk-stv-of $mean $variance (STV $mean $confidence))))

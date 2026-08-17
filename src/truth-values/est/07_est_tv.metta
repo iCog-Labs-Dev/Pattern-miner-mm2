@@ -22,7 +22,7 @@
        (est-tv-request $pattern $partitions)))
 
 
-(exec (surp 201 est-tv-final)
+(exec (surp 240 est-tv-final)
     (, (est-tv-request $pattern $partitions)
        (do-ji-tv-est-of $partitions $stv))
     (, (est-tv-of $pattern $stv)))

@@ -5,8 +5,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; pro-tv-wout-joint generic partition walk.
 ;;
-;; This intentionally uses five blocks, which is beyond the old hardcoded
-;; 1/2/3 block implementation.
+;; This intentionally uses five blocks to validate that block collection is
+;; handled by the generic walker.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (partition (b1 b2 b3 b4 b5))

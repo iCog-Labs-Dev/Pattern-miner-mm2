@@ -5,8 +5,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; do-ji-tv-est generic partition walk.
 ;;
-;; This intentionally uses five partitions, which is beyond the old hardcoded
-;; 1/2/3/4 partition implementation.
+;; This intentionally uses five partitions to validate that partition
+;; collection is handled by the generic walker.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (do-ji-tv-est-request (p1 p2 p3 p4 p5))
