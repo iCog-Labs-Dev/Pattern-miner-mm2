@@ -8,8 +8,6 @@
 ;; MM2 public result:
 ;;
 ;;   (do-ji-tv-est-of $partitions (STV $strength $confidence))
-;;
-;; This implementation iterates over any number of partitions.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 

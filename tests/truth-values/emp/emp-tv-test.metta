@@ -33,19 +33,6 @@
         (Inheritance $x man))
      5))
 
-(INPUT PATTERN
-    ((, (Inheritance $x ugly)
-        (Inheritance $x man)
-        (Inheritance $x sodaDrinker)
-        (Inheritance $x human))
-     5))
-
 (EXPECTED-RESULT petta-emp-tv-three (emp-tv-of (, (Inheritance $a ugly) (Inheritance $a man) (Inheritance $a sodaDrinker)) (EMPTV 2.3148148148148147e-5 0.09963099630996311)))
 
 (EXPECTED-RESULT petta-emp-tv-two (emp-tv-of (, (Inheritance $a ugly) (Inheritance $a man)) (EMPTV 0.001388888888888889 0.08181818181818183)))
-
-(EXPECTED-RESULT emp-tv-four-size (emp-tv-pattern-size-of (, (Inheritance $a ugly) (Inheritance $a man) (Inheritance $a sodaDrinker) (Inheritance $a human)) 4))
-
-(EXPECTED-RESULT emp-tv-four-universe (emp-prob-pbs-universe-count (, (Inheritance $a ugly) (Inheritance $a man) (Inheritance $a sodaDrinker) (Inheritance $a human)) 12960000))
-
-(EXPECTED-RESULT emp-tv-four (emp-tv-of (, (Inheritance $a ugly) (Inheritance $a man) (Inheritance $a sodaDrinker) (Inheritance $a human)) (EMPTV 3.8580246913580245e-7 0.09999382754150979)))

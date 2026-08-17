@@ -11,8 +11,6 @@
 ;;
 ;;   (block-tv-of $partition $block (EMPTV $strength $confidence))
 ;;
-;; The universe count is computed from the block length, so this is not limited
-;; to blocks of size 1/2/3.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 

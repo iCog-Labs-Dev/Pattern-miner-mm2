@@ -10,16 +10,9 @@
 ;;
 ;;   (emp-tv-of $pattern (EMPTV $strength $confidence))
 ;;
-;; Strength:
-;;
-;;   support(pattern) / DB-SIZE ^ number-of-conjuncts(pattern)
-;;
 ;; Confidence follows PeTTa/C++:
 ;;
 ;;   confidence = 0.1 * count_to_confidence(universe-count)
-;;
-;; This file intentionally computes the universe size from the actual
-;; conjunction length, so it is not limited to 1/2/3-clause patterns.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 

@@ -11,8 +11,6 @@
 ;; MM2 public result:
 ;;
 ;;   (pro-tv-wout-joint-of $partition (STV $strength $confidence))
-;;
-;; This implementation iterates over any number of blocks in a partition.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
