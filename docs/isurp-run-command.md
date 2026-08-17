@@ -62,15 +62,15 @@ mork run Pattern-miner-mm2/src/common-utils/utils.metta \
   --aux-path Pattern-miner-mm2/src/isurp-modules/do-ji-prob.metta \
   --aux-path Pattern-miner-mm2/src/isurp-modules/emp-prob-pbs.metta \
   --aux-path Pattern-miner-mm2/src/isurp-modules/isurp-new.metta \
-  --aux-path Pattern-miner-mm2/src/truth-values/est/00_truth_value_defs.metta \
-  --aux-path Pattern-miner-mm2/src/truth-values/est/02_beta_distribution.metta \
-  --aux-path Pattern-miner-mm2/src/truth-values/est/01_average_tv.metta \
-  --aux-path Pattern-miner-mm2/src/truth-values/emp/00_emp_tv.metta \
-  --aux-path Pattern-miner-mm2/src/truth-values/emp/01_block_tv.metta \
-  --aux-path Pattern-miner-mm2/src/truth-values/est/04_pro_tv_wout_joint.metta \
-  --aux-path Pattern-miner-mm2/src/truth-values/est/05_ji_tv_est.metta \
-  --aux-path Pattern-miner-mm2/src/truth-values/est/06_do_ji_tv_est.metta \
-  --aux-path Pattern-miner-mm2/src/truth-values/est/07_est_tv.metta \
+  --aux-path Pattern-miner-mm2/src/truth-values/est/truth-value-defs.metta \
+  --aux-path Pattern-miner-mm2/src/truth-values/est/beta-distribution.metta \
+  --aux-path Pattern-miner-mm2/src/truth-values/est/average-tv.metta \
+  --aux-path Pattern-miner-mm2/src/truth-values/emp/emp-tv.metta \
+  --aux-path Pattern-miner-mm2/src/truth-values/emp/block-tv.metta \
+  --aux-path Pattern-miner-mm2/src/truth-values/est/pro-tv-wout-joint.metta \
+  --aux-path Pattern-miner-mm2/src/truth-values/est/ji-tv-est.metta \
+  --aux-path Pattern-miner-mm2/src/truth-values/est/do-ji-tv-est.metta \
+  --aux-path Pattern-miner-mm2/src/truth-values/est/est-tv.metta \
   --aux-path path/to/your-isurp-input-db.metta
 ```
 

@@ -8,15 +8,15 @@
 ;; TEST-AUX src/isurp-modules/ji-prob-est.metta
 ;; TEST-AUX src/isurp-modules/do-ji-prob.metta
 ;; TEST-AUX src/isurp-modules/emp-prob-pbs.metta
-;; TEST-AUX src/truth-values/est/00_truth_value_defs.metta
-;; TEST-AUX src/truth-values/est/02_beta_distribution.metta
-;; TEST-AUX src/truth-values/est/01_average_tv.metta
-;; TEST-AUX src/truth-values/emp/00_emp_tv.metta
-;; TEST-AUX src/truth-values/emp/01_block_tv.metta
-;; TEST-AUX src/truth-values/est/04_pro_tv_wout_joint.metta
-;; TEST-AUX src/truth-values/est/05_ji_tv_est.metta
-;; TEST-AUX src/truth-values/est/06_do_ji_tv_est.metta
-;; TEST-AUX src/truth-values/est/07_est_tv.metta
+;; TEST-AUX src/truth-values/est/truth-value-defs.metta
+;; TEST-AUX src/truth-values/est/beta-distribution.metta
+;; TEST-AUX src/truth-values/est/average-tv.metta
+;; TEST-AUX src/truth-values/emp/emp-tv.metta
+;; TEST-AUX src/truth-values/emp/block-tv.metta
+;; TEST-AUX src/truth-values/est/pro-tv-wout-joint.metta
+;; TEST-AUX src/truth-values/est/ji-tv-est.metta
+;; TEST-AUX src/truth-values/est/do-ji-tv-est.metta
+;; TEST-AUX src/truth-values/est/est-tv.metta
 ;; TEST-AUX data/ugly-sodaDrinker.metta
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

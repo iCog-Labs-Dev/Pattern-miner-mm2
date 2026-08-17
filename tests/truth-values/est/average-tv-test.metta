@@ -1,6 +1,6 @@
-;; TEST-AUX src/truth-values/est/00_truth_value_defs.metta
-;; TEST-AUX src/truth-values/est/02_beta_distribution.metta
-;; TEST-AUX src/truth-values/est/01_average_tv.metta
+;; TEST-AUX src/truth-values/est/truth-value-defs.metta
+;; TEST-AUX src/truth-values/est/beta-distribution.metta
+;; TEST-AUX src/truth-values/est/average-tv.metta
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; avrg_tv component test

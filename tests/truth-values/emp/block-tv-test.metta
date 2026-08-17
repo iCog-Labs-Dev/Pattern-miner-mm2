@@ -1,4 +1,4 @@
-;; TEST-AUX src/truth-values/emp/01_block_tv.metta
+;; TEST-AUX src/truth-values/emp/block-tv.metta
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Block empirical truth value component test.

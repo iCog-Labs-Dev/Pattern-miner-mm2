@@ -1,4 +1,4 @@
-;; TEST-AUX src/truth-values/est/00_truth_value_defs.metta
+;; TEST-AUX src/truth-values/est/truth-value-defs.metta
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Truth value definition helper tests
