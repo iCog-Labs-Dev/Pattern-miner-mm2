@@ -287,6 +287,7 @@
 (DEF sae-start-walk
   (, (sae-args $id (var $source-index) $args))
   (O
+    (- (sae-args $id (var $source-index) $args))
     (+ (sae-walk $id (var $source-index) $args 1 ()))))
 
 (DEF sae-step
@@ -403,6 +404,7 @@
      (sae-step-result $sae-id (var $source-index) $abstracted-value))
   (O
     (- (shallow-abstraction-wait $id $path (var $source-index) $sae-id))
+    (- (sae-step-result $sae-id (var $source-index) $abstracted-value))
     (+ (shallow-abstraction-binding $id $path (var $source-index) $abstracted-value))))
 
 (DEF shallow-abstraction-fn
