@@ -444,7 +444,7 @@
 (DEF specialization-start
   (, (run-specialization $id $pattern))
   (O
-    (+ (specialization-position spec-test 1 (var 0)))
+    (+ (specialization-position $id 1 (var 0)))
     (+ (specialization-partial $id 1 ()))))
 
 (DEF specialization-extend
