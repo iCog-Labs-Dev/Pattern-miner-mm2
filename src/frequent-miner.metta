@@ -217,7 +217,8 @@
   (O
     (- (gap-valuation-binding (VAL-VALUE $id $candidate-expr $path) $id $path $var))
     (- (get-value-at-position-result (VAL-VALUE $id $candidate-expr $path) $path $value))
-    (+ (valuation-binding $id $path $var $value)))
+    (+ (valuation-binding $id $path $var $value))
+    (+ (valuation-binding $id $path $var $var)))
 )
 
 ; Reusable valuation function.
