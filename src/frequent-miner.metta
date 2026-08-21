@@ -553,3 +553,19 @@
 ; (FACT (Inheritance Lily ugly))
 
 ; (INPUT MIN-SUPPORT 3)
+
+
+(DEF frequent-miner-fn
+  (, (run-frequent-miner $id $pattern)
+     (DEF valuation-fn $valuation-p $valuation-t)
+     (DEF shallow-abstraction-fn $shallow-p $shallow-t)
+     (DEF specialization-combinations-fn $specialization-p $specialization-t)
+     (DEF candidate-pattern-fn $candidate-p $candidate-t))
+  (O
+    (+ (valuation $id $pattern))
+    (+ (run-shallow-abstraction $id))
+    (+ (run-specialization $id $pattern))
+    (+ (exec (freq 200 frequent-valuation) $valuation-p $valuation-t))
+    (+ (exec (freq 350 frequent-shallow-abstraction) $shallow-p $shallow-t))
+    (+ (exec (freq 500 frequent-specialization) $specialization-p $specialization-t))
+    (+ (exec (freq 600 frequent-candidate-patterns) $candidate-p $candidate-t))))
