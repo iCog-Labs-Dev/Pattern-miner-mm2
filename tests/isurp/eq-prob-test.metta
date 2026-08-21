@@ -1,11 +1,13 @@
-;; TEST-AUX src/isurp_modules/03_abstractness_sort.metta
-;; TEST-AUX src/isurp_modules/04_eq_prob.metta
+;; TEST-AUX src/isurp-modules/abstractness-sort.metta
+;; TEST-AUX src/isurp-modules/eq-prob.metta
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; eq-prob component test
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (partition (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly))))
+
+(INPUT DB-SIZE 4)
 
 (block
     (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly)))
@@ -32,4 +34,4 @@
 
 (EXPECTED-RESULT eq-joint-var (eq-joint-var (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly))) (var 0)))
 
-(EXPECTED-RESULT eq-prob (eq-prob-of (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly))) 0.5))
+(EXPECTED-RESULT eq-prob (eq-prob-of (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly))) 0.25))

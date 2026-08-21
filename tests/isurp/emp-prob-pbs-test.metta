@@ -1,4 +1,4 @@
-;; TEST-AUX src/isurp_modules/08_emp_prob_pbs.metta
+;; TEST-AUX src/isurp-modules/emp-prob-pbs.metta
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; emp-prob-pbs component test

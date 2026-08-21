@@ -21,6 +21,9 @@ scripts/run-tests.sh tests/isurp/abstractness-sort-test.metta \
   tests/isurp/ji-prob-est-test.metta \
   tests/isurp/do-ji-prob-test.metta \
   tests/isurp/emp-prob-pbs-test.metta \
+  tests/isurp/isurp-validation-test.metta \
+  tests/isurp/isurp-coupled-validation-test.metta \
+  tests/isurp/isurp-true-nested-validation-test.metta \
   tests/isurp/isurp-pipeline-test.metta
 ```
 
@@ -45,15 +48,16 @@ Run:
 
 ```bash
 mork run Pattern-miner-mm2/src/common-utils/utils.metta \
-  --aux-path Pattern-miner-mm2/src/isurp_modules/01_bootstrap_partitions.metta \
-  --aux-path Pattern-miner-mm2/src/isurp_modules/02_block_support.metta \
-  --aux-path Pattern-miner-mm2/src/isurp_modules/03_abstractness_sort.metta \
-  --aux-path Pattern-miner-mm2/src/isurp_modules/04_eq_prob.metta \
-  --aux-path Pattern-miner-mm2/src/isurp_modules/05_pro_prob_wout_joint.metta \
-  --aux-path Pattern-miner-mm2/src/isurp_modules/06_ji_prob_est.metta \
-  --aux-path Pattern-miner-mm2/src/isurp_modules/07_do_ji_prob.metta \
-  --aux-path Pattern-miner-mm2/src/isurp_modules/08_emp_prob_pbs.metta \
-  --aux-path Pattern-miner-mm2/src/isurp_modules/09_isurp_new.metta \
+  --aux-path Pattern-miner-mm2/src/isurp-modules/input-bootstrap.metta \
+  --aux-path Pattern-miner-mm2/src/isurp-modules/bootstrap-partitions.metta \
+  --aux-path Pattern-miner-mm2/src/isurp-modules/block-support.metta \
+  --aux-path Pattern-miner-mm2/src/isurp-modules/abstractness-sort.metta \
+  --aux-path Pattern-miner-mm2/src/isurp-modules/eq-prob.metta \
+  --aux-path Pattern-miner-mm2/src/isurp-modules/pro-prob-wout-joint.metta \
+  --aux-path Pattern-miner-mm2/src/isurp-modules/ji-prob-est.metta \
+  --aux-path Pattern-miner-mm2/src/isurp-modules/do-ji-prob.metta \
+  --aux-path Pattern-miner-mm2/src/isurp-modules/emp-prob-pbs.metta \
+  --aux-path Pattern-miner-mm2/src/isurp-modules/isurp-new.metta \
   --aux-path path/to/your-isurp-input-db.metta
 ```
 
@@ -74,15 +78,15 @@ ISurp stages use readable tuple priorities:
 | File | Purpose |
 | --- | --- |
 | `src/common-utils/utils.metta` | Shared reusable function-definition facts such as `count-db`, `prob`, `total-counts`, and `dst-from-interval`. |
-| `01_bootstrap_partitions.metta` | Starts the ISurp pipeline, indexes variables, generates partitions, and expands partitions into blocks. |
-| `02_block_support.metta` | Computes `block-support` facts for generated partition blocks. |
-| `03_abstractness_sort.metta` | Selects the most abstract connected block for each joint variable using triplet-level syntactic scoring and deterministic fallbacks. |
-| `04_eq_prob.metta` | Detects shared variables across blocks and computes `eq-prob-of`. |
-| `05_pro_prob_wout_joint.metta` | Computes `pro-prob-wout-joint` product probability before joint-variable correction. |
-| `06_ji_prob_est.metta` | Multiplies `pro-prob-wout-joint-of` by `eq-prob-of` to produce `ji-prob-est-of`. |
-| `07_do_ji_prob.metta` | Collects `ji-prob-est-of` facts into an ordered probability list for a requested partition list. |
-| `08_emp_prob_pbs.metta` | Computes direct empirical probability for the input pattern without sampling/bootstrap logic. |
-| `09_isurp_new.metta` | Connects the newer helper facts into `ji-prob-est-interval-of`, distance, and final `isurp-new-of`. |
+| `bootstrap-partitions.metta` | Starts the ISurp pipeline, indexes variables, generates partitions, and expands partitions into blocks. |
+| `block-support.metta` | Computes `block-support` facts for generated partition blocks. |
+| `abstractness-sort.metta` | Selects the most abstract connected block for each joint variable using triplet-level syntactic scoring and deterministic fallbacks. |
+| `eq-prob.metta` | Detects shared variables across blocks and computes `eq-prob-of`. |
+| `pro-prob-wout-joint.metta` | Computes `pro-prob-wout-joint` product probability before joint-variable correction. |
+| `ji-prob-est.metta` | Multiplies `pro-prob-wout-joint-of` by `eq-prob-of` to produce `ji-prob-est-of`. |
+| `do-ji-prob.metta` | Collects `ji-prob-est-of` facts into an ordered probability list for a requested partition list. |
+| `emp-prob-pbs.metta` | Computes direct empirical probability for the input pattern. |
+| `isurp-new.metta` | Connects the newer helper facts into `ji-prob-est-interval-of`, distance, and final `isurp-new-of`. |
 
 The legacy monolithic `src/isurp.metta` has been removed.  Use the modular
 command above so each shared utility and ISurp stage is loaded explicitly.

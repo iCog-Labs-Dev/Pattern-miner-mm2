@@ -80,15 +80,15 @@ jobs:
           path: |
             ~/.cargo/git
             ~/.cargo/registry
-            MORK/target
-            PathMap/target
-            mm2-stdlib/target
           key: ${{ runner.os }}-cargo-${{ hashFiles('MORK/Cargo.lock', 'PathMap/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-
 
       - name: Wire MM2 helper dependencies into MORK
         run: hyperon-miner-mm2/scripts/setup-mork-mm2-deps.sh MORK MM2-Helper mm2-stdlib
+
+      - name: Use portable MORK CPU target
+        run: perl -0pi -e 's/rustflags = \["-C", "target-cpu=native", "-Awarnings"\]/rustflags = ["-C", "target-cpu=x86-64", "-C", "target-feature=+aes,+sse2", "-Awarnings"]/g' MORK/.cargo/config.toml
 
       - name: Build MORK CLI
         working-directory: MORK/kernel
