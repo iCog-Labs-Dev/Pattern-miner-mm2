@@ -594,6 +594,14 @@
         (+ (exec (freq 702 frequent-miner-cleanup-all-at-once) $all-p $all-t))
         (+ (exec (freq 703 frequent-miner-cleanup-target-task) $target-p $target-t))))
 
+; frequent miner integration
+;
+; Request:
+;   (run-frequent-miner $id $pattern)
+;
+; Result:
+;   (candidate-pattern $id $pattern $support)
+
 (DEF frequent-miner-fn
   (, (run-frequent-miner $id $pattern)
      (DEF valuation-fn $valuation-p $valuation-t)
@@ -610,3 +618,9 @@
     (+ (exec (freq 500 frequent-specialization) $specialization-p $specialization-t))
     (+ (exec (freq 600 frequent-candidate-patterns) $candidate-p $candidate-t))
     (+ (exec (freq 700 frequent-miner-cleanup) $cleanup-p $cleanup-t))))
+
+; (exec (freq 000 call-frequent-miner)
+;   (, (run-frequent-miner fm-test (Inheritance $x $y))
+;      (DEF frequent-miner-fn $freq-p $freq-t))
+;   (O
+;     (+ (exec (freq 001 run-frequent-miner) $freq-p $freq-t))))
