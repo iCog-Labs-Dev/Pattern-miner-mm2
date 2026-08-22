@@ -20,6 +20,7 @@
   (O
     (+ (exec (freq 002 run-frequent-miner) $freq-p $freq-t))))
 
+(EXPECTED-RESULT frequent-miner-all (candidate-pattern fm-test (Inheritance (var 0) (var 1)) 59))
 (EXPECTED-RESULT frequent-miner-human (candidate-pattern fm-test (Inheritance (var 0) human) 19))
 (EXPECTED-RESULT frequent-miner-man (candidate-pattern fm-test (Inheritance (var 0) man) 10))
 (EXPECTED-RESULT frequent-miner-woman (candidate-pattern fm-test (Inheritance (var 0) woman) 10))
