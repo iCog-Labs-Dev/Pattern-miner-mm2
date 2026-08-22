@@ -554,46 +554,45 @@
 
 ; (INPUT MIN-SUPPORT 3)
 
-(DEF frequent-miner-cleanup-all-fn
+(DEF frequent-miner-cleanup-blocks
   (, (candidate-pattern $id $pattern $support))
   (O
-    (+ (exec (freq 701 cleanup-support-count-result)
-         (, (support-count-result $id $support-pattern $support-count))
-         (O (- (support-count-result $id $support-pattern $support-count)))))
-    (+ (exec (freq 702 cleanup-candidate-specialization)
-         (, (candidate-specialization $id $display-pattern $match-pattern))
-         (O (- (candidate-specialization $id $display-pattern $match-pattern)))))
-    (+ (exec (freq 703 cleanup-specialization-result)
-         (, (specialization-result $id $specialized-pattern))
-         (O (- (specialization-result $id $specialized-pattern)))))
-    (+ (exec (freq 704 cleanup-specialization-combination)
-         (, (specialization-combination $id $combination))
-         (O (- (specialization-combination $id $combination)))))
-    (+ (exec (freq 705 cleanup-specialization-position)
-         (, (specialization-position $id $pos $var))
-         (O (- (specialization-position $id $pos $var)))))
-    (+ (exec (freq 706 cleanup-shallow-binding)
-         (, (shallow-abstraction-binding $id $path $var $value))
-         (O (- (shallow-abstraction-binding $id $path $var $value)))))
-    (+ (exec (freq 707 cleanup-shallow-request-var)
-         (, (shallow-abstraction-request-var $id $path $var $value $is-var))
-         (O (- (shallow-abstraction-request-var $id $path $var $value $is-var)))))
-    (+ (exec (freq 708 cleanup-shallow-request-expr)
-         (, (shallow-abstraction-request-expr $id $path $var $value $is-exp))
-         (O (- (shallow-abstraction-request-expr $id $path $var $value $is-exp)))))
-    (+ (exec (freq 709 cleanup-valuation-binding)
-         (, (valuation-binding $id $path $var $value))
-         (O (- (valuation-binding $id $path $var $value)))))
-    (+ (exec (freq 710 cleanup-valuation-pattern)
-         (, (valuation-pattern $id $valuation-pattern))
-         (O (- (valuation-pattern $id $valuation-pattern)))))
-    (+ (exec (freq 711 cleanup-run-facts)
-         (, (run-shallow-abstraction $id)
-            (run-specialization $id $run-pattern)
-            (run-frequent-miner $id $run-pattern))
-         (O (- (run-shallow-abstraction $id))
-            (- (run-specialization $id $run-pattern))
-            (- (run-frequent-miner $id $run-pattern)))))))
+    (+ (cleanup (support-count-result $id $support-pattern $support-count)))
+    (+ (cleanup (candidate-specialization $id $display-pattern $match-pattern)))
+    (+ (cleanup (specialization-result $id $specialized-pattern)))
+    (+ (cleanup (specialization-combination $id $combination)))
+    (+ (cleanup (specialization-position $id $pos $var)))
+    (+ (cleanup (shallow-abstraction-binding $id $path $shallow-var $value)))
+    (+ (cleanup (shallow-abstract-expression $sae-id $var $expr)))
+    (+ (cleanup (shallow-abstraction-request-expr $id $path $var $value $is-exp)))
+    (+ (cleanup (shallow-abstraction-request-var $id $path $var $value $is-var)))
+    (+ (cleanup (valuation-binding $id $binding-path $binding-var $binding-value)))
+    (+ (cleanup (valuation-pattern $id $valuation-pattern)))
+    (+ (cleanup (run-shallow-abstraction $id)))
+    (+ (cleanup (run-specialization $id $run-pattern)))
+    (+ (cleanup (run-frequent-miner $id $run-pattern)))))
+
+(DEF frequent-miner-cleanup-all-at-once-fn
+    (, (cleanup $intermediate-result) $intermediate-result)
+    (O
+        (- (cleanup $intermediate-result))
+        (- $intermediate-result)
+        ))
+
+(DEF frequent-miner-cleanup-target-task-fn
+  (, (cleanup $fact))
+  (O
+    (- (cleanup $fact))))
+
+;; Remove the generic cleanup tasks after they are no longer useful.
+(DEF frequent-miner-cleanup-all-fn
+    (, (DEF frequent-miner-cleanup-blocks $blocks-p $blocks-t)
+       (DEF frequent-miner-cleanup-all-at-once-fn $all-p $all-t)
+       (DEF frequent-miner-cleanup-target-task-fn $target-p $target-t))
+    (O
+        (+ (exec (freq 701 frequent-miner-cleanup-blocks) $blocks-p $blocks-t))
+        (+ (exec (freq 702 frequent-miner-cleanup-all-at-once) $all-p $all-t))
+        (+ (exec (freq 703 frequent-miner-cleanup-target-task) $target-p $target-t))))
 
 (DEF frequent-miner-fn
   (, (run-frequent-miner $id $pattern)
