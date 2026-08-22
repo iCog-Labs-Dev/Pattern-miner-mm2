@@ -10,13 +10,13 @@
 
 ;; Count conjuncts in a pattern.
 ((count-conjuncts $pattern -> $out)
-    (, (INPUT PATTERN ($pattern $support)))
+    (,)
     (O
         (pure
             ($out $pattern $count)
             $count
             (size-atom
-                (cdr-atom (' $pattern))))))
+                (exclude-item , (' $pattern))))))
 
 ;; Count matches for an indexed conjunction. The caller supplies both an
 ;; opaque context value and the complete three-field priority for the count
@@ -153,7 +153,7 @@
 
 ;; Compute the probability of a pattern by dividing the support by total counts.
 ((prob $pattern $db -> $out)
-    (, (INPUT PATTERN ($pattern $support))
+    (, (indexed-pattern ($pattern $support))
        (total-count-of $pattern $count))
     (O
         (pure
