@@ -296,7 +296,7 @@
         (pure
             (surprisingess-of $pattern $value)
             $pattern
-            (indices_to_vars (' $indexed-pattern)))
+            (cons , (indices_to_vars (' $indexed-pattern))))
         (- (surprisingess-of $indexed-pattern $value))
     )
 )
