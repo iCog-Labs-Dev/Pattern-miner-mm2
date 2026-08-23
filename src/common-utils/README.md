@@ -1,15 +1,28 @@
 # Common MM2 Utilities
 
-`utils.metta` contains reusable rule templates shared by the pattern-miner
-pipelines. It does not define a third module or own exec priorities. A caller
-matches a template, chooses its output predicate, and schedules the returned
-source and sink.
+`utils.metta` contains project-wide callable templates. A caller matches a
+template, chooses its output predicate, and schedules the returned source and
+sink. `surp-components.metta` is different: it is a reusable, executable
+probability core currently consumed by IISurp. The existing ISurp component is
+unchanged and can adopt this core separately if its owner chooses to.
 
 Load it from a test with:
 
 ```metta
 ;; TEST-AUX src/common-utils/utils.metta
 ```
+
+IISurp tests load both files explicitly:
+
+```metta
+;; TEST-AUX src/common-utils/utils.metta
+;; TEST-AUX src/common-utils/surp-components.metta
+```
+
+`surp-components.metta` generates every non-trivial partition and folds each
+partition's block probabilities with a recursive cursor. It accepts any
+conjunction size `k >= 2`; there is no static maximum. Runtime grows quickly
+because the number of set partitions is the Bell number for `k`.
 
 ## Functions
 
@@ -64,6 +77,27 @@ threshold values, and writes:
 ```metta
 ($out $context $support true-or-false)
 ```
+
+### `binomial-universe-count`
+
+```metta
+((binomial-universe-count $context $n $k -> $out) $source $sink)
+```
+
+Consumes:
+
+```metta
+(binomial-universe-count-request $context $n $k $out)
+```
+
+and writes a context-scoped binomial count:
+
+```metta
+($out $context C(n,k))
+```
+
+IISurp uses this shared arithmetic with pattern-scoped probability metadata;
+it is also available for other surprisingness implementations to adopt.
 
 ### `drop-matched`
 
@@ -150,15 +184,30 @@ Divides the support from `INPUT PATTERN` by `total-count-of` and writes:
 ($out $pattern $probability)
 ```
 
-### `dst-from-interval`
+### `interval-distance`
+
+```metta
+((interval-distance $context $emin $emax $empirical -> $out) $source $sink)
+```
+
+Consumes an `interval-distance-request` and directly writes the non-negative
+distance from the empirical value to the closed interval:
+
+```metta
+($out $context $distance)
+```
+
+IISurp uses this callable with its semantic interval. Other surprisingness
+implementations can adopt it without changing the callable.
+
+### `dst-from-interval` (compatibility)
 
 ```metta
 ((dst-from-interval $pattern $emin $emax $emp -> $out) $source $sink)
 ```
 
 Consumes a `dst-request` and classifies the empirical value relative to the
-closed interval `[emin, emax]`. It writes the three boolean branch facts used
-by `surp.metta`:
+closed interval `[emin, emax]`. It writes three legacy boolean branch facts:
 
 ```metta
 (dst-above? ... true-or-false)

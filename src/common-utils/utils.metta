@@ -39,6 +39,20 @@
         (- (count-indexed-conjunction-support-request
             $context $candidate $priority $out))))
 
+;; Calculate C(n,k) without introducing unscoped probability facts.
+((binomial-universe-count $context $n $k -> $out)
+    (, (binomial-universe-count-request $context $n $k $out))
+    (O
+        (pure
+            ($out $context $count)
+            $count
+            (i64_to_string
+                (div_i64
+                    (falling_factorial (i64_from_string $n)
+                                       (i64_from_string $k))
+                    (factorial (i64_from_string $k)))))
+        (- (binomial-universe-count-request $context $n $k $out))))
+
 ;; Compare a support value against a caller-provided threshold. The opaque
 ;; context keeps the decision associated with the fact that requested it.
 ((support-at-least $context $support $threshold -> $out)
@@ -165,6 +179,28 @@
                     (f64_from_string $count))))))
 
 ;; Distance from an empirical value to an interval [emin, emax].
+;;
+;; max(emin - empirical, empirical - emax, 0) covers below, above, and
+;; inside cases without caller-specific branch rules.
+((interval-distance $context $emin $emax $empirical -> $out)
+    (, (interval-distance-request
+            $context $emin $emax $empirical $out))
+    (O
+        (pure
+            ($out $context $distance)
+            $distance
+            (f64_to_string
+                (max_f64
+                    (max_f64
+                        (sub_f64 (f64_from_string $emin)
+                                 (f64_from_string $empirical))
+                        (sub_f64 (f64_from_string $empirical)
+                                 (f64_from_string $emax)))
+                    (f64_from_string 0))))
+        (- (interval-distance-request
+                $context $emin $emax $empirical $out))))
+
+;; Legacy branch-classification callable retained for existing consumers.
 ((dst-from-interval $pattern $emin $emax $emp -> $out)
     (, (dst-request $pattern $emin $emax $emp $out))
     (O

@@ -9,6 +9,7 @@ run in one MORK atomspace.
 ```text
 docs/
   data-model.md              Shared MM2 data model and priority conventions
+  iisurp.md                  Short IISurp overview and public usage
   isurp-old-validation.md    Validation notes against PeTTa isurp-old
   testing.md                 Test file format and runner workflow
 
