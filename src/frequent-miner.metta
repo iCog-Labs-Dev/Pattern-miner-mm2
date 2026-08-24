@@ -624,3 +624,28 @@
 ;      (DEF frequent-miner-fn $freq-p $freq-t))
 ;   (O
 ;     (+ (exec (freq 001 run-frequent-miner) $freq-p $freq-t))))
+
+
+(DEF has-nested-expression-step
+  (, (hne-active $id))
+  (O
+    (+ (exec (freq 800 hne-empty-parent)
+         (, (hne-active $empty-id)
+            (hne-check $empty-id () $empty-candidate))
+         (O
+           (- (hne-check $empty-id () $empty-candidate)))))
+
+    (+ (exec (freq 801 hne-split)
+         (, (hne-active $split-id)
+            (hne-check $split-id $parent $candidate))
+         (O
+           (- (hne-check $split-id $parent $candidate))
+           (pure (hne-parent-head $split-id $parent $candidate $parent-head)
+             $parent-head (car-atom (' $parent)))
+           (pure (hne-candidate-head $split-id $parent $candidate $candidate-head)
+             $candidate-head (car-atom (' $candidate)))
+           (pure (hne-parent-tail $split-id $parent $candidate $parent-tail)
+             $parent-tail (cdr-atom (' $parent)))
+           (pure (hne-candidate-tail $split-id $parent $candidate $candidate-tail)
+             $candidate-tail (cdr-atom (' $candidate)))
+           (+ (hne-dispatch $split-id $parent $candidate)))))))
