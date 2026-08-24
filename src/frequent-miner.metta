@@ -627,7 +627,8 @@
 
 
 (DEF has-nested-expression-step
-  (, (hne-active $id))
+  (, (hne-active $id)
+     (DEF has-nested-expression-dispatch $dispatch-p $dispatch-t))
   (O
     (+ (exec (freq 800 hne-empty-parent)
          (, (hne-active $empty-id)
@@ -648,4 +649,22 @@
              $parent-tail (cdr-atom (' $parent)))
            (pure (hne-candidate-tail $split-id $parent $candidate $candidate-tail)
              $candidate-tail (cdr-atom (' $candidate)))
-           (+ (hne-dispatch $split-id $parent $candidate)))))))
+           (+ (hne-dispatch $split-id $parent $candidate))
+           (+ (exec (freq 810 hne-dispatch) $dispatch-p $dispatch-t)))))))
+
+(DEF has-nested-expression-dispatch
+  (, (hne-active $id)
+     (hne-dispatch $id $parent $candidate)
+     (hne-parent-head $id $parent $candidate $parent-head)
+     (hne-candidate-head $id $parent $candidate $candidate-head)
+     (hne-parent-tail $id $parent $candidate $parent-tail)
+     (hne-candidate-tail $id $parent $candidate $candidate-tail))
+  (O
+    (- (hne-dispatch $id $parent $candidate))
+    (pure (hne-parent-head-var $id $parent $candidate $parent-head $is-parent-var)
+      $is-parent-var (i8_to_string (is_var (' $parent-head))))
+    (pure (hne-parent-head-exp $id $parent $candidate $parent-head $is-parent-exp)
+      $is-parent-exp (i8_to_string (is_exp (' $parent-head))))
+    (pure (hne-candidate-head-exp $id $parent $candidate $candidate-head $is-candidate-exp)
+      $is-candidate-exp (i8_to_string (is_exp (' $candidate-head))))
+    (+ (hne-decision $id $parent $candidate $parent-head $candidate-head $parent-tail $candidate-tail))))
