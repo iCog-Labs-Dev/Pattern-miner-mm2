@@ -726,3 +726,13 @@
            (- (hne-parent-head-exp $atom-id $atom-parent $atom-candidate $atom-parent-head 0))
            (+ (hne-check $atom-id $atom-parent-tail $atom-candidate-tail))
            (+ (exec (freq 800 hne-step) $step-p $step-t)))))))
+
+(DEF has-nested-expression-with-respect-to-fn
+  (, (has-nested-expression-with-respect-to $id $parent $candidate)
+     (DEF has-nested-expression-step $step-p $step-t))
+  (O
+    (- (has-nested-expression-with-respect-to $id $parent $candidate))
+    (+ (hne-active $id))
+    (+ (hne-top $id $parent $candidate))
+    (+ (hne-check $id $parent $candidate))
+    (+ (exec (freq 800 hne-step) $step-p $step-t))))
