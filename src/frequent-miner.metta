@@ -626,6 +626,21 @@
 ;     (+ (exec (freq 001 run-frequent-miner) $freq-p $freq-t))))
 
 
+
+; nested-depth checker
+;
+; Positive-only continuation check for the iterative miner.
+;
+; Request:
+;   (has-nested-expression-with-respect-to $id $parent $candidate)
+;
+; Result, emitted only when a deeper candidate position is found:
+;   (has-nested-expression-result $id $parent $candidate true)
+;
+; Stop behavior:
+;   Every step requires (hne-active $id). The first true removes hne-active,
+;   so remaining queued checks for the same id cannot continue.
+
 (DEF has-nested-expression-step
   (, (hne-active $id)
      (DEF has-nested-expression-dispatch $dispatch-p $dispatch-t))
