@@ -736,3 +736,14 @@
     (+ (hne-top $id $parent $candidate))
     (+ (hne-check $id $parent $candidate))
     (+ (exec (freq 800 hne-step) $step-p $step-t))))
+
+; Example smoke, kept inactive:
+; (has-nested-expression-with-respect-to hne-smoke
+;   (Inheritance (var 0) (var 1))
+;   (Inheritance (var 0) (Evaluation Allen sodaDrinker)))
+; (exec (freq 000 call-hne-smoke)
+;   (, (has-nested-expression-with-respect-to hne-smoke
+;        (Inheritance (var 0) (var 1))
+;        (Inheritance (var 0) (Evaluation Allen sodaDrinker)))
+;      (DEF has-nested-expression-with-respect-to-fn $hne-p $hne-t))
+;   (O (+ (exec (freq 001 run-hne-smoke) $hne-p $hne-t))))
