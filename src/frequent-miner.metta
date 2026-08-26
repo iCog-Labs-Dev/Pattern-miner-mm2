@@ -762,3 +762,14 @@
 ;        (Inheritance (var 0) (Evaluation Allen sodaDrinker)))
 ;      (DEF has-nested-expression-with-respect-to-fn $hne-p $hne-t))
 ;   (O (+ (exec (freq 001 run-hne-smoke) $hne-p $hne-t))))
+
+
+(DEF iterative-miner-candidate-step
+  (, (iter-parent $id $parent $miner-id)
+     (candidate-pattern $miner-id $candidate $support)
+     (DEF has-nested-expression-with-respect-to-fn $hne-p $hne-t))
+  (O
+    (- (candidate-pattern $miner-id $candidate $support))
+    (+ (iterative-candidate-pattern $id $parent $candidate $support))
+    (+ (has-nested-expression-with-respect-to (HNE $id $parent $candidate) $parent $candidate))
+    (+ (exec (freq 900 iterative-check-depth) $hne-p $hne-t))))
