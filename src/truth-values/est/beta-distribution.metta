@@ -30,14 +30,16 @@
 ;; Convert STV to a beta distribution.
 (exec (surp 183 tv-beta-stv)
     (, (tv-beta-request (STV $strength $confidence))
-       (confidence-count-of $confidence $count))
+       (confidence-count-of $confidence $count)
+       (tv-prior-alpha $prior-alpha)
+       (tv-prior-beta $prior-beta))
     (O
         (pure
             (tv-beta-alpha (STV $strength $confidence) $alpha)
             $alpha
             (f64_to_string
                 (sum_f64
-                    (f64_from_string 1.0)
+                    (f64_from_string $prior-alpha)
                     (product_f64
                         (f64_from_string $strength)
                         (f64_from_string $count)))))
@@ -46,7 +48,7 @@
             $beta
             (f64_to_string
                 (sum_f64
-                    (f64_from_string 1.0)
+                    (f64_from_string $prior-beta)
                     (sub_f64
                         (f64_from_string $count)
                         (product_f64
@@ -57,14 +59,16 @@
 ;; Convert EMPTV to a beta distribution.
 (exec (surp 183 tv-beta-emptv)
     (, (tv-beta-request (EMPTV $strength $confidence))
-       (confidence-count-of $confidence $count))
+       (confidence-count-of $confidence $count)
+       (tv-prior-alpha $prior-alpha)
+       (tv-prior-beta $prior-beta))
     (O
         (pure
             (tv-beta-alpha (EMPTV $strength $confidence) $alpha)
             $alpha
             (f64_to_string
                 (sum_f64
-                    (f64_from_string 1.0)
+                    (f64_from_string $prior-alpha)
                     (product_f64
                         (f64_from_string $strength)
                         (f64_from_string $count)))))
@@ -73,7 +77,7 @@
             $beta
             (f64_to_string
                 (sum_f64
-                    (f64_from_string 1.0)
+                    (f64_from_string $prior-beta)
                     (sub_f64
                         (f64_from_string $count)
                         (product_f64
@@ -136,7 +140,9 @@
     (, (confidence-count-request-late $confidence)))
 
 (exec (surp 204 confidence-count-late)
-    (, (confidence-count-request-late $confidence))
+    (, (confidence-count-request-late $confidence)
+       (tv-default-k $default-k)
+       (tv-confidence-max $confidence-max))
     (O
         (pure
             (confidence-count-of-late $confidence $count)
@@ -144,26 +150,28 @@
             (f64_to_string
                 (div_f64
                     (product_f64
-                        (f64_from_string 800.0)
+                        (f64_from_string $default-k)
                         (min_f64
                             (f64_from_string $confidence)
-                            (f64_from_string 0.9999998)))
+                            (f64_from_string $confidence-max)))
                     (sub_f64
                         (f64_from_string 1.0)
                         (min_f64
                             (f64_from_string $confidence)
-                            (f64_from_string 0.9999998))))))))
+                            (f64_from_string $confidence-max))))))))
 
 (exec (surp 205 tv-beta-stv-late)
     (, (tv-beta-request (STV $strength $confidence))
-       (confidence-count-of-late $confidence $count))
+       (confidence-count-of-late $confidence $count)
+       (tv-prior-alpha $prior-alpha)
+       (tv-prior-beta $prior-beta))
     (O
         (pure
             (tv-beta-alpha-late (STV $strength $confidence) $alpha)
             $alpha
             (f64_to_string
                 (sum_f64
-                    (f64_from_string 1.0)
+                    (f64_from_string $prior-alpha)
                     (product_f64
                         (f64_from_string $strength)
                         (f64_from_string $count)))))
@@ -172,7 +180,7 @@
             $beta
             (f64_to_string
                 (sum_f64
-                    (f64_from_string 1.0)
+                    (f64_from_string $prior-beta)
                     (sub_f64
                         (f64_from_string $count)
                         (product_f64
@@ -181,14 +189,16 @@
 
 (exec (surp 205 tv-beta-emptv-late)
     (, (tv-beta-request (EMPTV $strength $confidence))
-       (confidence-count-of-late $confidence $count))
+       (confidence-count-of-late $confidence $count)
+       (tv-prior-alpha $prior-alpha)
+       (tv-prior-beta $prior-beta))
     (O
         (pure
             (tv-beta-alpha-late (EMPTV $strength $confidence) $alpha)
             $alpha
             (f64_to_string
                 (sum_f64
-                    (f64_from_string 1.0)
+                    (f64_from_string $prior-alpha)
                     (product_f64
                         (f64_from_string $strength)
                         (f64_from_string $count)))))
@@ -197,7 +207,7 @@
             $beta
             (f64_to_string
                 (sum_f64
-                    (f64_from_string 1.0)
+                    (f64_from_string $prior-beta)
                     (sub_f64
                         (f64_from_string $count)
                         (product_f64
@@ -286,7 +296,10 @@
 ;; mk_stv, part 2: confidence from reconstructed count.
 (exec (surp 189 mk-stv-confidence)
     (, (mk-stv-alpha $mean $variance $alpha)
-       (mk-stv-beta $mean $variance $beta))
+       (mk-stv-beta $mean $variance $beta)
+       (tv-prior-alpha $prior-alpha)
+       (tv-prior-beta $prior-beta)
+       (tv-default-k $default-k))
     (O
         (pure
             (mk-stv-count $mean $variance $count)
@@ -297,7 +310,9 @@
                         (sum_f64
                             (f64_from_string $alpha)
                             (f64_from_string $beta))
-                        (f64_from_string 2.0))
+                        (sum_f64
+                            (f64_from_string $prior-alpha)
+                            (f64_from_string $prior-beta)))
                     (f64_from_string 0.1))))
         (pure
             (mk-stv-confidence $mean $variance $confidence)
@@ -309,7 +324,9 @@
                             (sum_f64
                                 (f64_from_string $alpha)
                                 (f64_from_string $beta))
-                            (f64_from_string 2.0))
+                            (sum_f64
+                                (f64_from_string $prior-alpha)
+                                (f64_from_string $prior-beta)))
                         (f64_from_string 0.1))
                     (sum_f64
                         (max_f64
@@ -317,9 +334,11 @@
                                 (sum_f64
                                     (f64_from_string $alpha)
                                     (f64_from_string $beta))
-                                (f64_from_string 2.0))
+                                (sum_f64
+                                    (f64_from_string $prior-alpha)
+                                    (f64_from_string $prior-beta)))
                             (f64_from_string 0.1))
-                        (f64_from_string 800.0)))))))
+                        (f64_from_string $default-k)))))))
 
 
 ;; mk_stv mode calculation.
