@@ -802,6 +802,19 @@
     (+ (exec (freq 910 hne-cleanup-blocks) $blocks-p $blocks-t))
     (+ (exec (freq 911 hne-cleanup-targets) $target-p $target-t))
     (+ (exec (freq 912 hne-cleanup-target-tasks) $task-p $task-t))))
+    
+
+; iterative miner
+;
+; Runs one frequent-miner generation, checks each candidate against its parent,
+; then recursively mines only candidates that introduce nested depth.
+;
+; Request:
+;   (run-iterative-miner $id $pattern)
+;
+; Results:
+;   (iterative-candidate-pattern $id $parent $candidate $support)
+;   (iterative-recursive-candidate $id $parent $candidate $support)
 
 (DEF iterative-miner-candidate-step
   (, (iter-parent $id $parent $miner-id)
