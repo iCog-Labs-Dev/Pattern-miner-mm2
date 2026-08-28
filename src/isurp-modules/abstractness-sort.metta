@@ -7,14 +7,11 @@
 ;;
 ;;     ($rel $left $right)
 ;;
-;;   Blocks and partitions may still contain many clauses/blocks:
-;;
-;;     block     = (($rel $left $right) ...)
-;;     partition = (block ...)
+;;   Blocks and partitions may contain any number of clauses/blocks.
 ;;
 ;; Purpose:
 ;;
-;;   `eq-prob` needs the most abstract block connected to a joint variable.  The
+;;   `eq-prob` needs the most abstract block connected to a joint variable. The
 ;;   C++/PeTTa implementation ranks blocks by syntactic abstractness relative to
 ;;   that joint variable, then uses value-count/support from the selected block.
 ;;
@@ -25,10 +22,8 @@
 ;;   a deterministic weighted score:
 ;;
 ;;     1. syntactic triplet abstractness relative to the joint variable
-;;        - a non-joint variable argument is more abstract than a constant
 ;;     2. fewer clauses is more abstract
 ;;     3. larger support is the empirical fallback
-;;     4. equal scores keep original partition order
 ;;
 ;; Public request:
 ;;
@@ -45,52 +40,54 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; Expand block tuples into clauses.  This duplicates a small part of
-;; `eq-prob.metta` so the sorter can be tested independently.
-(exec (surp 060 abstract-expand-1)
+(exec (surp 060 abstract-copy-block)
     (, (abstractness-sort-request $partition $var)
-       (block $partition ($c1)))
-    (, (abstract-block-clause $partition ($c1) $c1)
-       (abstract-size-priority $partition ($c1) 4000000000000)))
+       (block $partition $block))
+    (, (abstract-copy-block $partition $block $block)))
 
-(exec (surp 060 abstract-expand-2)
-    (, (abstractness-sort-request $partition $var)
-       (block $partition ($c1 $c2)))
-    (, (abstract-block-clause $partition ($c1 $c2) $c1)
-       (abstract-block-clause $partition ($c1 $c2) $c2)
-       (abstract-size-priority $partition ($c1 $c2) 3000000000000)))
 
-(exec (surp 060 abstract-expand-3)
+(exec (surp 060 abstract-block-size)
     (, (abstractness-sort-request $partition $var)
-       (block $partition ($c1 $c2 $c3)))
-    (, (abstract-block-clause $partition ($c1 $c2 $c3) $c1)
-       (abstract-block-clause $partition ($c1 $c2 $c3) $c2)
-       (abstract-block-clause $partition ($c1 $c2 $c3) $c3)
-       (abstract-size-priority $partition ($c1 $c2 $c3) 2000000000000)))
+       (block $partition $block))
+    (O
+        (pure
+            (abstract-block-size $partition $block $size)
+            $size
+            (size-atom (' $block)))))
 
-(exec (surp 060 abstract-expand-4)
-    (, (abstractness-sort-request $partition $var)
-       (block $partition ($c1 $c2 $c3 $c4)))
-    (, (abstract-block-clause $partition ($c1 $c2 $c3 $c4) $c1)
-       (abstract-block-clause $partition ($c1 $c2 $c3 $c4) $c2)
-       (abstract-block-clause $partition ($c1 $c2 $c3 $c4) $c3)
-       (abstract-block-clause $partition ($c1 $c2 $c3 $c4) $c4)
-       (abstract-size-priority $partition ($c1 $c2 $c3 $c4) 1000000000000)))
+
+(exec (surp 061 abstract-size-priority)
+    (, (abstract-block-size $partition $block $size))
+    (O
+        (pure
+            (abstract-size-priority $partition $block $priority)
+            $priority
+            (i64_to_string
+                (sub_i64
+                    (i64_from_string 5000000000000)
+                    (product_i64
+                        (i64_from_string $size)
+                        (i64_from_string 1000000000000)))))))
+
+
+(exec (surp 060 abstract-block-iterator)
+    (, (abstract-copy-block $partition $block $copy)
+       (exec (surp 060 abstract-block-iterator) $src $sink))
+    (O
+        (pure
+            (abstract-block-clause $partition $block $clause)
+            $clause
+            (car-atom (' $copy)))
+        (pure
+            (abstract-copy-block $partition $block $tail)
+            $tail
+            (cdr-atom (' $copy)))
+        (- (abstract-copy-block $partition $block $copy))
+        (+ (exec (surp 060 abstract-block-iterator) $src $sink))))
 
 
 ;; Clause-level syntactic abstractness relative to the requested joint variable.
-;;
-;; If the joint variable is in one argument position, the other argument is the
-;; one that determines whether this clause is more open/abstract:
-;;
-;;   ($rel (var N) (var M)) -> 1
-;;   ($rel (var N) const)   -> 0
-;;   ($rel (var M) (var N)) -> 1
-;;   ($rel const   (var N)) -> 0
-;;
-;; `is_var` lets the same rule cover constants and indexed variables without
-;; needing negation.
-(exec (surp 061 abstract-open-right)
+(exec (surp 062 abstract-open-right)
     (, (abstractness-sort-request $partition (var $n))
        (abstract-block-clause $partition $block ($rel (var $n) $right)))
     (O
@@ -99,7 +96,7 @@
             $score
             (i8_to_string (is_var (' $right))))))
 
-(exec (surp 061 abstract-open-left)
+(exec (surp 062 abstract-open-left)
     (, (abstractness-sort-request $partition (var $n))
        (abstract-block-clause $partition $block ($rel $left (var $n))))
     (O
@@ -108,7 +105,7 @@
             $score
             (i8_to_string (is_var (' $left))))))
 
-(exec (surp 061 abstract-open-right-person-var)
+(exec (surp 062 abstract-open-right-person-var)
     (, (abstractness-sort-request $partition (var $n))
        (abstract-block-clause $partition $block ($rel (Person (var $n)) $right)))
     (O
@@ -117,7 +114,7 @@
             $score
             (i8_to_string (is_var (' $right))))))
 
-(exec (surp 061 abstract-open-left-person-var)
+(exec (surp 062 abstract-open-left-person-var)
     (, (abstractness-sort-request $partition (var $n))
        (abstract-block-clause $partition $block ($rel $left (Person (var $n)))))
     (O
@@ -126,7 +123,7 @@
             $score
             (i8_to_string (is_var (' $left))))))
 
-(exec (surp 061 abstract-open-right-and-person-var)
+(exec (surp 062 abstract-open-right-and-person-var)
     (, (abstractness-sort-request $partition (var $n))
        (abstract-block-clause $partition $block ($rel (And (And (Person (var $n)) $a) $b) $right)))
     (O
@@ -135,7 +132,7 @@
             $score
             (i8_to_string (is_var (' $right))))))
 
-(exec (surp 061 abstract-open-left-and-person-var)
+(exec (surp 062 abstract-open-left-and-person-var)
     (, (abstractness-sort-request $partition (var $n))
        (abstract-block-clause $partition $block ($rel $left (And (And (Person (var $n)) $a) $b))))
     (O
@@ -144,101 +141,28 @@
             $score
             (i8_to_string (is_var (' $left))))))
 
-;; Open-score totals for one-, two-, three-, and four-clause blocks.  Totals are
-;; based on clauses connected to the joint variable; unrelated concrete clauses
-;; are handled by the block-size fallback.
-(exec (surp 062 abstract-total-1)
-    (, (abstract-open-score $partition $var ($c1) $c1 $s1))
-    (, (abstract-open-total $partition $var ($c1) $s1)))
 
-(exec (surp 062 abstract-total-2-c1)
-    (, (abstract-open-score $partition $var ($c1 $c2) $c1 $s1))
-    (, (abstract-open-total $partition $var ($c1 $c2) $s1)))
+(exec (surp 063 abstract-open-total)
+    (, (abstractness-sort-request $partition $var)
+       (block $partition $block)
+       (exec (surp 063 abstract-open-total) $src $sink))
+    (,
+        (exec (surp 063 abstract-open-total)
+            (, (abstract-open-score $partition $var $block $clause 1))
+            (O
+                (count
+                    (abstract-open-total $partition $var $block $score)
+                    $score
+                    $clause)))))
 
-(exec (surp 062 abstract-total-2-c2)
-    (, (abstract-open-score $partition $var ($c1 $c2) $c2 $s2))
-    (, (abstract-open-total $partition $var ($c1 $c2) $s2)))
 
-(exec (surp 062 abstract-total-2)
-    (, (abstract-open-score $partition $var ($c1 $c2) $c1 $s1)
-       (abstract-open-score $partition $var ($c1 $c2) $c2 $s2))
-    (O
-        (pure
-            (abstract-open-total $partition $var ($c1 $c2) $score)
-            $score
-            (i64_to_string
-                (sum_i64
-                    (i64_from_string $s1)
-                    (i64_from_string $s2))))))
-
-(exec (surp 062 abstract-total-3-c1)
-    (, (abstract-open-score $partition $var ($c1 $c2 $c3) $c1 $s1))
-    (, (abstract-open-total $partition $var ($c1 $c2 $c3) $s1)))
-
-(exec (surp 062 abstract-total-3-c2)
-    (, (abstract-open-score $partition $var ($c1 $c2 $c3) $c2 $s2))
-    (, (abstract-open-total $partition $var ($c1 $c2 $c3) $s2)))
-
-(exec (surp 062 abstract-total-3-c3)
-    (, (abstract-open-score $partition $var ($c1 $c2 $c3) $c3 $s3))
-    (, (abstract-open-total $partition $var ($c1 $c2 $c3) $s3)))
-
-(exec (surp 062 abstract-total-3)
-    (, (abstract-open-score $partition $var ($c1 $c2 $c3) $c1 $s1)
-       (abstract-open-score $partition $var ($c1 $c2 $c3) $c2 $s2)
-       (abstract-open-score $partition $var ($c1 $c2 $c3) $c3 $s3))
-    (O
-        (pure
-            (abstract-open-total $partition $var ($c1 $c2 $c3) $score)
-            $score
-            (i64_to_string
-                (sum_i64
-                    (i64_from_string $s1)
-                    (i64_from_string $s2)
-                    (i64_from_string $s3))))))
-
-(exec (surp 062 abstract-total-4-c1)
-    (, (abstract-open-score $partition $var ($c1 $c2 $c3 $c4) $c1 $s1))
-    (, (abstract-open-total $partition $var ($c1 $c2 $c3 $c4) $s1)))
-
-(exec (surp 062 abstract-total-4-c2)
-    (, (abstract-open-score $partition $var ($c1 $c2 $c3 $c4) $c2 $s2))
-    (, (abstract-open-total $partition $var ($c1 $c2 $c3 $c4) $s2)))
-
-(exec (surp 062 abstract-total-4-c3)
-    (, (abstract-open-score $partition $var ($c1 $c2 $c3 $c4) $c3 $s3))
-    (, (abstract-open-total $partition $var ($c1 $c2 $c3 $c4) $s3)))
-
-(exec (surp 062 abstract-total-4-c4)
-    (, (abstract-open-score $partition $var ($c1 $c2 $c3 $c4) $c4 $s4))
-    (, (abstract-open-total $partition $var ($c1 $c2 $c3 $c4) $s4)))
-
-(exec (surp 062 abstract-total-4)
-    (, (abstract-open-score $partition $var ($c1 $c2 $c3 $c4) $c1 $s1)
-       (abstract-open-score $partition $var ($c1 $c2 $c3 $c4) $c2 $s2)
-       (abstract-open-score $partition $var ($c1 $c2 $c3 $c4) $c3 $s3)
-       (abstract-open-score $partition $var ($c1 $c2 $c3 $c4) $c4 $s4))
-    (O
-        (pure
-            (abstract-open-total $partition $var ($c1 $c2 $c3 $c4) $score)
-            $score
-            (i64_to_string
-                (sum_i64
-                    (i64_from_string $s1)
-                    (i64_from_string $s2)
-                    (i64_from_string $s3)
-                    (i64_from_string $s4))))))
+(exec (surp 063 abstract-open-total-zero)
+    (, (abstract-open-score $partition $var $block $clause 0))
+    (, (abstract-open-total $partition $var $block 0)))
 
 
 ;; Weighted block score.
-;;
-;; The weights encode the priority order:
-;;
-;;   open-total * 1000000000000000  >  size-priority  >  support
-;;
-;; Support is intentionally last.  It breaks ties empirically, but it does not
-;; override syntactic openness or the fewer-clauses fallback.
-(exec (surp 063 abstract-block-score)
+(exec (surp 064 abstract-block-score)
     (, (abstract-open-total $partition $var $block $open-total)
        (abstract-size-priority $partition $block $size-priority)
        (block-support $partition $block $support))
@@ -255,69 +179,95 @@
                     (i64_from_string $support))))))
 
 
-;; Pairwise comparisons between block scores.
-(exec (surp 064 abstract-score-compare)
-    (, (abstract-block-score $partition $var $left $left-score)
-       (abstract-block-score $partition $var $right $right-score))
+(exec (surp 065 abstract-best-start)
+    (, (abstractness-sort-request $partition $var)
+       (DEF abstract-best-step $step-p $step-t))
     (O
         (pure
-            (abstract-score-ge? $partition $var $left $right $ge)
-            $ge
-            (ge_i64
-                (i64_from_string $left-score)
-                (i64_from_string $right-score)))
+            (abstract-best-first $partition $var $first)
+            $first
+            (car-atom (' $partition)))
         (pure
-            (abstract-score-gt? $partition $var $left $right $gt)
-            $gt
+            (abstract-best-rest $partition $var $rest)
+            $rest
+            (cdr-atom (' $partition)))
+        (+ (exec (surp 066 abstract-best-step) $step-p $step-t))))
+
+
+(exec (surp 065 abstract-best-acc-start)
+    (, (abstract-best-first $partition $var $first)
+       (abstract-best-rest $partition $var $rest)
+       (abstract-block-score $partition $var $first $score))
+    (,
+        (abstract-best-acc $partition $var $rest $first $score)))
+
+
+(DEF abstract-best-step
+    (, (abstract-best-acc $partition $var $remaining $best-block $best-score)
+       (DEF abstract-best-resolve $resolve-p $resolve-t))
+    (O
+        (pure
+            (abstract-best-current $partition $var $remaining $current)
+            $current
+            (car-atom (' $remaining)))
+        (pure
+            (abstract-best-tail $partition $var $remaining $tail)
+            $tail
+            (cdr-atom (' $remaining)))
+        (- (abstract-best-acc $partition $var $remaining $best-block $best-score))
+        (+ (abstract-best-pending $partition $var $remaining $best-block $best-score))
+        (+ (exec (surp 067 abstract-best-resolve) $resolve-p $resolve-t))))
+
+
+(DEF abstract-best-resolve
+    (, (abstract-best-pending $partition $var $remaining $best-block $best-score)
+       (abstract-best-current $partition $var $remaining $current)
+       (abstract-best-tail $partition $var $remaining $tail)
+       (abstract-block-score $partition $var $current $current-score)
+       (DEF abstract-best-step $step-p $step-t)
+       (DEF abstract-best-final $final-p $final-t))
+    (O
+        (pure
+            (abstract-current-better? $partition $var $remaining $better)
+            $better
             (gt_i64
-                (i64_from_string $left-score)
-                (i64_from_string $right-score)))))
+                (i64_from_string $current-score)
+                (i64_from_string $best-score)))
+        (+ (exec (surp 068 abstract-best-final) $final-p $final-t))
+        (+ (exec (surp 069 abstract-best-step) $step-p $step-t))))
 
 
-;; Select the highest-scoring block.  Ties keep partition order.
-(exec (surp 065 most-abstract-1)
-    (, (partition ($b1))
-       (abstractness-sort-request ($b1) $var)
-       (abstract-block-score ($b1) $var $b1 $s1))
-    (, (most-abstract-block ($b1) $var $b1)))
-
-(exec (surp 065 most-abstract-2-left)
-    (, (partition ($b1 $b2))
-       (abstractness-sort-request ($b1 $b2) $var)
-       (abstract-score-ge? ($b1 $b2) $var $b1 $b2 true))
-    (, (most-abstract-block ($b1 $b2) $var $b1)))
-
-(exec (surp 065 most-abstract-2-right)
-    (, (partition ($b1 $b2))
-       (abstractness-sort-request ($b1 $b2) $var)
-       (abstract-score-gt? ($b1 $b2) $var $b2 $b1 true))
-    (, (most-abstract-block ($b1 $b2) $var $b2)))
-
-(exec (surp 065 most-abstract-3-first)
-    (, (partition ($b1 $b2 $b3))
-       (abstractness-sort-request ($b1 $b2 $b3) $var)
-       (abstract-score-ge? ($b1 $b2 $b3) $var $b1 $b2 true)
-       (abstract-score-ge? ($b1 $b2 $b3) $var $b1 $b3 true))
-    (, (most-abstract-block ($b1 $b2 $b3) $var $b1)))
-
-(exec (surp 065 most-abstract-3-second)
-    (, (partition ($b1 $b2 $b3))
-       (abstractness-sort-request ($b1 $b2 $b3) $var)
-       (abstract-score-gt? ($b1 $b2 $b3) $var $b2 $b1 true)
-       (abstract-score-ge? ($b1 $b2 $b3) $var $b2 $b3 true))
-    (, (most-abstract-block ($b1 $b2 $b3) $var $b2)))
-
-(exec (surp 065 most-abstract-3-third)
-    (, (partition ($b1 $b2 $b3))
-       (abstractness-sort-request ($b1 $b2 $b3) $var)
-       (abstract-score-gt? ($b1 $b2 $b3) $var $b3 $b1 true)
-       (abstract-score-gt? ($b1 $b2 $b3) $var $b3 $b2 true))
-    (, (most-abstract-block ($b1 $b2 $b3) $var $b3)))
+(exec (surp 068 abstract-best-keep)
+    (, (abstract-best-pending $partition $var $remaining $best-block $best-score)
+       (abstract-best-tail $partition $var $remaining $tail)
+       (abstract-current-better? $partition $var $remaining false))
+    (O
+        (- (abstract-best-pending $partition $var $remaining $best-block $best-score))
+        (- (abstract-best-tail $partition $var $remaining $tail))
+        (+ (abstract-best-acc $partition $var $tail $best-block $best-score))))
 
 
-;; Expose the support of the chosen block, which is the value eq-prob needs
-;; next as its divisor/count input.
-(exec (surp 066 most-abstract-support)
+(exec (surp 068 abstract-best-replace)
+    (, (abstract-best-pending $partition $var $remaining $best-block $best-score)
+       (abstract-best-current $partition $var $remaining $current)
+       (abstract-best-tail $partition $var $remaining $tail)
+       (abstract-block-score $partition $var $current $current-score)
+       (abstract-current-better? $partition $var $remaining true))
+    (O
+        (- (abstract-best-pending $partition $var $remaining $best-block $best-score))
+        (- (abstract-best-current $partition $var $remaining $current))
+        (- (abstract-best-tail $partition $var $remaining $tail))
+        (+ (abstract-best-acc $partition $var $tail $current $current-score))))
+
+
+(DEF abstract-best-final
+    (, (abstract-best-acc $partition $var () $best-block $best-score))
+    (O
+        (- (abstract-best-acc $partition $var () $best-block $best-score))
+        (+ (most-abstract-block $partition $var $best-block))))
+
+
+(exec (surp 070 most-abstract-support)
     (, (most-abstract-block $partition $var $block)
        (block-support $partition $block $support))
     (, (most-abstract-block-support $partition $var $block $support)))

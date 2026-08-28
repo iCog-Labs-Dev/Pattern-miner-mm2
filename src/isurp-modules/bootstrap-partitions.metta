@@ -15,46 +15,6 @@
 ;;   (block $partition $block)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Explicit fallback partitions for indexed inputs.  These follow
-;; `partitions-wout-pattern`: the original full pattern is excluded.
-(exec (surp 030 explicit-partition-2)
-    (, (indexed-pattern ($c1 $c2)))
-    (,
-        (ji-prob-partitions-of ($c1 $c2) ((($c1) ($c2))))
-        (do-ji-prob-request ((($c1) ($c2))))
-        (partition (($c1) ($c2)))
-        (block (($c1) ($c2)) ($c1))
-        (block (($c1) ($c2)) ($c2))))
-
-
-(exec (surp 030 explicit-partition-3)
-    (, (indexed-pattern ($c1 $c2 $c3)))
-    (,
-        (ji-prob-partitions-of ($c1 $c2 $c3)
-            ((($c1) ($c2 $c3))
-             (($c1 $c3) ($c2))
-             (($c1 $c2) ($c3))
-             (($c1) ($c2) ($c3))))
-        (do-ji-prob-request
-            ((($c1) ($c2 $c3))
-             (($c1 $c3) ($c2))
-             (($c1 $c2) ($c3))
-             (($c1) ($c2) ($c3))))
-        (partition (($c1) ($c2 $c3)))
-        (partition (($c1 $c3) ($c2)))
-        (partition (($c1 $c2) ($c3)))
-        (partition (($c1) ($c2) ($c3)))
-        (block (($c1) ($c2 $c3)) ($c1))
-        (block (($c1) ($c2 $c3)) ($c2 $c3))
-        (block (($c1 $c3) ($c2)) ($c1 $c3))
-        (block (($c1 $c3) ($c2)) ($c2))
-        (block (($c1 $c2) ($c3)) ($c1 $c2))
-        (block (($c1 $c2) ($c3)) ($c3))
-        (block (($c1) ($c2) ($c3)) ($c1))
-        (block (($c1) ($c2) ($c3)) ($c2))
-        (block (($c1) ($c2) ($c3)) ($c3))))
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 3. Generate partitions
 ;;

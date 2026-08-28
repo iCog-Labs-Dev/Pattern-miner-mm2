@@ -12,7 +12,7 @@
 ;;     empirical probability(block) = support(block) / universe-count(block)
 ;;
 ;;   Then multiply the block probabilities together while ignoring joint
-;;   variable dependencies.  Joint-variable correction is handled separately by
+;;   variable dependencies. Joint-variable correction is handled separately by
 ;;   `eq-prob`.
 ;;
 ;; MM2 public result:
@@ -24,122 +24,90 @@
 ;;   (INPUT DB-SIZE $db-size)
 ;;   (partition $partition)
 ;;   (block-support $partition $block $support)
-;;
-;; `block-support` can be produced by `block-support.metta`, or provided
-;; directly by a small test DB.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; Block empirical probability:
-;;
-;;   universe-count(block) = DB-SIZE ^ number-of-clauses-in-block
-;;   emp-prob(block)      = block-support / universe-count(block)
-;;
-;; These rules are explicit by block arity.  That is intentionally similar to
-;; the rest of the MM2 ISurp port: current MORK builds are more reliable with
-;; concrete tuple shapes than with deeply nested dynamic tuple-size expressions.
-(exec (surp 080 pro-block-prob-1)
+(exec (surp 080 pro-block-universe)
     (, (INPUT DB-SIZE $db-size)
-       (block-support $partition ($c1) $support))
+       (block-support $partition $block $support))
     (O
         (pure
-            (pro-block-prob $partition ($c1) $prob)
-            $prob
-            (f64_to_string
-                (div_f64
-                    (f64_from_string $support)
-                    (f64_from_string $db-size))))))
-
-
-(exec (surp 080 pro-block-prob-2)
-    (, (INPUT DB-SIZE $db-size)
-       (block-support $partition ($c1 $c2) $support))
-    (O
+            (pro-block-size $partition $block $size)
+            $size
+            (size-atom (' $block))
+        )
         (pure
-            (pro-block-universe-count $partition ($c1 $c2) $universe-count)
+            (pro-block-universe-count $partition $block $universe-count)
             $universe-count
             (i64_to_string
                 (pow_i64
                     (i64_from_string $db-size)
-                    (i64_from_string 2))))
+                    (i64_from_string
+                        (size-atom (' $block))))))))
+
+
+(exec (surp 081 pro-block-prob)
+    (, (block-support $partition $block $support)
+       (pro-block-universe-count $partition $block $universe-count))
+    (O
         (pure
-            (pro-block-prob $partition ($c1 $c2) $prob)
+            (pro-block-prob $partition $block $prob)
             $prob
             (f64_to_string
                 (div_f64
                     (f64_from_string $support)
-                    (f64_from_string
-                        (i64_to_string
-                            (pow_i64
-                                (i64_from_string $db-size)
-                                (i64_from_string 2)))))))))
+                    (f64_from_string $universe-count))))))
 
 
-(exec (surp 080 pro-block-prob-3)
-    (, (INPUT DB-SIZE $db-size)
-       (block-support $partition ($c1 $c2 $c3) $support))
+(exec (surp 082 pro-partition-start)
+    (, (partition $partition)
+       (DEF pro-partition-step $step-p $step-t))
+    (O
+        (+ (pro-partition-acc $partition $partition 1.0))
+        (+ (exec (surp 083 pro-partition-step) $step-p $step-t))))
+
+
+(DEF pro-partition-step
+    (, (pro-partition-acc $partition $remaining $acc)
+       (DEF pro-partition-resolve $resolve-p $resolve-t))
     (O
         (pure
-            (pro-block-universe-count $partition ($c1 $c2 $c3) $universe-count)
-            $universe-count
-            (i64_to_string
-                (pow_i64
-                    (i64_from_string $db-size)
-                    (i64_from_string 3))))
+            (pro-partition-current $partition $remaining $block)
+            $block
+            (car-atom (' $remaining)))
         (pure
-            (pro-block-prob $partition ($c1 $c2 $c3) $prob)
-            $prob
-            (f64_to_string
-                (div_f64
-                    (f64_from_string $support)
-                    (f64_from_string
-                        (i64_to_string
-                            (pow_i64
-                                (i64_from_string $db-size)
-                                (i64_from_string 3)))))))))
+            (pro-partition-rest $partition $remaining $rest)
+            $rest
+            (cdr-atom (' $remaining)))
+        (- (pro-partition-acc $partition $remaining $acc))
+        (+ (pro-partition-pending $partition $remaining $acc))
+        (+ (exec (surp 084 pro-partition-resolve) $resolve-p $resolve-t))))
 
 
-;; One-block partition:
-;;
-;;   pro-prob-wout-joint = P(block-1)
-(exec (surp 081 pro-partition-prob-1)
-    (, (partition ($b1))
-       (pro-block-prob ($b1) $b1 $p1))
-    (, (pro-prob-wout-joint-of ($b1) $p1)))
-
-
-;; Two-block partition:
-;;
-;;   pro-prob-wout-joint = P(block-1) * P(block-2)
-(exec (surp 081 pro-partition-prob-2)
-    (, (partition ($b1 $b2))
-       (pro-block-prob ($b1 $b2) $b1 $p1)
-       (pro-block-prob ($b1 $b2) $b2 $p2))
+(DEF pro-partition-resolve
+    (, (pro-partition-pending $partition $remaining $acc)
+       (pro-partition-current $partition $remaining $block)
+       (pro-partition-rest $partition $remaining $rest)
+       (pro-block-prob $partition $block $block-prob)
+       (DEF pro-partition-step $step-p $step-t)
+       (DEF pro-partition-final $final-p $final-t))
     (O
         (pure
-            (pro-prob-wout-joint-of ($b1 $b2) $prob)
-            $prob
+            (pro-partition-acc $partition $rest $new-acc)
+            $new-acc
             (f64_to_string
                 (product_f64
-                    (f64_from_string $p1)
-                    (f64_from_string $p2))))))
+                    (f64_from_string $acc)
+                    (f64_from_string $block-prob))))
+        (- (pro-partition-pending $partition $remaining $acc))
+        (- (pro-partition-current $partition $remaining $block))
+        (- (pro-partition-rest $partition $remaining $rest))
+        (+ (exec (surp 082 pro-partition-final) $final-p $final-t))
+        (+ (exec (surp 083 pro-partition-step) $step-p $step-t))))
 
 
-;; Three-block partition:
-;;
-;;   pro-prob-wout-joint = P(block-1) * P(block-2) * P(block-3)
-(exec (surp 081 pro-partition-prob-3)
-    (, (partition ($b1 $b2 $b3))
-       (pro-block-prob ($b1 $b2 $b3) $b1 $p1)
-       (pro-block-prob ($b1 $b2 $b3) $b2 $p2)
-       (pro-block-prob ($b1 $b2 $b3) $b3 $p3))
+(DEF pro-partition-final
+    (, (pro-partition-acc $partition () $prob))
     (O
-        (pure
-            (pro-prob-wout-joint-of ($b1 $b2 $b3) $prob)
-            $prob
-            (f64_to_string
-                (product_f64
-                    (product_f64
-                        (f64_from_string $p1)
-                        (f64_from_string $p2))
-                    (f64_from_string $p3))))))
+        (- (pro-partition-acc $partition () $prob))
+        (+ (pro-prob-wout-joint-of $partition $prob))))

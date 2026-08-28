@@ -30,48 +30,17 @@
 ;;   (ji-prob-est-interval-of $partitions $emin $emax)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(exec (surp 120 ji-interval-1)
-    (, (do-ji-prob-of ($p1) ($j1)))
-    (, (ji-prob-est-interval-of ($p1) $j1 $j1)))
-
-
-(exec (surp 120 ji-interval-2)
-    (, (do-ji-prob-of ($p1 $p2) ($j1 $j2)))
+(exec (surp 120 ji-interval)
+    (, (do-ji-prob-of $partitions $prob-list))
     (O
         (pure
-            (ji-prob-est-min-of ($p1 $p2) $emin)
+            (ji-prob-est-min-of $partitions $emin)
             $emin
-            (min-atom (' ($j1 $j2))))
+            (min-atom (' $prob-list)))
         (pure
-            (ji-prob-est-max-of ($p1 $p2) $emax)
+            (ji-prob-est-max-of $partitions $emax)
             $emax
-            (max-atom (' ($j1 $j2))))))
-
-
-(exec (surp 120 ji-interval-3)
-    (, (do-ji-prob-of ($p1 $p2 $p3) ($j1 $j2 $j3)))
-    (O
-        (pure
-            (ji-prob-est-min-of ($p1 $p2 $p3) $emin)
-            $emin
-            (min-atom (' ($j1 $j2 $j3))))
-        (pure
-            (ji-prob-est-max-of ($p1 $p2 $p3) $emax)
-            $emax
-            (max-atom (' ($j1 $j2 $j3))))))
-
-
-(exec (surp 120 ji-interval-4)
-    (, (do-ji-prob-of ($p1 $p2 $p3 $p4) ($j1 $j2 $j3 $j4)))
-    (O
-        (pure
-            (ji-prob-est-min-of ($p1 $p2 $p3 $p4) $emin)
-            $emin
-            (min-atom (' ($j1 $j2 $j3 $j4))))
-        (pure
-            (ji-prob-est-max-of ($p1 $p2 $p3 $p4) $emax)
-            $emax
-            (max-atom (' ($j1 $j2 $j3 $j4))))))
+            (max-atom (' $prob-list)))))
 
 
 (exec (surp 121 ji-interval)

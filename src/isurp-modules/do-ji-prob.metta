@@ -24,52 +24,60 @@
 ;; Required intermediate facts:
 ;;
 ;;   (ji-prob-est-of $partition $prob)
-;;
-;; Current scope:
-;;
-;;   Explicit list-shape rules for 0, 1, 2, 3, and 4 partitions.  This follows
-;;   the current MM2 implementation style.  A fully generic fold can replace it
-;;   once the surrounding partition pipeline is generalized.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; Empty partition list:
-;;
-;;   do-ji-prob(()) = ()
-(exec (surp 100 do-ji-prob-empty)
+(exec (surp 100 do-ji-prob-start-empty)
     (, (do-ji-prob-request ()))
     (, (do-ji-prob-of () ())))
 
 
-;; One partition:
-(exec (surp 100 do-ji-prob-1)
-    (, (do-ji-prob-request ($p1))
-       (ji-prob-est-of $p1 $j1))
-    (, (do-ji-prob-of ($p1) ($j1))))
+(exec (surp 100 do-ji-prob-start)
+    (, (do-ji-prob-request $partitions)
+       (DEF do-ji-prob-step $step-p $step-t))
+    (O
+        (+ (do-ji-prob-acc $partitions $partitions ()))
+        (+ (exec (surp 101 do-ji-prob-step) $step-p $step-t))))
 
 
-;; Two partitions:
-(exec (surp 100 do-ji-prob-2)
-    (, (do-ji-prob-request ($p1 $p2))
-       (ji-prob-est-of $p1 $j1)
-       (ji-prob-est-of $p2 $j2))
-    (, (do-ji-prob-of ($p1 $p2) ($j1 $j2))))
+(DEF do-ji-prob-step
+    (, (do-ji-prob-acc $partitions $remaining $prob-list)
+       (DEF do-ji-prob-resolve $resolve-p $resolve-t))
+    (O
+        (pure
+            (do-ji-prob-current $partitions $remaining $partition)
+            $partition
+            (car-atom (' $remaining)))
+        (pure
+            (do-ji-prob-rest $partitions $remaining $rest)
+            $rest
+            (cdr-atom (' $remaining)))
+        (- (do-ji-prob-acc $partitions $remaining $prob-list))
+        (+ (do-ji-prob-pending $partitions $remaining $prob-list))
+        (+ (exec (surp 102 do-ji-prob-resolve) $resolve-p $resolve-t))))
 
 
-;; Three partitions:
-(exec (surp 100 do-ji-prob-3)
-    (, (do-ji-prob-request ($p1 $p2 $p3))
-       (ji-prob-est-of $p1 $j1)
-       (ji-prob-est-of $p2 $j2)
-       (ji-prob-est-of $p3 $j3))
-    (, (do-ji-prob-of ($p1 $p2 $p3) ($j1 $j2 $j3))))
+(DEF do-ji-prob-resolve
+    (, (do-ji-prob-pending $partitions $remaining $prob-list)
+       (do-ji-prob-current $partitions $remaining $partition)
+       (do-ji-prob-rest $partitions $remaining $rest)
+       (ji-prob-est-of $partition $prob)
+       (DEF do-ji-prob-step $step-p $step-t)
+       (DEF do-ji-prob-final $final-p $final-t))
+    (O
+        (pure
+            (do-ji-prob-acc $partitions $rest $new-prob-list)
+            $new-prob-list
+            (append (' ($prob-list ($prob)))))
+        (- (do-ji-prob-pending $partitions $remaining $prob-list))
+        (- (do-ji-prob-current $partitions $remaining $partition))
+        (- (do-ji-prob-rest $partitions $remaining $rest))
+        (+ (exec (surp 100 do-ji-prob-final) $final-p $final-t))
+        (+ (exec (surp 101 do-ji-prob-step) $step-p $step-t))))
 
 
-;; Four partitions:
-(exec (surp 100 do-ji-prob-4)
-    (, (do-ji-prob-request ($p1 $p2 $p3 $p4))
-       (ji-prob-est-of $p1 $j1)
-       (ji-prob-est-of $p2 $j2)
-       (ji-prob-est-of $p3 $j3)
-       (ji-prob-est-of $p4 $j4))
-    (, (do-ji-prob-of ($p1 $p2 $p3 $p4) ($j1 $j2 $j3 $j4))))
+(DEF do-ji-prob-final
+    (, (do-ji-prob-acc $partitions () $prob-list))
+    (O
+        (- (do-ji-prob-acc $partitions () $prob-list))
+        (+ (do-ji-prob-of $partitions $prob-list))))
