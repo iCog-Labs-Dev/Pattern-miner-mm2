@@ -767,9 +767,21 @@
 (DEF iterative-miner-candidate-step
   (, (iter-parent $id $parent $miner-id)
      (candidate-pattern $miner-id $candidate $support)
-     (DEF has-nested-expression-with-respect-to-fn $hne-p $hne-t))
+     (DEF has-nested-expression-with-respect-to-fn $hne-p $hne-t)
+     (DEF iterative-miner-continue-fn $continue-p $continue-t))
   (O
     (- (candidate-pattern $miner-id $candidate $support))
     (+ (iterative-candidate-pattern $id $parent $candidate $support))
     (+ (has-nested-expression-with-respect-to (HNE $id $parent $candidate) $parent $candidate))
-    (+ (exec (freq 900 iterative-check-depth) $hne-p $hne-t))))
+    (+ (exec (freq 900 iterative-check-depth) $hne-p $hne-t))
+    (+ (exec (freq 950 iterative-continue) $continue-p $continue-t))))
+
+(DEF iterative-miner-continue-fn
+  (, (iter-parent $id $parent $miner-id)
+     (iterative-candidate-pattern $id $parent $candidate $support)
+     (has-nested-expression-result (HNE $id $parent $candidate) $parent $candidate true))
+  (O
+    (- (has-nested-expression-result (HNE $id $parent $candidate) $parent $candidate true))
+    (- (iter-parent $id $parent $miner-id))
+    (+ (iterative-recursive-candidate $id $parent $candidate $support))
+    (pure (run-iterative-miner $id $pat-candidate) $pat-candidate (indices_to_vars (' $candidate)))))
