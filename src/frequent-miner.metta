@@ -764,6 +764,45 @@
 ;   (O (+ (exec (freq 001 run-hne-smoke) $hne-p $hne-t))))
 
 
+; Remove HNE scratch facts after an iterative candidate has been checked.
+; The positive result is intentionally kept for the iterator continuation stage.
+(DEF hne-cleanup-blocks
+  (, (hne-cleanup $id))
+  (O
+    (- (hne-cleanup $id))
+    (+ (hne-cleanup-target (hne-active $id)))
+    (+ (hne-cleanup-target (hne-top $id $parent $candidate)))
+    (+ (hne-cleanup-target (hne-check $id $parent $candidate)))
+    (+ (hne-cleanup-target (hne-dispatch $id $parent $candidate)))
+    (+ (hne-cleanup-target (hne-decision $id $parent $candidate $parent-head $candidate-head $parent-tail $candidate-tail)))
+    (+ (hne-cleanup-target (hne-parent-head $id $parent $candidate $parent-head)))
+    (+ (hne-cleanup-target (hne-candidate-head $id $parent $candidate $candidate-head)))
+    (+ (hne-cleanup-target (hne-parent-tail $id $parent $candidate $parent-tail)))
+    (+ (hne-cleanup-target (hne-candidate-tail $id $parent $candidate $candidate-tail)))
+    (+ (hne-cleanup-target (hne-parent-head-var $id $parent $candidate $parent-head $is-parent-var)))
+    (+ (hne-cleanup-target (hne-parent-head-exp $id $parent $candidate $parent-head $is-parent-exp)))
+    (+ (hne-cleanup-target (hne-candidate-head-exp $id $parent $candidate $candidate-head $is-candidate-exp)))))
+
+(DEF hne-cleanup-target-fn
+  (, (hne-cleanup-target $fact) $fact)
+  (O
+    (- (hne-cleanup-target $fact))
+    (- $fact)))
+
+(DEF hne-cleanup-target-task-fn
+  (, (hne-cleanup-target $fact))
+  (O
+    (- (hne-cleanup-target $fact))))
+
+(DEF hne-cleanup-fn
+  (, (DEF hne-cleanup-blocks $blocks-p $blocks-t)
+     (DEF hne-cleanup-target-fn $target-p $target-t)
+     (DEF hne-cleanup-target-task-fn $task-p $task-t))
+  (O
+    (+ (exec (freq 910 hne-cleanup-blocks) $blocks-p $blocks-t))
+    (+ (exec (freq 911 hne-cleanup-targets) $target-p $target-t))
+    (+ (exec (freq 912 hne-cleanup-target-tasks) $task-p $task-t))))
+
 (DEF iterative-miner-candidate-step
   (, (iter-parent $id $parent $miner-id)
      (candidate-pattern $miner-id $candidate $support)
@@ -773,6 +812,7 @@
     (- (candidate-pattern $miner-id $candidate $support))
     (+ (iterative-candidate-pattern $id $parent $candidate $support))
     (+ (has-nested-expression-with-respect-to (HNE $id $parent $candidate) $parent $candidate))
+    (+ (hne-cleanup (HNE $id $parent $candidate)))
     (+ (exec (freq 900 iterative-check-depth) $hne-p $hne-t))
     (+ (exec (freq 950 iterative-continue) $continue-p $continue-t))))
 
@@ -780,12 +820,14 @@
   (, (iter-parent $id $parent $miner-id)
      (iterative-candidate-pattern $id $parent $candidate $support)
      (has-nested-expression-result (HNE $id $parent $candidate) $parent $candidate true)
+     (DEF hne-cleanup-fn $hne-cleanup-p $hne-cleanup-t)
      (DEF iterative-miner-fn $iter-p $iter-t))
   (O
     (- (has-nested-expression-result (HNE $id $parent $candidate) $parent $candidate true))
     (- (iter-parent $id $parent $miner-id))
     (+ (iterative-recursive-candidate $id $parent $candidate $support))
     (pure (run-iterative-miner $id $pat-candidate) $pat-candidate (indices_to_vars (' $candidate)))
+    (+ (exec (freq 910 iterative-hne-cleanup) $hne-cleanup-p $hne-cleanup-t))
     (+ (exec (freq 000 iterative-run-next) $iter-p $iter-t))))
 
 (DEF iterative-miner-fn
