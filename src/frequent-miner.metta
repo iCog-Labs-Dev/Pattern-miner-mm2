@@ -840,3 +840,11 @@
     (+ (run-frequent-miner (ITER $id) $pattern))
     (+ (exec (freq 100 iterative-run-generation) $freq-p $freq-t))
     (+ (exec (freq 850 iterative-check-candidates) $candidate-p $candidate-t))))
+
+
+; Example smoke, kept inactive:
+; (run-iterative-miner iter-smoke (Inheritance $x $y))
+; (exec (freq 000 call-iterative-miner)
+;   (, (run-iterative-miner iter-smoke (Inheritance $x $y))
+;      (DEF iterative-miner-fn $iter-p $iter-t))
+;   (O (+ (exec (freq 001 run-iterative-miner) $iter-p $iter-t))))
