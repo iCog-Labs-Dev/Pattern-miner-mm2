@@ -1,11 +1,14 @@
+;; TEST-AUX data/ugly-sodaDrinker.metta
 ;; TEST-AUX src/common-utils/utils.metta
+;; TEST-AUX src/surp.metta
 ;; TEST-AUX src/jsd_modules/init.metta
 ;; TEST-AUX src/jsd_modules/emp-tv.metta
 ;; TEST-AUX src/jsd_modules/est-tv.metta
-;; TEST-AUX data/ugly-sodaDrinker-db.metta
 
-(INPUT PATTERN ((, (inheritance (var 0) woman) (inheritance (var 0) sodaDrinker)) 5))
-(INPUT DB db1)
+(INPUT DB db)
+(INPUT DB-SIZE 60)
+(INPUT NORMALIZATION TRUE)
+(INPUT PATTERN ((, (inheritance $x woman) (inheritance $x sodaDrinker)) 5))
 
 (CONSTANT default_k 800.0)
 (CONSTANT DEFAULT_K 800.0)
@@ -25,7 +28,7 @@
 
 (eq-prob-of (((inheritance (var 0) woman)) ((inheritance (var 0) sodaDrinker))) 0.016666666666666666)
 
-(EXPECTED-RESULT emp-tv (EMPTV (, (inheritance (var 0) woman) (inheritance (var 0) sodaDrinker)) db1 (0.0013888889 0.081818186)))
+(EXPECTED-RESULT emp-tv (EMPTV ((inheritance (var 0) woman) (inheritance (var 0) sodaDrinker)) (0.0013888889 0.081818186)))
 
 
 

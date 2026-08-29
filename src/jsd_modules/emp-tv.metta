@@ -3,14 +3,15 @@
 ;; Purpose: Get total relevant items
 ;; ========================================================================
 
-(exec (jsd 112 universe-count)
-    (, (INPUT DB $db-name) (INPUT PATTERN ($pattern $support))
-         ((universe-count $db-name $pattern -> universe-count-of) $src-of-uvc $sink-of-uvc))
-         
-    (,
-        (exec (jsd 114 universe-count) $src-of-uvc $sink-of-uvc)
+(exec (emp-tv 112 universe-count)
+    (, (INPUT DB-SIZE $db-size) (num-of-conjuncts $indexed-pattern $conjuncts))
+    (O
+        (pure
+            (universe-count-of $indexed-pattern $uc)
+            $uc
+            (i64_to_string (pow_i64 (i64_from_string $db-size) (i64_from_string $conjuncts)))
+        )
     )
-
 )
 
 
@@ -25,11 +26,11 @@
 ;; ========================================================================
 
 
-(exec (jsd 115 emp-tv-confidence)
-    (, (universe-count-of $pattern $db $uc) (CONSTANT DEFAULT_K $k))
+(exec (emp-tv 115 emp-tv-confidence)
+    (, (universe-count-of $indexed-pattern $uc) (CONSTANT DEFAULT_K $k))
     (O
         (pure
-            (emp-tv-confidence $pattern $db $conf)
+            (emp-tv-confidence $indexed-pattern $conf)
             $conf
             (f32_to_string ( product_f32 
                 (f32_from_string 0.1) 
@@ -37,17 +38,17 @@
         )
     )
 )
-(exec (jsd 116 emp-tv-mean)
-    (, (universe-count-of $pattern $db $uc) (INPUT PATTERN ($pattern $support)))
+(exec (emp-tv 116 emp-tv-mean)
+    (, (universe-count-of $indexed-pattern $uc) (indexed-pattern ($indexed-pattern $support)))
     (O
         (pure
-            (emp-tv-mean $pattern $db $mean)
+            (emp-tv-mean $indexed-pattern $mean)
             $mean
             (f32_to_string (div_f32 (f32_from_string $support) (f32_from_string $uc)))
         )
     )
 )
-(exec (jsd 117 emp-tv)
-    (, (emp-tv-confidence $pattern $db $conf) (emp-tv-mean $pattern $db $mean))
-    (, (EMPTV $pattern $db ($mean $conf)))
+(exec (emp-tv 117 emp-tv)
+    (, (emp-tv-confidence $indexed-pattern $conf) (emp-tv-mean $indexed-pattern $mean))
+    (, (EMPTV $indexed-pattern ($mean $conf)))
 )

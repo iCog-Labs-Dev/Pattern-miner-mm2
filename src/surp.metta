@@ -303,8 +303,6 @@
         (cleanup (min-partition-product $pattern $min))
         (cleanup (max-partition-product $pattern $max))
         (cleanup (partition-product-range $pattern $min $max))
-        (cleanup (indexed-pattern $indexed-pattern))
-        (cleanup (copy-of-partition $partition $partition-copy))
         (cleanup (dst-above? $p $emin $emax $emp $out $above))
         (cleanup (dst-below? $p $emin $emax $emp $out $below))
         (cleanup (dst-inside? $p $emin $emax $emp $out $inside))
