@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TEST_ROOT="${TEST_ROOT:-$ROOT_DIR/tests}"
 OUT_DIR="${OUT_DIR:-/tmp/hyperon-miner-mm2-tests}"
-DEFAULT_MORK_BIN="/Users/tewodrosnibret/Documents/icog/MORK/target/release/mork"
+DEFAULT_MORK_BIN="$ROOT_DIR/../MORK/target/release/mork"
 
 if [[ -z "${MORK_BIN:-}" ]]; then
   if command -v mork >/dev/null 2>&1; then
