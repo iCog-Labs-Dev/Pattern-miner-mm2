@@ -49,50 +49,34 @@
             (partitions-of $indexed-pattern $indexed-partition)
             $indexed-partition
             (partitions (' $indexed-pattern)))
-        
-        (pure
-            (copy-partitions-of $indexed-pattern $indexed-partition)
-            $indexed-partition
-            (partitions (' $indexed-pattern)))
 ))
 
 
 
 (exec (surp 106 extract-partiton)
-    (, (partitions-of $indexed-pattern $indexed-partitions)
-        (copy-partitions-of $indexed-pattern $reduced-indexed-partitions)
-       (exec (surp 106 extract-partiton) $src $sink))
+    (, (partitions-of $indexed-pattern $indexed-partitions) (exec (surp 106 extract-partiton) $src (O (pure $out $var (car $q)))))
     (O
         (pure
-            (partition $indexed-partitions $car)
-            $car
-            (car-atom (' $reduced-indexed-partitions)))
-        (pure
-            (copy-partitions-of $indexed-pattern $cdr)
-            $cdr
-            (cdr-atom (' $reduced-indexed-partitions)))
-        (- (copy-partitions-of $indexed-pattern $reduced-indexed-partitions))
-        (+ (exec (surp 106 extract-partiton) $src $sink))))
+            (exec (surp 106 extract-partiton) (,)
+                (, (exec (surp 106 extract-partiton) $src (O (pure $out $var (car (cdr $q))))) (partition $indexed-partitions $partition)))            
+            $partition
+            (car (' $indexed-partitions))
+        )
+    )
+)
 
-;; Copy partitions before expanding them into blocks.
-(exec (surp 107 copy-partition)
-    (, (partition $indexed-partitions $partition))
-    (, (copy-of-partition $partition $partition)))
-
+;; Expanding partitions into blocks.
 (exec (surp 108 extract-blocks)
-    (, (copy-of-partition $partition $partition-copy)
-       (exec (surp 108 extract-blocks) $src $sink))
+    (, (partition $indexed-partitions $partition) (exec (surp 108 extract-blocks) $src (O (pure $out $var (car $q)))))
     (O
         (pure
-            (block $partition $block)
+            (exec (surp 108 extract-blocks)(,)
+                (, (exec (surp 108 extract-blocks) $src (O (pure $out $var (car (cdr $q))))) (block $partition $block)))            
             $block
-            (car-atom (' $partition-copy)))
-        (pure
-            (copy-of-partition $partition $cdr)
-            $cdr
-            (cdr-atom (' $partition-copy)))
-        (- (copy-of-partition $partition $partition-copy))
-        (+ (exec (surp 108 extract-blocks) $src $sink))))
+            (car (' $partition))
+        )
+    )
+)
 
 ;; Convert each indexed block back to a real variable pattern and count its support.
 (exec (surp 109 block-support-query)
@@ -341,32 +325,4 @@
     (O
         (- (cleanup $fact))
         ))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
