@@ -228,15 +228,3 @@
     )
 )
 
-
-;; Get total relevant items
-((universe-count $db $pattern -> $out)
-    (, (num-of-conjuncts $pattern $pattern-count) (db-size $db $db-count)) 
-    (O 
-        (pure 
-            ($out $pattern $db $universe-count)
-            $universe-count
-            (i64_to_string (pow_i64 (i64_from_string $db-count) (i64_from_string $pattern-count)))
-        )
-    )
-)
