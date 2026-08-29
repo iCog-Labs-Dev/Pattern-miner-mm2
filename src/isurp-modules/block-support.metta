@@ -5,8 +5,8 @@
 ;;
 ;;   (block-support $partition $indexed-block $support)
 ;;
-;; `05_pro_prob_wout_joint.metta` uses this to compute independent block
-;; probabilities.  `03_abstractness_sort.metta` uses it as the support/value
+;; `pro-prob-wout-joint.metta` uses this to compute independent block
+;; probabilities.  `abstractness-sort.metta` uses it as the support/value
 ;; fallback after selecting the most abstract block for a joint variable.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

@@ -153,7 +153,7 @@
 
 ;; Compute the probability of a pattern by dividing the support by total counts.
 ((prob $pattern $db -> $out)
-    (, (INPUT PATTERN ($pattern $support))
+    (, (indexed-pattern ($pattern $support))
        (total-count-of $pattern $count))
     (O
         (pure

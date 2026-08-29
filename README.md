@@ -10,19 +10,19 @@ run in one MORK atomspace.
 docs/
   data-model.md              Shared MM2 data model and priority conventions
   isurp-old-validation.md    Validation notes against PeTTa isurp-old
+  isurp-module-validation.md Modular newer ISurp implementation and validation
   testing.md                 Test file format and runner workflow
 
 data/
-  freq-db.metta              Valuation test fixture
-  ugly-sodaDrinker.metta     Shared mining and surprisingness fixture
+  ugly-sodaDrinker.metta     Sample AtomSpace facts
 
 src/
   common-utils/              Reusable MM2 callable definitions
   conjunction-expansion-triplet.metta
                              Standalone triplet conjunction expansion
   surp.metta                 Current MM2 implementation of isurp-old
-  frequent-miner.metta       Variable extraction and valuation utilities
-  dummy.metta                Scratch file
+  frequent-miner.metta       Early frequent-miner/helper work
+  dummy.metta                Scratch file,
 
 tests/
   frequent-miner/            Runnable frequent-miner test cases
@@ -39,8 +39,6 @@ scripts/
 
 This project expects a MORK build with the local [`mm2-helper`](https://github.com/iCog-Labs-Dev/MM2-Helper) extensions and
 [`mm2-stdlib`](https://github.com/abnsol/mm2-stdlib) helpers available.
-
-
 
 ## Running Tests
 
