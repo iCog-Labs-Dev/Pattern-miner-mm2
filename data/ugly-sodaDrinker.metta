@@ -1,3 +1,4 @@
+(Inheritance Allen human)
 (Inheritance Abe human)
 (Inheritance Cason human)
 (Inheritance Davion human)
@@ -17,7 +18,6 @@
 (Inheritance Jassy human)
 (Inheritance Jenica human)
 (Inheritance Kecia human)
-
 (Inheritance Allen man)
 (Inheritance Abe man)
 (Inheritance Cason man)
@@ -28,7 +28,6 @@
 (Inheritance Bob man)
 (Inheritance Mike man)
 (Inheritance Zac man)
-
 (Inheritance Lily woman)
 (Inheritance Emily woman)
 (Inheritance Lucy woman)
@@ -39,7 +38,6 @@
 (Inheritance Jassy woman)
 (Inheritance Jenica woman)
 (Inheritance Kecia woman)
-
 (Inheritance Allen ugly)
 (Inheritance Abe ugly)
 (Inheritance Cason ugly)
@@ -50,7 +48,6 @@
 (Inheritance Lucy ugly)
 (Inheritance Sophia ugly)
 (Inheritance Alaura ugly)
-
 (Inheritance Allen sodaDrinker)
 (Inheritance Abe sodaDrinker)
 (Inheritance Cason sodaDrinker)
@@ -61,3 +58,8 @@
 (Inheritance Jassy sodaDrinker)
 (Inheritance Jenica sodaDrinker)
 (Inheritance Kecia sodaDrinker)
+
+(exec 0
+    (, (Inheritance $x human) (Inheritance Bob man) (Inheritance $x human))
+    (O (count (count $c) $c (, (Inheritance $x human) (Inheritance Bob man) (Inheritance $x human))))
+)
