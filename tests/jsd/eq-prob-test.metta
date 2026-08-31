@@ -22,4 +22,4 @@
 (Inheritance Lily ugly)
 
 (EXPECTED-RESULT eq-joint-var (eq-joint-var (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly))) (var 0)))
-(EXPECTED-RESULT eq-prob (eq-prob-of (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly))) 0.5))
+(EXPECTED-RESULT eq-prob (eq-prob-of (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly))) 0.25))

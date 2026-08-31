@@ -56,6 +56,8 @@
     (, (var-extract-request $clause 0 $clause))
 )
 
+
+;; ===========================================================================================================================================
 ;; ===========================================================================================================================================
 ;; Variable Extractor:
 ;;
@@ -157,6 +159,7 @@
     )
 )
 
+;; ===========================================================================================================================================
 ;; ===========================================================================================================================================
 
 
@@ -261,9 +264,25 @@
 
 
 
+;; calculate-prob-for-vars / process-blocks:
+;;
+;; The PeTTa source sorts connected blocks by abstractness, then walks every
+;; additional connected block after the first one.  Each extra block adds one
+;; equality correction.  If there is no earlier more-abstract block, PeTTa uses
+;; the whole DB size as the denominator.
+;;
+;; In this MM2 port, `abstractness-sort.metta` still materializes:
+;;
+;;   (most-abstract-block-support $partition $var $block $count)
+;;
+;; for debugging and future exact value-count support.  The current PeTTa-like
+;; executable path below uses the DB-size fallback and the number of connected
+;; blocks:
+;;
+;;   factor(var) = 1 / DB-SIZE ^ (connected-block-count(var) - 1)
 
 (exec (eq-prob 142 eq-var-factor)
-    (, (eq-joint-var $partition $var)
+    (, (eq-joint-var $partition $var) (INPUT DB-SIZE $db-size)
        (most-abstract-block-support $partition $var $most-abstract-block $count))
     (O
         (pure
@@ -272,7 +291,8 @@
             (f64_to_string
                 (div_f64
                     (f64_from_string 1.0)
-                    (f64_from_string $count))))))
+                    (powf_f64 (f64_from_string $db-size) (sub_f64 (f64_from_string $count) (f64_from_string 1))))))))
+
 
 
 ; ;; eq-prob finalization:
