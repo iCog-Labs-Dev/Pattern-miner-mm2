@@ -1,5 +1,5 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; 5. EQ-prob support for newer ISurp
+;; eq-prob
 ;;
 ;; Source PeTTa function:
 ;;
@@ -21,27 +21,15 @@
 ;;   below works on the indexed representation produced by `vars_to_indices`,
 ;;   where variables are represented as `(var 0)`, `(var 1)`, ...
 ;;
-;; Important current scope:
-;;
-;;   - Direct variable markers in binary predicate atom arguments are supported:
-;;       (Inheritance (var 0) man)
-;;       (Inheritance man (var 0))
-;;       (Inheritance (var 0) (var 1))
-;;
-;;   - Abstractness ordering is delegated to `03_abstractness_sort.metta`.
-;;     That module materializes the most abstract block connected to each joint
-;;     variable and exposes its support.
 ;;
 ;; Public result facts produced by this section:
 ;;
 ;;   (eq-joint-var $partition $var)
-;;   (eq-value-count $partition $block $var $count)
+;;   (eq-value-count $block $var $count)
 ;;   (abstractness-sort-request $partition $var)
 ;;   (eq-var-factor $partition $var $factor)
 ;;   (eq-prob-of $partition $prob)
 ;;
-;; The newer `isurp` should multiply independent block probability by
-;; `(eq-prob-of $partition $prob)`.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -67,6 +55,47 @@
     (, (block-clause $block $clause))  
     (, (var-extract-request $clause 0 $clause))
 )
+
+;; ===========================================================================================================================================
+;; Variable Extractor:
+;;
+;; This section recursively scans clause expressions to identify and track all
+;; variable occurrences within each clause. The extraction process:
+;;
+;;   1. Initiates variable extraction for each clause via `var-extract-request`
+;;      with position counter starting at 0 (tracking nesting level and order).
+;;
+;;   2. Recursively traverses clause structure (DEF rules 122-125), incrementing
+;;      position for nested expressions and sequential elements, collecting 
+;;      position info for each variable.
+;;
+;;   3. Uses `clause-values` to expose individual sub-expressions at each level,
+;;      and `is-var` predicate to test if an expression is a variable marker.
+;;
+;;
+;; POSITION NUMBERS EXPLAINED:
+;;
+;;   Position: A sequence of indices where each digit represents the index of an
+;;   element at each nesting level in the expression tree. Traversal proceeds
+;;   left-to-right, 1-indexed. Each digit selects which argument/element to
+;;   navigate into at that level of nesting.
+;;
+;;   EXAMPLE:
+;;   (Inheritance (And (And (Person Hessley) man) (Or human ugly)) 
+;;                (Or (And human (var 0)) (And human (var 1))))
+;;
+;;   Variable (var 0) extraction:
+;;     Position: 323
+;;     - 3: Select 3rd element at top level: (Or (And human (var 0)) (And human (var 1)))
+;;     - 2: Select 2nd element in that: (And human (var 0))
+;;     - 3: Select 3rd element in that: (var 0)
+;;   
+;;   Variable (var 1) extraction:
+;;     Position: 333
+;;     - 3: Select 3rd element at top level: (Or (And human (var 0)) (And human (var 1)))
+;;     - 3: Select 3rd element in that: (And human (var 1))
+;;     - 3: Select 3rd element in that: (var 1)
+
 
 (DEF (eq-prob 122 vars-extract)
     (, (var-extract-request $clause $depth $reduced-clause) 
@@ -128,16 +157,10 @@
     )
 )
 
+;; ===========================================================================================================================================
+
 
 ;; get-var / connected-subpatterns-with-var:
-;;
-;; Scan direct arguments for `(var N)` markers in binary predicate atoms only:
-;;
-;;   ($rel $left $right)
-;;
-;; The first element is treated as the link/predicate, so only the two argument
-;; positions are checked.  This intentionally excludes n-ary predicate atoms
-;; such as `($rel $x $a $b)` and nested wrapper terms.
 
 (exec (eq-prob 125 eq-scan-left-var)
     (, (var-in $var $clause $depth) (block-clause $block $clause) (block $partition $block))
@@ -181,17 +204,6 @@
 ;;
 ;; Build a query and target value for each joint variable in each connected
 ;; block.
-;;
-;; PeTTa's `value-count` counts unique values of the selected variable.  The
-;; direct MM2 equivalent would count the generated variable itself under a
-;; generated query, but this MORK build panics on that sink shape.  This MM2
-;; fallback therefore counts the generated block query.  It is a conservative
-;; support-count approximation and keeps the pipeline executable.
-
-
-;; value-count, part 2:
-;;
-;; Count the generated block query as the supported fallback for value-count.
 
 (exec (eq-prob 129 vc-query)
     (, (eq-block-has-var $partition $block $var))
@@ -211,6 +223,8 @@
         )
     )
 )
+
+;; value-count, part 2:
 
 (exec (eq-prob 130 vc-query)
     (, (vc-query $block $ind-var ($query $var)))
@@ -248,185 +262,44 @@
 
 
 
-; (exec (jsd 140 eq-var-factor)
-;     (, (eq-joint-var $partition $var)
-;        (most-abstract-block-support $partition $var $most-abstract-block $count))
-;     (O
-;         (pure
-;             (eq-var-factor $partition $var $factor)
-;             $factor
-;             (f64_to_string
-;                 (div_f64
-;                     (f64_from_string 1.0)
-;                     (f64_from_string $count))))))
+(exec (eq-prob 142 eq-var-factor)
+    (, (eq-joint-var $partition $var)
+       (most-abstract-block-support $partition $var $most-abstract-block $count))
+    (O
+        (pure
+            (eq-var-factor $partition $var $factor)
+            $factor
+            (f64_to_string
+                (div_f64
+                    (f64_from_string 1.0)
+                    (f64_from_string $count))))))
 
 
 ; ;; eq-prob finalization:
 ; ;;
-; ;; Product of per-variable factors.  These explicit rules cover the common
-; ;; one-, two-, three-, and four-joint-variable cases used by current tests.
-; ;; A fully generic version should replace this with a recursive product
-; ;; accumulator over all `(eq-var-factor $partition $var $factor)` facts.
-
-; ;; One-block partitions have no cross-block joint variables, so the correction
-; ;; factor is the multiplicative identity.
-; (exec (jsd 141 eq-prob-identity)
-;     (, (partition $pattern ($b1)))
-;     (, (eq-prob-of ($b1) 1.0)))
-
-; (exec (jsd 141 eq-prob-single)
-;     (, (eq-var-factor $partition $v1 $f1))
-;     (, (eq-prob-of $partition $f1)))
+; ;; Product of per-variable factors.  
 
 
-; (exec (jsd 141 eq-prob-var-01)
-;     (, (eq-var-factor $partition (var 0) $f0)
-;        (eq-var-factor $partition (var 1) $f1))
-;     (O
-;         (pure
-;             (eq-prob-of $partition $prob)
-;             $prob
-;             (f64_to_string
-;                 (product_f64
-;                     (f64_from_string $f0)
-;                     (f64_from_string $f1))))))
+(exec (eq-prob 143 max-var-index)
+    (, (eq-joint-var $partition (var $num))) 
+    (O 
+        (fmax 
+            (max-joint-var-index $partition $max) 
+            $max 
+            $num
+        )
+        (+ (eq-prob-of $partition 1))
+    )
+)
 
-; (exec (jsd 131 eq-prob-var-02)
-;     (, (eq-var-factor $partition (var 0) $f0)
-;        (eq-var-factor $partition (var 2) $f2))
-;     (O
-;         (pure
-;             (eq-prob-of $partition $prob)
-;             $prob
-;             (f64_to_string
-;                 (product_f64
-;                     (f64_from_string $f0)
-;                     (f64_from_string $f2))))))
 
-; (exec (jsd 141 eq-prob-var-03)
-;     (, (eq-var-factor $partition (var 0) $f0)
-;        (eq-var-factor $partition (var 3) $f3))
-;     (O
-;         (pure
-;             (eq-prob-of $partition $prob)
-;             $prob
-;             (f64_to_string
-;                 (product_f64
-;                     (f64_from_string $f0)
-;                     (f64_from_string $f3))))))
-
-; (exec (jsd 141 eq-prob-var-12)
-;     (, (eq-var-factor $partition (var 1) $f1)
-;        (eq-var-factor $partition (var 2) $f2))
-;     (O
-;         (pure
-;             (eq-prob-of $partition $prob)
-;             $prob
-;             (f64_to_string
-;                 (product_f64
-;                     (f64_from_string $f1)
-;                     (f64_from_string $f2))))))
-
-; (exec (jsd 141 eq-prob-var-13)
-;     (, (eq-var-factor $partition (var 1) $f1)
-;        (eq-var-factor $partition (var 3) $f3))
-;     (O
-;         (pure
-;             (eq-prob-of $partition $prob)
-;             $prob
-;             (f64_to_string
-;                 (product_f64
-;                     (f64_from_string $f1)
-;                     (f64_from_string $f3))))))
-
-; (exec (jsd 141 eq-prob-var-23)
-;     (, (eq-var-factor $partition (var 2) $f2)
-;        (eq-var-factor $partition (var 3) $f3))
-;     (O
-;         (pure
-;             (eq-prob-of $partition $prob)
-;             $prob
-;             (f64_to_string
-;                 (product_f64
-;                     (f64_from_string $f2)
-;                     (f64_from_string $f3))))))
-
-; ;; Triple and four-variable products for partitions that expose multiple joint
-; ;; variables across binary predicate clauses.
-; (exec (jsd 141 eq-prob-var-012)
-;     (, (eq-var-factor $partition (var 0) $f0)
-;        (eq-var-factor $partition (var 1) $f1)
-;        (eq-var-factor $partition (var 2) $f2))
-;     (O
-;         (pure
-;             (eq-prob-of $partition $prob)
-;             $prob
-;             (f64_to_string
-;                 (product_f64
-;                     (product_f64
-;                         (f64_from_string $f0)
-;                         (f64_from_string $f1))
-;                     (f64_from_string $f2))))))
-
-; (exec (jsd 141 eq-prob-var-013)
-;     (, (eq-var-factor $partition (var 0) $f0)
-;        (eq-var-factor $partition (var 1) $f1)
-;        (eq-var-factor $partition (var 3) $f3))
-;     (O
-;         (pure
-;             (eq-prob-of $partition $prob)
-;             $prob
-;             (f64_to_string
-;                 (product_f64
-;                     (product_f64
-;                         (f64_from_string $f0)
-;                         (f64_from_string $f1))
-;                     (f64_from_string $f3))))))
-
-; (exec (jsd 141 eq-prob-var-023)
-;     (, (eq-var-factor $partition (var 0) $f0)
-;        (eq-var-factor $partition (var 2) $f2)
-;        (eq-var-factor $partition (var 3) $f3))
-;     (O
-;         (pure
-;             (eq-prob-of $partition $prob)
-;             $prob
-;             (f64_to_string
-;                 (product_f64
-;                     (product_f64
-;                         (f64_from_string $f0)
-;                         (f64_from_string $f2))
-;                     (f64_from_string $f3))))))
-
-; (exec (jsd 141 eq-prob-var-123)
-;     (, (eq-var-factor $partition (var 1) $f1)
-;        (eq-var-factor $partition (var 2) $f2)
-;        (eq-var-factor $partition (var 3) $f3))
-;     (O
-;         (pure
-;             (eq-prob-of $partition $prob)
-;             $prob
-;             (f64_to_string
-;                 (product_f64
-;                     (product_f64
-;                         (f64_from_string $f1)
-;                         (f64_from_string $f2))
-;                     (f64_from_string $f3))))))
-
-; (exec (jsd 141 eq-prob-var-0123)
-;     (, (eq-var-factor $partition (var 0) $f0)
-;        (eq-var-factor $partition (var 1) $f1)
-;        (eq-var-factor $partition (var 2) $f2)
-;        (eq-var-factor $partition (var 3) $f3))
-;     (O
-;         (pure
-;             (eq-prob-of $partition $prob)
-;             $prob
-;             (f64_to_string
-;                 (product_f64
-;                     (product_f64
-;                         (f64_from_string $f0)
-;                         (f64_from_string $f1))
-;                     (product_f64
-;                         (f64_from_string $f2)
-;                         (f64_from_string $f3)))))))
+(exec (eq-prob 144 eq-prob)
+    (, (eq-prob-of $partition $prod) (eq-var-factor $partition (var $n) $value) (max-joint-var-index $partition $n) (exec (eq-prob 144 eq-prob) $src $sink))
+    (O (pure (eq-prob-of $partition $new-prod) $new-prod (f32_to_string (product_f32 (f32_from_string $value) (f32_from_string $prod))))
+        (- (eq-prob-of $partition $prod))
+        (pure (max-joint-var-index $partition $new-max) $new-max (i32_to_string (sub_i32 (i32_from_string $n) (i32_from_string 1))))
+        (- (max-joint-var-index $partition $n))
+        (- (max-joint-var-index $partition -1))
+        
+    )
+)
