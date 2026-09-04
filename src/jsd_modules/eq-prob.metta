@@ -25,7 +25,7 @@
 ;; Public result facts produced by this section:
 ;;
 ;;   (eq-joint-var $partition $var)
-;;   (eq-value-count $block $var $count)
+;;   (value-count $block $var $count)
 ;;   (abstractness-sort-request $partition $var)
 ;;   (eq-var-factor $partition $var $factor)
 ;;   (eq-prob-of $partition $prob)
@@ -236,7 +236,7 @@
             $query
             (O
                 (count
-                    (eq-value-count $block $ind-var $v-count)
+                    (value-count $block $ind-var $v-count)
                     $v-count
                     $var
                 )
