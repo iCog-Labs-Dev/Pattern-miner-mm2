@@ -41,18 +41,17 @@
     (, (universe-count-of $block $uc) (block-support $block $support))
     (O
         (pure
-            (emp-tv-mean $pattern $db $mean)
+            (emp-tv-mean $block $mean)
             $mean
             (f32_to_string (div_f32 (f32_from_string $support) (f32_from_string $uc)))
         )
     )
 )
+
 (exec (est-tv 153 emp-tv)
     (, (emp-tv-confidence $block $conf) (emp-tv-mean $block $mean))
     (, (EMPTV $block ($mean $conf)))
 )
-
-
 
 
 ;; =============================================================================================

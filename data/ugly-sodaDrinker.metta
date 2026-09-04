@@ -58,8 +58,3 @@
 (Inheritance Jassy sodaDrinker)
 (Inheritance Jenica sodaDrinker)
 (Inheritance Kecia sodaDrinker)
-
-(exec 0
-    (, (Inheritance $x human) (Inheritance Bob man) (Inheritance $x human))
-    (O (count (count $c) $c (, (Inheritance $x human) (Inheritance Bob man) (Inheritance $x human))))
-)
