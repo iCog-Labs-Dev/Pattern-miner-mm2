@@ -132,8 +132,8 @@ import sys
 
 path = Path(sys.argv[1])
 text = path.read_text()
-old = '        }, _err => return Err("exec shape (exec <loc> <patterns> <templates>)"))\n    }\n'
-new = '        }, _err => return Err("exec shape (exec <loc> <patterns> <templates>)"));\n    }\n'
+old = '        }, _err => return Err("exec shape (exec <loc> <patterns> <templates>)")\n    }\n'
+new = '        }, _err => return Err("exec shape (exec <loc> <patterns> <templates>)"))\n    }\n'
 if old in text:
     text = text.replace(old, new, 1)
 elif new not in text:
