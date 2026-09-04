@@ -290,7 +290,7 @@
 
 
 ;; Final cleanup: 
-(exec (surp 190 cleanup)
+(exec (surp 990 cleanup)
     (, (surprisingess-of $pattern $value))
     (,
         (cleanup (block $partition $block))
@@ -310,7 +310,7 @@
 
 
 ;; One cleanup matcher removes any fact selected by the cleanup task.
-(exec (surp 191 cleanup)
+(exec (surp 991 cleanup)
     (, (cleanup $fact) $fact)
     (O
         (- (cleanup $fact))
@@ -318,7 +318,7 @@
         ))
 
 ;; Remove the generic cleanup tasks after they are no longer useful.
-(exec (surp 192 cleanup)
+(exec (surp 992 cleanup)
     (, (cleanup $fact))
     (O
         (- (cleanup $fact))
