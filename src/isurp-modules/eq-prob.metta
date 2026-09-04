@@ -23,10 +23,9 @@
 ;;
 ;; Important current scope:
 ;;
-;;   - Direct variable markers in binary predicate atom arguments are supported:
-;;       (Inheritance (var 0) man)
-;;       (Inheritance man (var 0))
-;;       (Inheritance (var 0) (var 1))
+;;   - Indexed variables are discovered by walking each clause argument.  The
+;;     relation/operator position is skipped, and every argument is scanned
+;;     recursively for `(var N)` markers.
 ;;
 ;;   - Abstractness ordering is delegated to `abstractness-sort.metta`.
 ;;     That module materializes the most abstract block connected to each joint
@@ -79,56 +78,70 @@
 
 ;; get-var / connected-subpatterns-with-var:
 ;;
-;; Scan supported binary predicate argument shapes for `(var N)` markers:
-;;
-;;   ($rel $left $right)
-;;
-;; The first element is treated as the link/predicate, so only the two argument
-;; positions are checked.  This intentionally excludes n-ary predicate atoms
-;; such as `($rel $x $a $b)`.  The PeTTa validation shapes with nested
-;; `(Person (var N))` subjects are handled by explicit rules below.
-(exec (surp 053 eq-scan-left-var)
-    (, (eq-block-clause $partition $block ($rel (var $n) $a)))
-    (, (eq-block-has-var $partition $block (var $n))))
+;; Convert each clause into its argument tuple.  `cdr-atom` skips the
+;; relation/operator and leaves every real argument to be scanned.
+(exec (surp 053 eq-clause-args-start)
+    (, (eq-block-clause $partition $block $clause))
+    (O
+        (pure
+            (eq-clause-args $partition $block $clause $args)
+            $args
+            (cdr-atom (' $clause)))))
 
-(exec (surp 053 eq-scan-right-var)
-    (, (eq-block-clause $partition $block ($rel $a (var $n))))
-    (, (eq-block-has-var $partition $block (var $n))))
+;; Walk the clause argument tuple and emit one `eq-clause-arg` fact per
+;; argument.
+(exec (surp 054 eq-clause-args-walk)
+    (, (eq-clause-args $partition $block $clause $remaining)
+       (exec (surp 054 eq-clause-args-walk) $src $sink))
+    (O
+        (pure
+            (eq-clause-arg $partition $block $clause $arg)
+            $arg
+            (car-atom (' $remaining)))
+        (pure
+            (eq-clause-args $partition $block $clause $rest)
+            $rest
+            (cdr-atom (' $remaining)))
+        (- (eq-clause-args $partition $block $clause $remaining))
+        (+ (exec (surp 054 eq-clause-args-walk) $src $sink))))
 
-(exec (surp 053 eq-scan-left-person-var)
-    (, (eq-block-clause $partition $block ($rel (Person (var $n)) $a)))
-    (, (eq-block-has-var $partition $block (var $n))))
+(exec (surp 055 eq-clause-arg-vars)
+    (, (eq-clause-arg $partition $block $clause $arg))
+    (O
+        (pure
+            (eq-clause-arg-vars $partition $block $clause $arg $vars)
+            $vars
+            (indexed_vars_in_expr (' $arg)))))
 
-(exec (surp 053 eq-scan-right-person-var)
-    (, (eq-block-clause $partition $block ($rel $a (Person (var $n)))))
-    (, (eq-block-has-var $partition $block (var $n))))
-
-(exec (surp 053 eq-scan-left-and-person-var)
-    (, (eq-block-clause $partition $block ($rel (And (And (Person (var $n)) $a) $b) $c)))
-    (, (eq-block-has-var $partition $block (var $n))))
-
-(exec (surp 053 eq-scan-right-and-person-var)
-    (, (eq-block-clause $partition $block ($rel $a (And (And (Person (var $n)) $b) $c))))
-    (, (eq-block-has-var $partition $block (var $n))))
+(exec (surp 056 eq-clause-arg-vars-walk)
+    (, (eq-clause-arg-vars $partition $block $clause $arg $remaining)
+       (exec (surp 056 eq-clause-arg-vars-walk) $src $sink))
+    (O
+        (pure
+            (eq-block-has-var $partition $block $var)
+            $var
+            (car-atom (' $remaining)))
+        (pure
+            (eq-clause-arg-vars $partition $block $clause $arg $rest)
+            $rest
+            (cdr-atom (' $remaining)))
+        (- (eq-clause-arg-vars $partition $block $clause $arg $remaining))
+        (+ (exec (surp 056 eq-clause-arg-vars-walk) $src $sink))))
 
 
 ;; joint-variables:
 ;;
 ;; A variable is joint for a partition when it appears in at least two different
 ;; blocks of that partition.
-(exec (surp 054 eq-var-block-count)
-    (, (eq-block-has-var $partition $block $var)
-       (exec (surp 054 eq-var-block-count) $src $sink))
-    (,
-        (exec (surp 054 eq-var-block-count)
-            (, (eq-block-has-var $partition $counted-block $var))
-            (O
-                (count
-                    (eq-var-block-count $partition $var $count)
-                    $count
-                    $counted-block)))))
+(exec (surp 062 eq-var-block-count)
+    (, (eq-block-has-var $partition $block $var))
+    (O
+        (count
+            (eq-var-block-count $partition $var $count)
+            $count
+            $block)))
 
-(exec (surp 055 eq-var-block-joint-check)
+(exec (surp 080 eq-var-block-joint-check)
     (, (eq-var-block-count $partition $var $count))
     (O
         (pure
@@ -138,9 +151,17 @@
                 (i32_from_string $count)
                 (i32_from_string 2)))))
 
-(exec (surp 056 eq-joint-var-from-count)
+(exec (surp 081 eq-joint-var-from-count)
     (, (eq-var-block-is-joint $partition $var $count true))
     (, (eq-joint-var $partition $var)))
+
+(exec (surp 081 eq-any-var-from-count)
+    (, (eq-var-block-count $partition $var $count))
+    (, (eq-any-var $partition $var)))
+
+(exec (surp 081 eq-non-joint-var-from-count)
+    (, (eq-var-block-is-joint $partition $var $count false))
+    (, (eq-non-joint-var $partition $var)))
 
 
 ;; value-count, part 1:
@@ -153,7 +174,7 @@
 ;; generated query, but this MORK build panics on that sink shape.  This MM2
 ;; fallback therefore counts the generated block query.  It is a conservative
 ;; support-count approximation and keeps the pipeline executable.
-(exec (surp 057 eq-value-query)
+(exec (surp 082 eq-value-query)
     (, (eq-joint-var $partition $var)
        (eq-block-has-var $partition $block $var))
     (O
@@ -167,10 +188,10 @@
 ;; value-count, part 2:
 ;;
 ;; Count the generated block query as the supported fallback for value-count.
-(exec (surp 058 eq-value-count)
+(exec (surp 083 eq-value-count)
     (, (eq-value-query $partition $block $var $query))
     (,
-        (exec (surp 058 eq-value-count)
+        (exec (surp 083 eq-value-count)
             $query
             (O
                 (count
@@ -195,15 +216,15 @@
 ;; blocks:
 ;;
 ;;   factor(var) = 1 / DB-SIZE ^ (connected-block-count(var) - 1)
-(exec (surp 059 eq-abstractness-request)
+(exec (surp 084 eq-abstractness-request)
     (, (eq-joint-var $partition $var))
     (, (abstractness-sort-request $partition $var)))
 
-(exec (surp 070 eq-connected-block-count)
+(exec (surp 085 eq-connected-block-count)
     (, (eq-joint-var $partition $var)
-       (exec (surp 070 eq-connected-block-count) $src $sink))
+       (exec (surp 085 eq-connected-block-count) $src $sink))
     (,
-        (exec (surp 070 eq-connected-block-count)
+        (exec (surp 085 eq-connected-block-count)
             (, (eq-block-has-var $partition $block $var))
             (O
                 (count
@@ -211,7 +232,7 @@
                     $count
                     $block)))))
 
-(exec (surp 071 eq-var-factor)
+(exec (surp 086 eq-var-factor)
     (, (eq-connected-block-count $partition $var $count)
        (INPUT DB-SIZE $db-size))
     (O
@@ -241,16 +262,16 @@
 ;;   1 / DB-SIZE ^ sum(connected-block-count(var) - 1)
 ;;
 ;; Count joint variable/block pairs and joint variables to derive that exponent.
-(exec (surp 072 eq-joint-block-pair)
+(exec (surp 086 eq-joint-block-pair)
     (, (eq-joint-var $partition $var)
        (eq-block-has-var $partition $block $var))
     (, (eq-joint-block-pair $partition $var $block)))
 
-(exec (surp 073 eq-joint-block-pair-count)
+(exec (surp 087 eq-joint-block-pair-count)
     (, (partition $partition)
-       (exec (surp 073 eq-joint-block-pair-count) $src $sink))
+       (exec (surp 087 eq-joint-block-pair-count) $src $sink))
     (,
-        (exec (surp 073 eq-joint-block-pair-count)
+        (exec (surp 087 eq-joint-block-pair-count)
             (, (eq-joint-block-pair $partition $var $block))
             (O
                 (count
@@ -258,11 +279,11 @@
                     $count
                     ($var $block))))))
 
-(exec (surp 074 eq-joint-var-count)
+(exec (surp 087 eq-joint-var-count)
     (, (partition $partition)
-       (exec (surp 074 eq-joint-var-count) $src $sink))
+       (exec (surp 087 eq-joint-var-count) $src $sink))
     (,
-        (exec (surp 074 eq-joint-var-count)
+        (exec (surp 087 eq-joint-var-count)
             (, (eq-joint-var $partition $var))
             (O
                 (count
@@ -270,7 +291,42 @@
                     $count
                     $var)))))
 
-(exec (surp 075 eq-prob-from-counts)
+(exec (surp 087 eq-any-var-count)
+    (, (partition $partition)
+       (exec (surp 087 eq-any-var-count) $src $sink))
+    (,
+        (exec (surp 087 eq-any-var-count)
+            (, (eq-any-var $partition $var))
+            (O
+                (count
+                    (eq-any-var-count $partition $count)
+                    $count
+                    $var)))))
+
+(exec (surp 087 eq-non-joint-var-count)
+    (, (partition $partition)
+       (exec (surp 087 eq-non-joint-var-count) $src $sink))
+    (,
+        (exec (surp 087 eq-non-joint-var-count)
+            (, (eq-non-joint-var $partition $var))
+            (O
+                (count
+                    (eq-non-joint-var-count $partition $count)
+                    $count
+                    $var)))))
+
+(exec (surp 088 eq-no-joint-check)
+    (, (eq-any-var-count $partition $any-count)
+       (eq-non-joint-var-count $partition $non-joint-count))
+    (O
+        (pure
+            (eq-no-joint? $partition $is-no-joint)
+            $is-no-joint
+            (eq_i32
+                (i32_from_string $any-count)
+                (i32_from_string $non-joint-count)))))
+
+(exec (surp 088 eq-prob-from-counts)
     (, (eq-joint-block-pair-count $partition $pair-count)
        (eq-joint-var-count $partition $var-count)
        (INPUT DB-SIZE $db-size))
@@ -289,7 +345,7 @@
                                     (i64_from_string $pair-count)
                                     (i64_from_string $var-count))))))))))
 
-(exec (surp 076 eq-prob-no-joint)
+(exec (surp 089 eq-prob-no-joint)
     (, (partition $partition)
-       (eq-joint-var-count $partition 0))
+       (eq-no-joint? $partition true))
     (, (eq-prob-of $partition 1.0)))
