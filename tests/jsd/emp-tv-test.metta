@@ -23,8 +23,8 @@
 
 
 
-(est-mk-stv-mean test-pattern test-db 1.7689693569125715)
-(est-mk-stv-var test-pattern test-db 1.0178393379503528)
+(est-mk-stv-mean test-pattern 1.7689693569125715)
+(est-mk-stv-var test-pattern 1.0178393379503528)
 
 (EXPECTED-RESULT mk-stv (mk-stv 1.7689693569125715 1.0178393379503528 (0 0.00012498438)))
 
