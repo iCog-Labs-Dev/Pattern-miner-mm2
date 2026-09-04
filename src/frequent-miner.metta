@@ -496,3 +496,57 @@
 ;   (, (run-specialization spec-test (Inheritance $x $y))
 ;      (DEF specialization-combinations-fn $spec-p $spec-t))
 ;   (O (+ (exec (freq 001 run-specialization-combinations) $spec-p $spec-t))))
+
+
+(DEF var-conversion-fn
+  (, (specialization-result $id $specialized-pattern))
+  (O
+    (pure (candidate-specialization $id $specialized-pattern $converted-pattern) $converted-pattern
+      (indices_to_vars (' $specialized-pattern)))))
+
+(DEF support-count-fn
+  (, (candidate-specialization $id $display-pattern $match-pattern)
+     (FACT $match-pattern))
+  (O
+    (- (candidate-specialization $id $display-pattern $match-pattern))
+    (count (support-count-result $id $display-pattern $count) $count $match-pattern)
+    ))
+
+(DEF candidate-pattern-check-fn
+  (, (support-count-result $id $pattern $support)
+     (INPUT MIN-SUPPORT $min-support))
+  (O
+    (pure (minimum-support-check-result $id $pattern $support $min-support $passes) $passes
+      (le_f64 (f64_from_string $min-support) (f64_from_string $support)))
+    (+ (exec (freq 630 minimum-support-pass)
+         (, (minimum-support-check-result $pass-id $pass-pattern $pass-support $pass-min true))
+         (O (- (minimum-support-check-result $pass-id $pass-pattern $pass-support $pass-min true))
+            (+ (candidate-pattern $pass-id $pass-pattern $pass-support)))))))
+        
+(DEF candidate-pattern-fn
+  (, (DEF var-conversion-fn $conv-p $conv-t)
+     (DEF support-count-fn $support-p $support-t)
+     (DEF candidate-pattern-check-fn $min-p $min-t))
+  (O
+    (+ (exec (freq 610 run-var-conversion) $conv-p $conv-t))
+    (+ (exec (freq 620 run-support-count) $support-p $support-t))
+    (+ (exec (freq 621 run-candidate-pattern-check) $min-p $min-t))))
+
+
+; (exec (freq 600 call-candidate-pattern)
+;   (, (support-count support-smoke $pattern)
+;      (DEF candidate-pattern-fn $candidate-p $candidate-t))
+;   (O
+;     (+ (exec (freq 601 run-candidate-pattern) $candidate-p $candidate-t))))
+
+
+; (support-count support-smoke (Inheritance $x sodaDrinker))
+
+; (FACT (Inheritance Allen sodaDrinker))
+; (FACT (Inheritance Abe sodaDrinker))
+; (FACT (Inheritance Cason sodaDrinker))
+; (FACT (Inheritance Casogn sodaDrinker))
+; (FACT (Inheritance Casogcn sodaDrinker))
+; (FACT (Inheritance Lily ugly))
+
+; (INPUT MIN-SUPPORT 3)
