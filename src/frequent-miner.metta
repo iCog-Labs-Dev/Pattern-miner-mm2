@@ -217,7 +217,8 @@
   (O
     (- (gap-valuation-binding (VAL-VALUE $id $candidate-expr $path) $id $path $var))
     (- (get-value-at-position-result (VAL-VALUE $id $candidate-expr $path) $path $value))
-    (+ (valuation-binding $id $path $var $value)))
+    (+ (valuation-binding $id $path $var $value))
+    (+ (valuation-binding $id $path $var $var)))
 )
 
 ; Reusable valuation function.
@@ -287,6 +288,7 @@
 (DEF sae-start-walk
   (, (sae-args $id (var $source-index) $args))
   (O
+    (- (sae-args $id (var $source-index) $args))
     (+ (sae-walk $id (var $source-index) $args 1 ()))))
 
 (DEF sae-step
@@ -403,6 +405,7 @@
      (sae-step-result $sae-id (var $source-index) $abstracted-value))
   (O
     (- (shallow-abstraction-wait $id $path (var $source-index) $sae-id))
+    (- (sae-step-result $sae-id (var $source-index) $abstracted-value))
     (+ (shallow-abstraction-binding $id $path (var $source-index) $abstracted-value))))
 
 (DEF shallow-abstraction-fn
@@ -444,7 +447,7 @@
 (DEF specialization-start
   (, (run-specialization $id $pattern))
   (O
-    (+ (specialization-position spec-test 1 (var 0)))
+    (+ (specialization-position $id 1 (var 0)))
     (+ (specialization-partial $id 1 ()))))
 
 (DEF specialization-extend
@@ -550,3 +553,74 @@
 ; (FACT (Inheritance Lily ugly))
 
 ; (INPUT MIN-SUPPORT 3)
+
+(DEF frequent-miner-cleanup-blocks
+  (, (candidate-pattern $id $pattern $support))
+  (O
+    (+ (cleanup (support-count-result $id $support-pattern $support-count)))
+    (+ (cleanup (candidate-specialization $id $display-pattern $match-pattern)))
+    (+ (cleanup (specialization-result $id $specialized-pattern)))
+    (+ (cleanup (specialization-combination $id $combination)))
+    (+ (cleanup (specialization-position $id $pos $var)))
+    (+ (cleanup (shallow-abstraction-binding $id $path $shallow-var $value)))
+    (+ (cleanup (shallow-abstract-expression $sae-id $var $expr)))
+    (+ (cleanup (shallow-abstraction-request-expr $id $path $var $value $is-exp)))
+    (+ (cleanup (shallow-abstraction-request-var $id $path $var $value $is-var)))
+    (+ (cleanup (valuation-binding $id $binding-path $binding-var $binding-value)))
+    (+ (cleanup (valuation-pattern $id $valuation-pattern)))
+    (+ (cleanup (run-shallow-abstraction $id)))
+    (+ (cleanup (run-specialization $id $run-pattern)))
+    (+ (cleanup (run-frequent-miner $id $run-pattern)))))
+
+(DEF frequent-miner-cleanup-all-at-once-fn
+    (, (cleanup $intermediate-result) $intermediate-result)
+    (O
+        (- (cleanup $intermediate-result))
+        (- $intermediate-result)
+        ))
+
+(DEF frequent-miner-cleanup-target-task-fn
+  (, (cleanup $fact))
+  (O
+    (- (cleanup $fact))))
+
+;; Remove the generic cleanup tasks after they are no longer useful.
+(DEF frequent-miner-cleanup-all-fn
+    (, (DEF frequent-miner-cleanup-blocks $blocks-p $blocks-t)
+       (DEF frequent-miner-cleanup-all-at-once-fn $all-p $all-t)
+       (DEF frequent-miner-cleanup-target-task-fn $target-p $target-t))
+    (O
+        (+ (exec (freq 701 frequent-miner-cleanup-blocks) $blocks-p $blocks-t))
+        (+ (exec (freq 702 frequent-miner-cleanup-all-at-once) $all-p $all-t))
+        (+ (exec (freq 703 frequent-miner-cleanup-target-task) $target-p $target-t))))
+
+; frequent miner integration
+;
+; Request:
+;   (run-frequent-miner $id $pattern)
+;
+; Result:
+;   (candidate-pattern $id $pattern $support)
+
+(DEF frequent-miner-fn
+  (, (run-frequent-miner $id $pattern)
+     (DEF valuation-fn $valuation-p $valuation-t)
+     (DEF shallow-abstraction-fn $shallow-p $shallow-t)
+     (DEF specialization-combinations-fn $specialization-p $specialization-t)
+     (DEF candidate-pattern-fn $candidate-p $candidate-t)
+     (DEF frequent-miner-cleanup-all-fn $cleanup-p $cleanup-t))
+  (O
+    (+ (valuation $id $pattern))
+    (+ (run-shallow-abstraction $id))
+    (+ (run-specialization $id $pattern))
+    (+ (exec (freq 200 frequent-valuation) $valuation-p $valuation-t))
+    (+ (exec (freq 350 frequent-shallow-abstraction) $shallow-p $shallow-t))
+    (+ (exec (freq 500 frequent-specialization) $specialization-p $specialization-t))
+    (+ (exec (freq 600 frequent-candidate-patterns) $candidate-p $candidate-t))
+    (+ (exec (freq 700 frequent-miner-cleanup) $cleanup-p $cleanup-t))))
+
+; (exec (freq 000 call-frequent-miner)
+;   (, (run-frequent-miner fm-test (Inheritance $x $y))
+;      (DEF frequent-miner-fn $freq-p $freq-t))
+;   (O
+;     (+ (exec (freq 001 run-frequent-miner) $freq-p $freq-t))))
