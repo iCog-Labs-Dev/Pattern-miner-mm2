@@ -30,6 +30,7 @@ tests/
 
 scripts/
   run-tests.sh               Test runner for *-test.metta files
+  setup-mork-mm2-deps.sh     Wires MM2 helper and stdlib code into MORK
 
 .github/workflows/
   tests.yml                  CI workflow for building MORK and running tests
@@ -37,8 +38,9 @@ scripts/
 
 ## Dependencies
 
-This project expects a MORK build with the local [`mm2-helper`](https://github.com/iCog-Labs-Dev/MM2-Helper) extensions and
-[`mm2-stdlib`](https://github.com/abnsol/mm2-stdlib) helpers available.
+This project expects a MORK build with the local [`MM2-Helper`](https://github.com/iCog-Labs-Dev/MM2-Helper) extensions and
+[`mm2-stdlib`](https://github.com/tezena/mm2-stdlib) helpers available.
+
 
 ## Running Tests
 
