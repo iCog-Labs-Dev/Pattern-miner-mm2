@@ -1,8 +1,19 @@
-# Standalone Expansion Definition Map
+# Conjunction Expansion Definition Map
 
 This is a compact map of the facts transformed by
 `src/conjunction-expansion-triplet.metta`. Generic operations come from
 `src/common-utils/utils.metta`.
+
+## Iterative Candidate Intake
+
+```text
+iterative-candidate-pattern
+  -> ce-base
+  -> ce-support + ce-support-cycle
+```
+
+Integrated singleton candidates keep the support calculated by the iterative
+miner. Constructed conjunctions enter the normal support-counting route below.
 
 ## Support Cycle
 
@@ -14,7 +25,8 @@ ce-pending
 ```
 
 - `ce-support-fn` starts one candidate cycle.
-- `count-indexed-conjunction-support` produces the support.
+- `support-cache-gate` obtains support through the shared cache
+  gate and counts only a cache miss.
 - `support-at-least` applies `MIN-SUPPORT`.
 - `ce-save-pass-fn` emits the public result and requests expansion.
 
@@ -91,7 +103,7 @@ ce-connected-base
 
 | Repeated rule shape | Utility |
 | --- | --- |
-| count indexed support | `count-indexed-conjunction-support` |
+| cache or count indexed support | `support-cache-gate` |
 | compare support and threshold | `support-at-least` |
 | match and remove | `drop-matched` |
 | replace one fact | `replace-matched` |

@@ -1,3 +1,17 @@
+;; One-generation frequent candidate miner.
+;;
+;; Inputs:
+;;   (INPUT MIN-SUPPORT n)
+;;   (FACT $database-expression)
+;;
+;; Public request:
+;;   (run-frequent-miner $generation-id $pattern)
+;;
+;; Public result:
+;;   (candidate-pattern $generation-id $indexed-pattern $support)
+;;
+;; `iterative-miner.metta` supplies generation scoping and recursive depth.
+
 (DEF gv-expand
   (, (gv-visit $id $path $node))
   (O
@@ -217,7 +231,8 @@
   (O
     (- (gap-valuation-binding (VAL-VALUE $id $candidate-expr $path) $id $path $var))
     (- (get-value-at-position-result (VAL-VALUE $id $candidate-expr $path) $path $value))
-    (+ (valuation-binding $id $path $var $value)))
+    (+ (valuation-binding $id $path $var $value))
+    (+ (valuation-binding $id $path $var $var)))
 )
 
 ; Reusable valuation function.
@@ -287,6 +302,7 @@
 (DEF sae-start-walk
   (, (sae-args $id (var $source-index) $args))
   (O
+    (- (sae-args $id (var $source-index) $args))
     (+ (sae-walk $id (var $source-index) $args 1 ()))))
 
 (DEF sae-step
@@ -403,6 +419,7 @@
      (sae-step-result $sae-id (var $source-index) $abstracted-value))
   (O
     (- (shallow-abstraction-wait $id $path (var $source-index) $sae-id))
+    (- (sae-step-result $sae-id (var $source-index) $abstracted-value))
     (+ (shallow-abstraction-binding $id $path (var $source-index) $abstracted-value))))
 
 (DEF shallow-abstraction-fn
@@ -412,3 +429,171 @@
   (O
     (+ (exec (freq 350 shallow-start) $start-p $start-t))
     (+ (exec (freq 360 shallow-step) $step-p $step-t))))
+
+; specialization
+;
+; This stage builds combinations of shallow-abstraction choices across the
+; variable positions of a pattern and substitutes each completed combination.
+;
+; Request:
+;   (run-specialization $id $pattern)
+;
+; Input:
+;   (shallow-abstraction-binding $id $path $var $value)
+;
+; Results:
+;   (specialization-combination $id $bindings)
+;   (specialization-result $id $specialized-pattern)
+(spec-index-next 1 2)
+(spec-index-next 2 3)
+(spec-index-next 3 4)
+(spec-index-next 4 5)
+(spec-index-next 5 6)
+(spec-index-next 6 7)
+(spec-index-next 7 8)
+(spec-index-next 8 9)
+
+(DEF specialization-start
+  (, (run-specialization $id $pattern))
+  (O
+    (+ (specialization-position $id 1 (var 0)))
+    (+ (specialization-partial $id 1 ()))))
+
+(DEF specialization-extend
+  (, (specialization-partial $id $pos $partial)
+     (specialization-position $id $pos $var)
+     (shallow-abstraction-binding $id $path $var $value)
+     (spec-index-next $pos $next-pos)
+     (DEF specialization-extend $extend-p $extend-t)
+     (DEF specialization-finish $finish-p $finish-t))
+  (O
+    (- (specialization-partial $id $pos $partial))
+    (- (specialization-position $id $pos $var))
+    (pure (specialization-partial $id $next-pos $next-partial) $next-partial
+      (append (' ($partial ($value)))))
+    (+ (specialization-position $id $next-pos (var $pos)))
+    (+ (exec (freq 510 specialization-extend) $extend-p $extend-t))
+    (+ (exec (freq 590 specialization-finish) $finish-p $finish-t))))
+
+(DEF specialization-finish
+  (, (specialization-partial $id $pos $partial)
+     (run-specialization $id $pattern))
+  (O
+    (- (specialization-partial $id $pos $partial))
+    (+ (specialization-combination $id $partial))
+    (pure (specialization-result $id $specialized-pattern) $specialized-pattern
+      (substitute (' ($pattern $partial))))))
+
+(DEF specialization-combinations-fn
+  (, (run-specialization $id $pattern)
+     (DEF specialization-start $start-p $start-t)
+     (DEF specialization-extend $extend-p $extend-t)
+     (DEF specialization-finish $finish-p $finish-t))
+  (O
+    (+ (exec (freq 500 specialization-start) $start-p $start-t))
+    (+ (exec (freq 510 specialization-extend) $extend-p $extend-t))
+    (+ (exec (freq 590 specialization-finish) $finish-p $finish-t))))
+
+; candidate pattern support
+(DEF var-conversion-fn
+  (, (specialization-result $id $specialized-pattern))
+  (O
+    (pure (candidate-specialization $id $specialized-pattern $converted-pattern) $converted-pattern
+      (indices_to_vars (' $specialized-pattern)))))
+
+(DEF support-count-fn
+  (, (candidate-specialization $id $display-pattern $match-pattern)
+     (FACT $match-pattern))
+  (O
+    (- (candidate-specialization $id $display-pattern $match-pattern))
+    (count (support-count-result $id $display-pattern $count) $count $match-pattern)
+    ))
+
+(DEF candidate-pattern-check-fn
+  (, (support-count-result $id $pattern $support)
+     (INPUT MIN-SUPPORT $min-support))
+  (O
+    (pure (minimum-support-check-result $id $pattern $support $min-support $passes) $passes
+      (le_f64 (f64_from_string $min-support) (f64_from_string $support)))
+    (+ (exec (freq 630 minimum-support-pass)
+         (, (minimum-support-check-result $pass-id $pass-pattern $pass-support $pass-min true)
+            (minimum-support-check-result $pass-id-rm $pass-pattern-rm $pass-support-rm $pass-min-rm $check-rm))
+         (O (- (minimum-support-check-result $pass-id-rm $pass-pattern-rm $pass-support-rm $pass-min-rm $check-rm))
+            (+ (candidate-pattern $pass-id $pass-pattern $pass-support)))))))
+
+
+(DEF candidate-pattern-fn
+  (, (DEF var-conversion-fn $conv-p $conv-t)
+     (DEF support-count-fn $support-p $support-t)
+     (DEF candidate-pattern-check-fn $min-p $min-t))
+  (O
+    (+ (exec (freq 610 run-var-conversion) $conv-p $conv-t))
+    (+ (exec (freq 620 run-support-count) $support-p $support-t))
+    (+ (exec (freq 621 run-candidate-pattern-check) $min-p $min-t))))
+
+; frequent-miner intermediate-state cleanup
+(DEF frequent-miner-cleanup-blocks
+  (, (candidate-pattern $id $pattern $support))
+  (O
+    (+ (cleanup (support-count-result $id $support-pattern $support-count)))
+    (+ (cleanup (candidate-specialization $id $display-pattern $match-pattern)))
+    (+ (cleanup (specialization-result $id $specialized-pattern)))
+    (+ (cleanup (specialization-combination $id $combination)))
+    (+ (cleanup (specialization-position $id $pos $var)))
+    (+ (cleanup (shallow-abstraction-binding $id $path $shallow-var $value)))
+    (+ (cleanup (shallow-abstract-expression $sae-id $var $expr)))
+    (+ (cleanup (shallow-abstraction-request-expr $id $path $var $value $is-exp)))
+    (+ (cleanup (shallow-abstraction-request-var $id $path $var $value $is-var)))
+    (+ (cleanup (valuation-binding $id $binding-path $binding-var $binding-value)))
+    (+ (cleanup (valuation-pattern $id $valuation-pattern)))
+    (+ (cleanup (run-shallow-abstraction $id)))
+    (+ (cleanup (run-specialization $id $run-pattern)))
+    (+ (cleanup (run-frequent-miner $id $run-pattern)))))
+
+(DEF frequent-miner-cleanup-all-at-once-fn
+    (, (cleanup $intermediate-result) $intermediate-result)
+    (O
+        (- (cleanup $intermediate-result))
+        (- $intermediate-result)
+        ))
+
+(DEF frequent-miner-cleanup-target-task-fn
+  (, (cleanup $fact))
+  (O
+    (- (cleanup $fact))))
+
+;; Remove the generic cleanup tasks after they are no longer useful.
+(DEF frequent-miner-cleanup-all-fn
+    (, (DEF frequent-miner-cleanup-blocks $blocks-p $blocks-t)
+       (DEF frequent-miner-cleanup-all-at-once-fn $all-p $all-t)
+       (DEF frequent-miner-cleanup-target-task-fn $target-p $target-t))
+    (O
+        (+ (exec (freq 701 frequent-miner-cleanup-blocks) $blocks-p $blocks-t))
+        (+ (exec (freq 702 frequent-miner-cleanup-all-at-once) $all-p $all-t))
+        (+ (exec (freq 703 frequent-miner-cleanup-target-task) $target-p $target-t))))
+
+; one-generation frequent miner
+;
+; Request:
+;   (run-frequent-miner $id $pattern)
+;
+; Result:
+;   (candidate-pattern $id $pattern $support)
+;
+
+(DEF frequent-miner-fn
+  (, (run-frequent-miner $id $pattern)
+     (DEF valuation-fn $valuation-p $valuation-t)
+     (DEF shallow-abstraction-fn $shallow-p $shallow-t)
+     (DEF specialization-combinations-fn $specialization-p $specialization-t)
+     (DEF candidate-pattern-fn $candidate-p $candidate-t)
+     (DEF frequent-miner-cleanup-all-fn $cleanup-p $cleanup-t))
+  (O
+    (+ (valuation $id $pattern))
+    (+ (run-shallow-abstraction $id))
+    (+ (run-specialization $id $pattern))
+    (+ (exec (freq 200 frequent-valuation) $valuation-p $valuation-t))
+    (+ (exec (freq 350 frequent-shallow-abstraction) $shallow-p $shallow-t))
+    (+ (exec (freq 500 frequent-specialization) $specialization-p $specialization-t))
+    (+ (exec (freq 600 frequent-candidate-patterns) $candidate-p $candidate-t))
+    (+ (exec (freq 700 frequent-miner-cleanup) $cleanup-p $cleanup-t))))

@@ -1,22 +1,72 @@
 ;; Standalone conjunction expansion for triplet patterns.
 ;;
-;; Inputs:
+;; Standalone inputs:
 ;;   (INPUT MIN-SUPPORT n)
 ;;   (INPUT MAX-SIZE n)
 ;;   (pattern 0 ($predicate $left $right))
+;;
+;; Integrated request:
+;;   (conjunction-expansion $run-id)
+;;
+;; Integrated candidate input (produced before the request is run):
+;;   (iterative-candidate-pattern
+;;     $run-id $root-pattern $indexed-candidate $support)
 ;;
 ;; Database triplets are active facts in the same atomspace.
 ;;
 ;; Public output:
 ;;   (expanded-conjunct $size $indexed-candidate $support)
 ;;
-;; Flow:
+;; Standalone flow:
 ;;   normalize seeds -> count support -> filter -> build connected variants
+;;   -> canonicalize -> queue the next size
+;;
+;; Integrated flow:
+;;   register all iterative-miner candidates as bases -> reuse their support
+;;   -> filter -> build connected variants -> count support for new conjunctions
 ;;   -> canonicalize -> queue the next size
 ;;
 ;; All `ce-*` facts are private pipeline state. This file has no dependency on
 ;; frequent-miner.metta; it uses the shared `freq` priority namespace required
 ;; by docs/data-model.md.
+
+;; Read every candidate produced by one completed iterative-miner run. Matching
+;; candidates are registered at priority 010 before any support/expansion cycle
+;; starts at priority 106. The root pattern is lineage owned by the iterative
+;; miner; expansion uses the indexed candidate and its computed support.
+(DEF ce-intake-iterative-candidate-fn
+  (, (ce-intake-run $run-id)
+     (iterative-candidate-pattern
+       $run-id $root-pattern $candidate $support))
+  (O
+    (+ (ce-base $candidate))
+    (+ (ce-support 1 ($candidate) $support))
+    (+ (ce-support-cycle 1 ($candidate)))))
+
+(DEF ce-finish-intake-fn
+  (, (ce-intake-run $run-id))
+  (O (- (ce-intake-run $run-id))))
+
+(DEF ce-cleanup-bases-fn
+  (, (ce-base $base))
+  (O (- (ce-base $base))))
+
+;; Public callable for integrated intake. Direct callers must run it only after
+;; the iterative miner has stored its candidates. `frequent-pattern-miner-fn`
+;; provides that ordering through its priority-999 handoff.
+(DEF conjunction-expansion-fn
+  (, (conjunction-expansion $run-id)
+     (DEF ce-intake-iterative-candidate-fn $intake-p $intake-t)
+     (DEF ce-finish-intake-fn $finish-p $finish-t)
+     (DEF ce-schedule-cycle-fn $cycle-p $cycle-t)
+     (DEF ce-cleanup-bases-fn $cleanup-p $cleanup-t))
+  (O
+    (- (conjunction-expansion $run-id))
+    (+ (ce-intake-run $run-id))
+    (+ (exec (freq 010 intake-iterative-candidates) $intake-p $intake-t))
+    (+ (exec (freq 011 finish-iterative-intake) $finish-p $finish-t))
+    (+ (exec (freq 106 schedule-iterative-cycles) $cycle-p $cycle-t))
+    (+ (exec (freq 900 cleanup-bases) $cleanup-p $cleanup-t))))
 
 ;; Count a queued candidate through common-utils, then install the later stages
 ;; needed by the same cycle. Splitting request/count scheduling from the
@@ -34,14 +84,17 @@
 
 (DEF ce-request-count-fn
   (, (ce-count-work $size $candidate)
-     ((count-indexed-conjunction-support
-        $size $candidate (freq 111 count-support) -> ce-support)
-       $count-p $count-t))
+     ((support-cache-gate
+        (ce-count-work $size $candidate)
+        $size
+        $candidate
+        (freq 110 support-cache-hit)
+        (freq 111 count-support)
+        (freq 112 deliver-support)
+        -> ce-support)
+       $gate-p $gate-t))
   (O
-    (+ (count-indexed-conjunction-support-request
-      $size $candidate (freq 111 count-support) ce-support))
-    (+ (exec (freq 110 build-count-query) $count-p $count-t))
-    (- (ce-count-work $size $candidate))))
+    (+ (exec (freq 110 support-gate) $gate-p $gate-t))))
 
 (DEF ce-schedule-cycle-fn
   (, (ce-support-cycle $size $candidate)
@@ -418,5 +471,5 @@
 ;; Bases are derived input, not output. Priority 900 runs only after all
 ;; recursively queued mining cycles have finished.
 (exec (freq 900 cleanup-bases)
-  (, (ce-base $base))
-  (O (- (ce-base $base))))
+  (, (DEF ce-cleanup-bases-fn $cleanup-p $cleanup-t))
+  (O (+ (exec (freq 900 cleanup-bases) $cleanup-p $cleanup-t))))

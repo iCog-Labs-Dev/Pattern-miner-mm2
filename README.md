@@ -21,7 +21,10 @@ src/
   conjunction-expansion-triplet.metta
                              Standalone triplet conjunction expansion
   surp.metta                 Current MM2 implementation of isurp-old
-  frequent-miner.metta       Variable extraction and valuation utilities
+  frequent-miner.metta       One-generation frequent candidate miner
+  iterative-miner.metta      Recursive candidate generation and depth checks
+  frequent-pattern-miner.metta
+                             Integrated miner/expansion entry point
   dummy.metta                Scratch file
 
 tests/
@@ -39,6 +42,10 @@ scripts/
 
 This project expects a MORK build with the local [`mm2-helper`](https://github.com/iCog-Labs-Dev/MM2-Helper) extensions and
 [`mm2-stdlib`](https://github.com/abnsol/mm2-stdlib) helpers available.
+
+The frequent miner requires the MM2-Helper implementations of `is_exp`,
+`substitute`, `vars_to_indices`, and `indices_to_vars`. Re-run the helper setup
+and rebuild MORK after updating MM2-Helper.
 
 
 
@@ -92,6 +99,46 @@ Its public result is:
 (expanded-conjunct size indexed-candidate support)
 ```
 
-`src/frequent-miner.metta` retains the existing variable-extraction,
-positional-lookup, and valuation callables used by `valuation-test.metta`.
+`src/frequent-miner.metta` contains variable extraction, positional lookup,
+valuation, shallow abstraction, specialization, support filtering, and the
+one-generation frequent-candidate driver.
 See `docs/conjunction-expansion-walkthrough.md` for the expansion algorithm.
+
+## Integrated Frequent Pattern Miner
+
+Load the frequent miner, iterative miner, common utilities, conjunction
+expansion, and integrated entry-point files into the same atomspace. Then issue:
+
+```metta
+(run-frequent-pattern-miner iter-smoke (Inheritance $a $b))
+```
+
+Specialize and run the public callable:
+
+```metta
+(exec (freq 001 call-frequent-pattern-miner)
+  (, (run-frequent-pattern-miner iter-smoke (Inheritance $a $b))
+     (DEF frequent-pattern-miner-fn $miner-p $miner-t))
+  (O (+ (exec (freq 002 run-frequent-pattern-miner)
+       $miner-p $miner-t))))
+```
+
+The orchestrator runs the iterative miner first and invokes conjunction
+expansion at priority `999`, after candidate generation and cleanup. The
+handoff uses this stable contract:
+
+```metta
+(iterative-candidate-pattern
+  iter-smoke
+  (Inheritance $a $b)
+  (Inheritance (var 0) sodaDrinker)
+  10)
+```
+
+Conjunction expansion uses the indexed candidate as a base and reuses `10` as
+its singleton support. Support is counted normally for newly constructed
+conjunctions. Source and dependency files remain caller-owned; tests load them
+through `TEST-AUX` rather than imports inside the components.
+
+The current private `ce-*` working state is not run-scoped, so invoke one
+integrated run at a time in an atomspace.
