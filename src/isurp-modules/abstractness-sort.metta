@@ -46,7 +46,7 @@
 
 
 ;; Expand block tuples into clauses.  This duplicates a small part of
-;; `04_eq_prob.metta` so the sorter can be tested independently.
+;; `eq-prob.metta` so the sorter can be tested independently.
 (exec (surp 060 abstract-expand-1)
     (, (abstractness-sort-request $partition $var)
        (block $partition ($c1)))
@@ -105,6 +105,42 @@
     (O
         (pure
             (abstract-open-score $partition (var $n) $block ($rel $left (var $n)) $score)
+            $score
+            (i8_to_string (is_var (' $left))))))
+
+(exec (surp 061 abstract-open-right-person-var)
+    (, (abstractness-sort-request $partition (var $n))
+       (abstract-block-clause $partition $block ($rel (Person (var $n)) $right)))
+    (O
+        (pure
+            (abstract-open-score $partition (var $n) $block ($rel (Person (var $n)) $right) $score)
+            $score
+            (i8_to_string (is_var (' $right))))))
+
+(exec (surp 061 abstract-open-left-person-var)
+    (, (abstractness-sort-request $partition (var $n))
+       (abstract-block-clause $partition $block ($rel $left (Person (var $n)))))
+    (O
+        (pure
+            (abstract-open-score $partition (var $n) $block ($rel $left (Person (var $n))) $score)
+            $score
+            (i8_to_string (is_var (' $left))))))
+
+(exec (surp 061 abstract-open-right-and-person-var)
+    (, (abstractness-sort-request $partition (var $n))
+       (abstract-block-clause $partition $block ($rel (And (And (Person (var $n)) $a) $b) $right)))
+    (O
+        (pure
+            (abstract-open-score $partition (var $n) $block ($rel (And (And (Person (var $n)) $a) $b) $right) $score)
+            $score
+            (i8_to_string (is_var (' $right))))))
+
+(exec (surp 061 abstract-open-left-and-person-var)
+    (, (abstractness-sort-request $partition (var $n))
+       (abstract-block-clause $partition $block ($rel $left (And (And (Person (var $n)) $a) $b))))
+    (O
+        (pure
+            (abstract-open-score $partition (var $n) $block ($rel $left (And (And (Person (var $n)) $a) $b)) $score)
             $score
             (i8_to_string (is_var (' $left))))))
 

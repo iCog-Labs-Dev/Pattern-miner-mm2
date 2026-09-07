@@ -10,11 +10,11 @@ run in one MORK atomspace.
 docs/
   data-model.md              Shared MM2 data model and priority conventions
   isurp-old-validation.md    Validation notes against PeTTa isurp-old
+  isurp-module-validation.md Modular newer ISurp implementation and validation
   testing.md                 Test file format and runner workflow
 
 data/
-  freq-db.metta              Valuation test fixture
-  ugly-sodaDrinker.metta     Shared mining and surprisingness fixture
+  ugly-sodaDrinker.metta     Sample AtomSpace facts
 
 src/
   common-utils/              Reusable MM2 callable definitions
@@ -33,6 +33,7 @@ tests/
 
 scripts/
   run-tests.sh               Test runner for *-test.metta files
+  setup-mork-mm2-deps.sh     Wires MM2 helper and stdlib code into MORK
 
 .github/workflows/
   tests.yml                  CI workflow for building MORK and running tests
@@ -40,13 +41,8 @@ scripts/
 
 ## Dependencies
 
-This project expects a MORK build with the local [`mm2-helper`](https://github.com/iCog-Labs-Dev/MM2-Helper) extensions and
-[`mm2-stdlib`](https://github.com/abnsol/mm2-stdlib) helpers available.
-
-The frequent miner requires the MM2-Helper implementations of `is_exp`,
-`substitute`, `vars_to_indices`, and `indices_to_vars`. Re-run the helper setup
-and rebuild MORK after updating MM2-Helper.
-
+This project expects a MORK build with the local [`MM2-Helper`](https://github.com/iCog-Labs-Dev/MM2-Helper) extensions and
+[`mm2-stdlib`](https://github.com/tezena/mm2-stdlib) helpers available.
 
 
 ## Running Tests

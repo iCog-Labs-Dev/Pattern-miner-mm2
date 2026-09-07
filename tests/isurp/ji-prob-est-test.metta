@@ -1,14 +1,15 @@
-;; TEST-AUX src/common-utils/utils.metta
-;; TEST-AUX src/isurp_modules/03_abstractness_sort.metta
-;; TEST-AUX src/isurp_modules/04_eq_prob.metta
+;; TEST-AUX src/isurp-modules/abstractness-sort.metta
+;; TEST-AUX src/isurp-modules/eq-prob.metta
+;; TEST-AUX src/isurp-modules/pro-prob-wout-joint.metta
+;; TEST-AUX src/isurp-modules/ji-prob-est.metta
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; eq-prob component test
+;; ji-prob-est component test
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(partition (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly))))
 
 (INPUT DB-SIZE 4)
+
+(partition (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly))))
 
 (block
     (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly)))
@@ -33,6 +34,4 @@
 (Inheritance Allen ugly)
 (Inheritance Lily ugly)
 
-(EXPECTED-RESULT eq-joint-var (eq-joint-var (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly))) (var 0)))
-
-(EXPECTED-RESULT eq-prob (eq-prob-of (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly))) 0.25))
+(EXPECTED-RESULT ji-prob-est (ji-prob-est-of (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly))) 0.0625))
