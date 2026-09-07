@@ -12,11 +12,11 @@ on:
       mork_ref:
         description: MORK branch, tag, or commit to test with
         required: false
-        default: main
+        default: 5464713539c1c1cb491397f4c7bb1d9cdc8b74a0
       pathmap_ref:
         description: PathMap branch, tag, or commit to test with
         required: false
-        default: master
+        default: 233fbbac7c7b8d8b2414b54689a2da4331d234c7
       mm2_helper_ref:
         description: MM2-Helper branch, tag, or commit to test with
         required: false
@@ -44,15 +44,15 @@ jobs:
       - name: Checkout PathMap
         uses: actions/checkout@v4
         with:
-          repository: ${{ vars.PATHMAP_REPOSITORY || 'Adam-Vandervorst/PathMap' }}
-          ref: ${{ github.event.inputs.pathmap_ref || vars.PATHMAP_REF || 'master' }}
+          repository: Adam-Vandervorst/PathMap
+          ref: ${{ github.event.inputs.pathmap_ref || '233fbbac7c7b8d8b2414b54689a2da4331d234c7' }}
           path: PathMap
 
       - name: Checkout MORK
         uses: actions/checkout@v4
         with:
-          repository: ${{ vars.MORK_REPOSITORY || 'trueagi-io/MORK' }}
-          ref: ${{ github.event.inputs.mork_ref || vars.MORK_REF || 'main' }}
+          repository: trueagi-io/MORK
+          ref: ${{ github.event.inputs.mork_ref || '5464713539c1c1cb491397f4c7bb1d9cdc8b74a0' }}
           path: MORK
 
       - name: Checkout MM2-Helper
