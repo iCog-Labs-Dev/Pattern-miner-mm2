@@ -7,7 +7,7 @@
 ;;;;;;;;;;;;;;;;
 
 
-
+(INPUT DB db)
 (INPUT DB-SIZE 28)
 (INPUT NORMALIZATION TRUE)
 (INPUT PATTERN ((, (Inheritance $x Loves $y) (Inheritance $x $Interest $Venue) (Inheritance $y $Interest $Venue)) 12))

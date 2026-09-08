@@ -6,7 +6,7 @@
 ;; TEST INPUT ;;
 ;;;;;;;;;;;;;;;;
 
-
+(INPUT DB db)
 (INPUT DB-SIZE 25)
 (INPUT NORMALIZATION TRUE)
 (INPUT PATTERN ((, (Inheritance (And (And (Person $x) man) (Or human sodaDrinker)) (Or (And human man) (And human sodaDrinker)))

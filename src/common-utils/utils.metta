@@ -153,7 +153,7 @@
 
 ;; Compute the probability of a pattern by dividing the support by total counts.
 ((prob $pattern $db -> $out)
-    (, (indexed-pattern ($pattern $support))
+    (, (INPUT PATTERN ($pattern $support))
        (total-count-of $pattern $count))
     (O
         (pure
@@ -225,5 +225,18 @@
             (tuple db-fact $db (car (' $pattern)))
         )
         
+    )
+)
+
+
+;; Get total relevant items
+((universe-count $db $pattern -> $out)
+    (, (num-of-conjuncts $pattern $pattern-count) (db-size $db $db-count)) 
+    (O 
+        (pure 
+            ($out $pattern $db $universe-count)
+            $universe-count
+            (i64_to_string (pow_i64 (i64_from_string $db-count) (i64_from_string $pattern-count)))
+        )
     )
 )

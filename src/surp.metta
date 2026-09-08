@@ -30,17 +30,23 @@
 
 (exec (surp 102 start-surp)
     (, 
-       (indexed-pattern ($indexed-pattern $support))
+       (indexed-pattern ($indexed-pattern $support)) (INPUT DB $db-name)
        ((count-conjuncts $indexed-pattern -> num-of-conjuncts) $src-of-cnj $sink-of-cnj)
        ((total-counts $db-name $indexed-pattern -> total-count-of) $src-of-tc $sink-of-tc)
-       ((prob $indexed-pattern $db-name -> prob-of) $src-of-prob $sink-of-prob))
+       )
     (O
-        (+ (exec (surp 102 count-db) $src-of-count $sink-of-count))
         (+ (exec (surp 102 count-conjuncts) $src-of-cnj $sink-of-cnj))
-        (+ (exec (surp 103 total-counts) $src-of-tc $sink-of-tc))
-        (+ (exec (surp 104 prob) $src-of-prob $sink-of-prob))))
+        (+ (exec (surp 103 total-counts) $src-of-tc $sink-of-tc))))
 
-
+(exec (surp 104 prob)
+    (, (indexed-pattern ($indexed-pattern $support)) (total-count-of $indexed-pattern $count))
+    (O (pure
+            (prob-of $indexed-pattern $prob)
+            $prob
+            (f64_to_string 
+                (div_f64 (f64_from_string $support) (f64_from_string $count)))
+    ))
+)
 
 (exec (surp 105 partitions-of)
     (, (indexed-pattern ($indexed-pattern $support)))
