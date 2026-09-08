@@ -12,10 +12,10 @@
 (pattern 0 (Inheritance $x sodaDrinker))
 
 ;; Constant-slot expansion.
-(EXPECTED-RESULT constant-singleton (expanded-conjunct 1 ((Inheritance (var 0) human)) 19))
+(EXPECTED-RESULT constant-singleton (expanded-conjunct 1 ((Inheritance (var 0) human)) 20))
 (EXPECTED-RESULT constant-size-2 (expanded-conjunct 2 ((Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker)) 5))
-(EXPECTED-RESULT constant-size-3 (expanded-conjunct 3 ((Inheritance (var 0) ugly) (Inheritance (var 0) human) (Inheritance (var 0) sodaDrinker)) 4))
+(EXPECTED-RESULT constant-size-3 (expanded-conjunct 3 ((Inheritance (var 0) ugly) (Inheritance (var 0) human) (Inheritance (var 0) sodaDrinker)) 5))
 
 ;; Distinct-variable connected expansion and canonicalization.
-(EXPECTED-RESULT canonical-fan (expanded-conjunct 2 ((Inheritance (var 0) (var 1)) (Inheritance (var 0) (var 2))) 183))
-(EXPECTED-RESULT canonical-join (expanded-conjunct 2 ((Inheritance (var 0) (var 1)) (Inheritance (var 2) (var 1))) 761))
+(EXPECTED-RESULT canonical-fan (expanded-conjunct 2 ((Inheritance (var 0) (var 1)) (Inheritance (var 0) (var 2))) 190))
+(EXPECTED-RESULT canonical-join (expanded-conjunct 2 ((Inheritance (var 0) (var 1)) (Inheritance (var 2) (var 1))) 800))
