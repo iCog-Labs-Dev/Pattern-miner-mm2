@@ -84,7 +84,9 @@
 
 (DEF ce-request-count-fn
   (, (ce-count-work $size $candidate)
-     ((support-cache-gate
+     (INPUT SUPPORT-MODE $support-mode)
+     ((support-gate
+        $support-mode
         (ce-count-work $size $candidate)
         $size
         $candidate

@@ -84,8 +84,13 @@ facts:
 ```metta
 (INPUT MIN-SUPPORT 2)
 (INPUT MAX-SIZE 3)
+(INPUT SUPPORT-MODE cached)
 (pattern 0 (Inheritance $x human))
 ```
+
+`SUPPORT-MODE` is required by pipelines that count support through the shared
+gate. Use `cached` for normal operation or `uncached` to benchmark the same
+pipeline while forcing every support request to query the database.
 
 `src/conjunction-expansion-triplet.metta` is independent of
 `src/frequent-miner.metta`. Load `src/common-utils/utils.metta` alongside it.

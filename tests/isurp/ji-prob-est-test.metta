@@ -8,6 +8,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (INPUT DB-SIZE 4)
+(INPUT SUPPORT-MODE cached)
 
 (partition (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly))))
 

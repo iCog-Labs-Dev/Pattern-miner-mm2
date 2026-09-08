@@ -9,6 +9,7 @@
 (partition (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly))))
 
 (INPUT DB-SIZE 4)
+(INPUT SUPPORT-MODE cached)
 
 (block
     (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly)))

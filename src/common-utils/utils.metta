@@ -95,7 +95,14 @@
         (+ ($out $context $candidate $support))
         (- (support-cache-wait $out $context $candidate))))
 
-((support-cache-gate
+;; Mode-selectable support gate used by production pipelines.
+;;
+;; Callers read `(INPUT SUPPORT-MODE $mode)` and pass either `cached` or
+;; `uncached` here.  The mode is part of the callable signature so dispatch
+;; happens while the source/sink pair is generated; no extra exec layer is
+;; introduced around the scheduled gate.
+((support-gate
+    cached
     $fact
     $context
     $candidate
@@ -114,6 +121,35 @@
         (+ (exec $hit-priority $hit-p $hit-t))
         (+ (exec $count-priority $count-p $count-t))
         (+ (exec $deliver-priority $deliver-p $deliver-t))
+        (- $fact)))
+
+;; Always count this request.  Seed a zero result first because MORK's count
+;; sink only runs when the query matches; a positive count replaces that zero.
+;; This branch never reads or writes `(support-cache ...)` facts.
+((support-gate
+    uncached
+    $fact
+    $context
+    $candidate
+    $hit-priority
+    $count-priority
+    $deliver-priority
+    -> $out)
+    (, $fact)
+    (O
+        (+ ($out $context $candidate 0))
+        (pure
+            (exec $count-priority
+                $query
+                (O
+                    (count
+                        ($out $context $candidate $support)
+                        $support
+                        $query)
+                    (- ($out $context $candidate 0))))
+            $query
+            (indices_to_vars
+                (cons , (' $candidate))))
         (- $fact)))
 
 ;; Compare a support value against a caller-provided threshold. The opaque

@@ -83,7 +83,9 @@
 ;; is result context only; repeated blocks across partitions share one count.
 (exec 6
     (, (block $partition $indexed-block)
-       ((support-cache-gate
+       (INPUT SUPPORT-MODE $support-mode)
+       ((support-gate
+          $support-mode
           (surp-block-support-request $partition $indexed-block)
           $partition
           $indexed-block

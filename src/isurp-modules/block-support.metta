@@ -21,7 +21,9 @@
 ;; several partitions is counted once and delivered to each partition.
 (exec (surp 041 block-support-gate)
     (, (block-support-gate-request $partition $indexed-block)
-       ((support-cache-gate
+       (INPUT SUPPORT-MODE $support-mode)
+       ((support-gate
+          $support-mode
           (block-support-gate-request $partition $indexed-block)
           $partition
           $indexed-block

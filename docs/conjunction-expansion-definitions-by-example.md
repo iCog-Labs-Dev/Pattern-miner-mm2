@@ -25,7 +25,7 @@ ce-pending
 ```
 
 - `ce-support-fn` starts one candidate cycle.
-- `support-cache-gate` obtains support through the shared cache
+- `support-gate` obtains support in the configured cached or uncached mode
   gate and counts only a cache miss.
 - `support-at-least` applies `MIN-SUPPORT`.
 - `ce-save-pass-fn` emits the public result and requests expansion.
@@ -103,7 +103,7 @@ ce-connected-base
 
 | Repeated rule shape | Utility |
 | --- | --- |
-| cache or count indexed support | `support-cache-gate` |
+| count indexed support using `SUPPORT-MODE` | `support-gate` |
 | compare support and threshold | `support-at-least` |
 | match and remove | `drop-matched` |
 | replace one fact | `replace-matched` |

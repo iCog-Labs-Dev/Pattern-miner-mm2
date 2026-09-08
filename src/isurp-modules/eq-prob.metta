@@ -195,7 +195,9 @@
 ;; context and does not affect the cache key.
 (exec (surp 056 eq-value-support-gate)
     (, (eq-value-query $partition $block $var $query)
-       ((support-cache-gate
+       (INPUT SUPPORT-MODE $support-mode)
+       ((support-gate
+          $support-mode
           (eq-value-query $partition $block $var $query)
           ($partition $var)
           $block

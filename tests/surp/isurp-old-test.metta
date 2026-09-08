@@ -9,6 +9,7 @@
 (INPUT DB db)
 (INPUT DB-SIZE 60)
 (INPUT NORMALIZATION TRUE)
+(INPUT SUPPORT-MODE cached)
 (INPUT PATTERN ((,  (Inheritance $x man) (Inheritance $x ugly) (Inheritance $x sodaDrinker)) 5))
 
 (EXPECTED-RESULT isurp-old (surprisingess-of (, (Inheritance $a man) (Inheritance $a ugly) (Inheritance $a sodaDrinker)) 0.999707773232028))

@@ -8,6 +8,7 @@
 (INPUT DB db)
 (INPUT MIN-SUPPORT 2)
 (INPUT MAX-SIZE 3)
+(INPUT SUPPORT-MODE cached)
 
 ;; The iterative miner consumes FACT wrappers; conjunction expansion consumes
 ;; the raw triplets loaded from the same fixture.

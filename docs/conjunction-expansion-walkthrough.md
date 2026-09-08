@@ -75,7 +75,7 @@ Intake has two ordered phases. First, every indexed candidate is registered as
 a `ce-base`. Then each singleton enters the existing filter and expansion
 cycle with the iterative miner's support value. This ordering makes the full
 candidate pool available before any connected pair is built. Generated
-conjunctions use the shared `support-cache-gate`; only singleton intake bypasses
+conjunctions use the shared `support-gate`; only singleton intake bypasses
 the gate because the iterative miner already supplies its support.
 
 The root pattern remains iterative-miner lineage data. Expansion neither
@@ -99,7 +99,7 @@ candidate back to real variables so it can match active database facts.
 
 ## Support And Depth
 
-The shared `support-cache-gate` callable first checks the
+In `cached` mode, the shared `support-gate` callable first checks the
 durable support cache and counts only misses. `support-at-least` compares the
 result with `MIN-SUPPORT`.
 
