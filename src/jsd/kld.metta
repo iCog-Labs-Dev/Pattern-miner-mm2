@@ -16,10 +16,52 @@
     (, (jsd-kld-of $cdf $cdf 0.0)))
 
 
-(exec (surp 320 jsd-kld-start)
+(exec (surp 320 jsd-kld-size-check)
     (, (jsd-kld-request $left-cdf $right-cdf)
+       (DEF jsd-kld-size-dispatch $dispatch-p $dispatch-t))
+    (O
+        (pure
+            (jsd-kld-input-left-size $left-cdf $right-cdf $left-size)
+            $left-size
+            (size-atom (' $left-cdf)))
+        (pure
+            (jsd-kld-input-right-size $left-cdf $right-cdf $right-size)
+            $right-size
+            (size-atom (' $right-cdf)))
+        (+ (exec (surp 320 jsd-kld-size-dispatch) $dispatch-p $dispatch-t))))
+
+
+(DEF jsd-kld-size-dispatch
+    (, (jsd-kld-input-left-size $left-cdf $right-cdf $left-size)
+       (jsd-kld-input-right-size $left-cdf $right-cdf $right-size)
+       (DEF jsd-kld-start $start-p $start-t)
+       (DEF jsd-kld-size-mismatch $mismatch-p $mismatch-t))
+    (O
+        (pure
+            (jsd-kld-size-match $left-cdf $right-cdf $same-size)
+            $same-size
+            (eq_i32
+                (i32_from_string $left-size)
+                (i32_from_string $right-size)))
+        (- (jsd-kld-input-left-size $left-cdf $right-cdf $left-size))
+        (- (jsd-kld-input-right-size $left-cdf $right-cdf $right-size))
+        (+ (exec (surp 320 jsd-kld-start) $start-p $start-t))
+        (+ (exec (surp 320 jsd-kld-size-mismatch) $mismatch-p $mismatch-t))))
+
+
+(DEF jsd-kld-size-mismatch
+    (, (jsd-kld-size-match $left-cdf $right-cdf false))
+    (O
+        (- (jsd-kld-size-match $left-cdf $right-cdf false))
+        (+ (jsd-kld-size-mismatch $left-cdf $right-cdf))))
+
+
+(DEF jsd-kld-start
+    (, (jsd-kld-request $left-cdf $right-cdf)
+       (jsd-kld-size-match $left-cdf $right-cdf true)
        (DEF jsd-kld-size $size-p $size-t))
     (O
+        (- (jsd-kld-size-match $left-cdf $right-cdf true))
         (+ (jsd-kld-acc $left-cdf $right-cdf $left-cdf $right-cdf 0.0 0.0 0.0))
         (+ (exec (surp 321 jsd-kld-size) $size-p $size-t))))
 

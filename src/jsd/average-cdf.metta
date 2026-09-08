@@ -8,11 +8,53 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(exec (surp 310 jsd-average-cdf-start)
+(exec (surp 310 jsd-average-cdf-size-check)
     (, (jsd-average-cdf-request $left-cdf $right-cdf)
+       (DEF jsd-average-cdf-size-dispatch $dispatch-p $dispatch-t))
+    (O
+        (pure
+            (jsd-average-cdf-left-size $left-cdf $right-cdf $left-size)
+            $left-size
+            (size-atom (' $left-cdf)))
+        (pure
+            (jsd-average-cdf-right-size $left-cdf $right-cdf $right-size)
+            $right-size
+            (size-atom (' $right-cdf)))
+        (+ (exec (surp 310 jsd-average-cdf-size-dispatch) $dispatch-p $dispatch-t))))
+
+
+(DEF jsd-average-cdf-size-dispatch
+    (, (jsd-average-cdf-left-size $left-cdf $right-cdf $left-size)
+       (jsd-average-cdf-right-size $left-cdf $right-cdf $right-size)
+       (DEF jsd-average-cdf-start $start-p $start-t)
+       (DEF jsd-average-cdf-size-mismatch $mismatch-p $mismatch-t))
+    (O
+        (pure
+            (jsd-average-cdf-size-match $left-cdf $right-cdf $same-size)
+            $same-size
+            (eq_i32
+                (i32_from_string $left-size)
+                (i32_from_string $right-size)))
+        (- (jsd-average-cdf-left-size $left-cdf $right-cdf $left-size))
+        (- (jsd-average-cdf-right-size $left-cdf $right-cdf $right-size))
+        (+ (exec (surp 310 jsd-average-cdf-start) $start-p $start-t))
+        (+ (exec (surp 310 jsd-average-cdf-size-mismatch) $mismatch-p $mismatch-t))))
+
+
+(DEF jsd-average-cdf-size-mismatch
+    (, (jsd-average-cdf-size-match $left-cdf $right-cdf false))
+    (O
+        (- (jsd-average-cdf-size-match $left-cdf $right-cdf false))
+        (+ (jsd-average-cdf-size-mismatch $left-cdf $right-cdf))))
+
+
+(DEF jsd-average-cdf-start
+    (, (jsd-average-cdf-request $left-cdf $right-cdf)
+       (jsd-average-cdf-size-match $left-cdf $right-cdf true)
        (DEF jsd-average-cdf-step $step-p $step-t)
        (DEF jsd-average-cdf-final $final-p $final-t))
     (O
+        (- (jsd-average-cdf-size-match $left-cdf $right-cdf true))
         (+ (jsd-average-cdf-acc $left-cdf $right-cdf $left-cdf $right-cdf ()))
         (+ (exec (surp 311 jsd-average-cdf-step) $step-p $step-t))
         (+ (exec (surp 312 jsd-average-cdf-final) $final-p $final-t))))
