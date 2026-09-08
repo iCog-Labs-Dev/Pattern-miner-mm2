@@ -35,23 +35,3 @@
             $query
             (indices_to_vars
                 (cons , (' $indexed-block))))))
-
-
-;; Direct fallback for common one-clause binary predicate blocks:
-;;
-;;   ((Inheritance (var 0) man))
-;;
-;; Some current MORK/helper combinations do not materialize the dynamic
-;; `indices_to_vars` query above for already-indexed input patterns.  This
-;; fallback keeps support counting available for the common binary predicate
-;; shape used in the ISurp integration tests.
-(exec (surp 040 block-support-fallback)
-    (, (block $partition (($rel (var $n) $arg))))
-    (,
-        (exec (surp 041 count-block-support)
-            (, ($rel $x $arg))
-            (O
-                (count
-                    (block-support $partition (($rel (var $n) $arg)) $support)
-                    $support
-                    ($rel $x $arg))))))
