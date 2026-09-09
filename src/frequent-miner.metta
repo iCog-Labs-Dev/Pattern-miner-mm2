@@ -776,3 +776,102 @@
 ;        (Inheritance (var 0) (Evaluation Allen sodaDrinker)))
 ;      (DEF has-nested-expression-with-respect-to-fn $hne-p $hne-t))
 ;   (O (+ (exec (freq 001 run-hne-smoke) $hne-p $hne-t))))
+
+
+; Remove HNE scratch facts after an iterative candidate has been checked.
+; The positive result is intentionally kept for the iterator continuation stage.
+(DEF hne-cleanup-blocks
+  (, (hne-cleanup $id))
+  (O
+    (- (hne-cleanup $id))
+    (+ (hne-cleanup-target (hne-active $id)))
+    (+ (hne-cleanup-target (hne-top $id $parent $candidate)))
+    (+ (hne-cleanup-target (hne-check $id $parent $candidate)))
+    (+ (hne-cleanup-target (hne-dispatch $id $parent $candidate)))
+    (+ (hne-cleanup-target (hne-decision $id $parent $candidate $parent-head $candidate-head $parent-tail $candidate-tail)))
+    (+ (hne-cleanup-target (hne-parent-head $id $parent $candidate $parent-head)))
+    (+ (hne-cleanup-target (hne-candidate-head $id $parent $candidate $candidate-head)))
+    (+ (hne-cleanup-target (hne-parent-tail $id $parent $candidate $parent-tail)))
+    (+ (hne-cleanup-target (hne-candidate-tail $id $parent $candidate $candidate-tail)))
+    (+ (hne-cleanup-target (hne-parent-head-var $id $parent $candidate $parent-head $is-parent-var)))
+    (+ (hne-cleanup-target (hne-parent-head-exp $id $parent $candidate $parent-head $is-parent-exp)))
+    (+ (hne-cleanup-target (hne-candidate-head-exp $id $parent $candidate $candidate-head $is-candidate-exp)))))
+
+(DEF hne-cleanup-target-fn
+  (, (hne-cleanup-target $fact) $fact)
+  (O
+    (- (hne-cleanup-target $fact))
+    (- $fact)))
+
+(DEF hne-cleanup-target-task-fn
+  (, (hne-cleanup-target $fact))
+  (O
+    (- (hne-cleanup-target $fact))))
+
+(DEF hne-cleanup-fn
+  (, (DEF hne-cleanup-blocks $blocks-p $blocks-t)
+     (DEF hne-cleanup-target-fn $target-p $target-t)
+     (DEF hne-cleanup-target-task-fn $task-p $task-t))
+  (O
+    (+ (exec (freq 910 hne-cleanup-blocks) $blocks-p $blocks-t))
+    (+ (exec (freq 911 hne-cleanup-targets) $target-p $target-t))
+    (+ (exec (freq 912 hne-cleanup-target-tasks) $task-p $task-t))))
+    
+
+; iterative miner
+;
+; Runs one frequent-miner generation, checks each candidate against its parent,
+; then recursively mines only candidates that introduce nested depth.
+;
+; Request:
+;   (run-iterative-miner $id $pattern)
+;
+; Results:
+;   (iterative-candidate-pattern $id $parent $candidate $support)
+;   (iterative-recursive-candidate $id $parent $candidate $support)
+
+(DEF iterative-miner-candidate-step
+  (, (iter-parent $id $parent $miner-id)
+     (candidate-pattern $miner-id $candidate $support)
+     (DEF has-nested-expression-with-respect-to-fn $hne-p $hne-t)
+     (DEF iterative-miner-continue-fn $continue-p $continue-t))
+  (O
+    (- (candidate-pattern $miner-id $candidate $support))
+    (+ (iterative-candidate-pattern $id $parent $candidate $support))
+    (+ (has-nested-expression-with-respect-to (HNE $id $parent $candidate) $parent $candidate))
+    (+ (hne-cleanup (HNE $id $parent $candidate)))
+    (+ (exec (freq 900 iterative-check-depth) $hne-p $hne-t))
+    (+ (exec (freq 950 iterative-continue) $continue-p $continue-t))))
+
+(DEF iterative-miner-continue-fn
+  (, (iter-parent $id $parent $miner-id)
+     (iterative-candidate-pattern $id $parent $candidate $support)
+     (has-nested-expression-result (HNE $id $parent $candidate) $parent $candidate true)
+     (DEF hne-cleanup-fn $hne-cleanup-p $hne-cleanup-t)
+     (DEF iterative-miner-fn $iter-p $iter-t))
+  (O
+    (- (has-nested-expression-result (HNE $id $parent $candidate) $parent $candidate true))
+    (- (iter-parent $id $parent $miner-id))
+    (+ (iterative-recursive-candidate $id $parent $candidate $support))
+    (pure (run-iterative-miner $id $pat-candidate) $pat-candidate (indices_to_vars (' $candidate)))
+    (+ (exec (freq 910 iterative-hne-cleanup) $hne-cleanup-p $hne-cleanup-t))
+    (+ (exec (freq 000 iterative-run-next) $iter-p $iter-t))))
+
+(DEF iterative-miner-fn
+  (, (run-iterative-miner $id $pattern)
+     (DEF frequent-miner-fn $freq-p $freq-t)
+     (DEF iterative-miner-candidate-step $candidate-p $candidate-t))
+  (O
+    (- (run-iterative-miner $id $pattern))
+    (+ (iter-parent $id $pattern (ITER $id)))
+    (+ (run-frequent-miner (ITER $id) $pattern))
+    (+ (exec (freq 100 iterative-run-generation) $freq-p $freq-t))
+    (+ (exec (freq 850 iterative-check-candidates) $candidate-p $candidate-t))))
+
+
+; Example smoke, kept inactive:
+; (run-iterative-miner iter-smoke (Inheritance $x $y))
+; (exec (freq 000 call-iterative-miner)
+;   (, (run-iterative-miner iter-smoke (Inheritance $x $y))
+;      (DEF iterative-miner-fn $iter-p $iter-t))
+;   (O (+ (exec (freq 001 run-iterative-miner) $iter-p $iter-t))))
