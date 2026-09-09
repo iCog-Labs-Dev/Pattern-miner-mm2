@@ -79,24 +79,27 @@
         (- (copy-of-partition $partition $partition-copy))
         (+ (exec 5 $src $sink))))
 
-;; Convert each indexed block back to a real variable pattern and count its support.
+;; Send every indexed block through the shared support-cache gate. The partition
+;; is result context only; repeated blocks across partitions share one count.
 (exec 6
-    (, (block $partition $indexed-block))
+    (, (block $partition $indexed-block)
+       (INPUT SUPPORT-MODE $support-mode)
+       ((support-gate
+          $support-mode
+          (surp-block-support-request $partition $indexed-block)
+          $partition
+          $indexed-block
+          7
+          8
+          9
+          -> block-support)
+        $gate-p $gate-t))
     (O
-        (pure
-            (exec 6
-                $query
-                (O
-                    (count
-                        (block-support $partition $indexed-block $support)
-                        $support
-                        $query)))
-            $query
-            (indices_to_vars
-                (cons , (' $indexed-block))))))
+        (+ (surp-block-support-request $partition $indexed-block))
+        (+ (exec 6 $gate-p $gate-t))))
 
 ;; Convert block support into block probability using the full pattern total count.
-(exec 7
+(exec 10
     (, (INPUT PATTERN ($pattern $pattern-support))
        (total-count-of $pattern $total-count)
        (block-support $partition $indexed-block $support))
@@ -110,7 +113,7 @@
                     (f64_from_string $total-count))))))
 
 ;; Current partition shapes have either two or three blocks.
-(exec 8
+(exec 11
     (, (partition ($b1 $b2))
        (block-prob ($b1 $b2) $b1 $p1)
        (block-prob ($b1 $b2) $b2 $p2))
@@ -123,7 +126,7 @@
                     (f64_from_string $p1)
                     (f64_from_string $p2))))))
 
-(exec 8
+(exec 11
     (, (partition ($b1 $b2 $b3))
        (block-prob ($b1 $b2 $b3) $b1 $p1)
        (block-prob ($b1 $b2 $b3) $b2 $p2)
@@ -140,7 +143,7 @@
                     (f64_from_string $p3))))))
 
 ;; Take [min, max] over the current three-conjunct partition products.
-(exec 9
+(exec 12
     (, (indexed-pattern ($c1 $c2 $c3))
        (partition-product (($c1) ($c2 $c3)) $p1)
        (partition-product (($c1 $c3) ($c2)) $p2)
@@ -156,21 +159,21 @@
             $max
             (max-atom (' ($p1 $p2 $p3 $p4))))))
 
-(exec 10
+(exec 13
     (, (min-partition-product $min)
        (max-partition-product $max))
     (, (partition-product-range $min $max)))
 
-(exec 11
+(exec 14
     (, (partition-product-range $emin $emax)
        (prob-of $pattern $emp)
        ((dst-from-interval $pattern $emin $emax $emp -> dst-of) $src $sink))
     (,
         (dst-request $pattern $emin $emax $emp dst-of)
-        (exec 11 $src $sink)))
+        (exec 14 $src $sink)))
 
 ;; emp > emax: distance = emp - emax.
-(exec 12
+(exec 15
     (, (dst-above? $pattern $emin $emax $emp $out true))
     (O
         (pure
@@ -184,7 +187,7 @@
         (- (dst-above? $pattern $emin $emax $emp $out true))))
 
 ;; emp < emin: distance = emin - emp.
-(exec 12
+(exec 15
     (, (dst-below? $pattern $emin $emax $emp $out true))
     (O
         (pure
@@ -198,7 +201,7 @@
         (- (dst-below? $pattern $emin $emax $emp $out true))))
 
 ;; emin <= emp <= emax: distance = 0.0.
-(exec 12
+(exec 15
     (, (dst-inside? $pattern $emin $emax $emp $out true))
     (O
         (+ ($out $pattern 0.0))
@@ -207,7 +210,7 @@
 
 
 ;; If normalization is enabled, surprisingness = min(dst / max(emax, empirical probability), 1.0).
-(exec 13
+(exec 16
     (, (INPUT NORMALIZATION TRUE)
        (dst-of $pattern $dst)
        (prob-of $pattern $prob)
@@ -218,7 +221,7 @@
             $denom
             (max-atom (' ($emax $prob))))))
 
-(exec 14
+(exec 17
     (, (INPUT NORMALIZATION TRUE)
        (dst-of $pattern $dst)
        (normalization-denom $pattern $dst $denom))
@@ -231,7 +234,7 @@
                     (f64_from_string $dst)
                     (f64_from_string $denom))))))
 
-(exec 15
+(exec 18
     (, (INPUT NORMALIZATION TRUE)
        (dst-of $pattern $dst)
        (normalization-denom $pattern $dst $denom)
@@ -248,7 +251,7 @@
 
 
 ;; Otherwise, surprisingness is just the distance from the interval.
-(exec 16
+(exec 19
     (, (INPUT NORMALIZATION FALSE)
        (dst-of $pattern $dst))
     (O
@@ -261,7 +264,7 @@
 
 
 ;; Final cleanup: 
-(exec 17
+(exec 20
     (, (surprisingess-of $pattern $value))
     (,
         (cleanup (block $partition $block))
@@ -280,7 +283,7 @@
         (cleanup (dst-request $p $emin $emax $emp $out))))
 
 ;; One cleanup matcher removes any fact selected by the cleanup task.
-(exec 18
+(exec 21
     (, (cleanup $fact) $fact)
     (O
         (- (cleanup $fact))
@@ -288,13 +291,11 @@
         ))
 
 ;; Remove the generic cleanup tasks after they are no longer useful.
-(exec 19
+(exec 22
     (, (cleanup $fact))
     (O
         (- (cleanup $fact))
         ))
-
-
 
 
 

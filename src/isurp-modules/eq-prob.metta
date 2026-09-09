@@ -190,17 +190,28 @@
 
 ;; value-count, part 2:
 ;;
-;; Count the generated block query as the supported fallback for value-count.
-(exec (surp 056 eq-value-count)
-    (, (eq-value-query $partition $block $var $query))
-    (,
-        (exec (surp 056 eq-value-count)
-            $query
-            (O
-                (count
-                    (eq-value-count $partition $block $var $count)
-                    $count
-                    $query)))))
+;; The current fallback is block support, so it uses the same shared cache gate
+;; as frequent mining and block-support. The variable stays in the opaque
+;; context and does not affect the cache key.
+(exec (surp 056 eq-value-support-gate)
+    (, (eq-value-query $partition $block $var $query)
+       (INPUT SUPPORT-MODE $support-mode)
+       ((support-gate
+          $support-mode
+          (eq-value-query $partition $block $var $query)
+          ($partition $var)
+          $block
+          (surp 056 eq-support-cache-hit)
+          (surp 057 count-eq-support)
+          (surp 058 deliver-eq-support)
+          -> eq-value-support-result)
+        $gate-p $gate-t))
+    (O
+        (+ (exec (surp 056 run-eq-value-support-gate) $gate-p $gate-t))))
+
+(exec (surp 059 eq-value-support-result)
+    (, (eq-value-support-result ($partition $var) $block $count))
+    (, (eq-value-count $partition $block $var $count)))
 
 
 ;; calculate-prob-for-vars / process-blocks:

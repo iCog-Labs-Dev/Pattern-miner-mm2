@@ -1,3 +1,17 @@
+;; One-generation frequent candidate miner.
+;;
+;; Inputs:
+;;   (INPUT MIN-SUPPORT n)
+;;   (FACT $database-expression)
+;;
+;; Public request:
+;;   (run-frequent-miner $generation-id $pattern)
+;;
+;; Public result:
+;;   (candidate-pattern $generation-id $indexed-pattern $support)
+;;
+;; `iterative-miner.metta` supplies generation scoping and recursive depth.
+
 (DEF gv-expand
   (, (gv-visit $id $path $node))
   (O

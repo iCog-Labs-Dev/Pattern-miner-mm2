@@ -11,47 +11,26 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(exec (surp 040 block-support-query)
+(exec (surp 040 block-support-request)
     (, (INPUT PATTERN ($pattern $pattern-support))
        (block $partition $indexed-block))
+    (, (block-support-gate-request $partition $indexed-block)))
+
+;; All block support goes through the shared common-utils cache gate. Partition
+;; identity is carried only as result context, so the same block appearing in
+;; several partitions is counted once and delivered to each partition.
+(exec (surp 041 block-support-gate)
+    (, (block-support-gate-request $partition $indexed-block)
+       (INPUT SUPPORT-MODE $support-mode)
+       ((support-gate
+          $support-mode
+          (block-support-gate-request $partition $indexed-block)
+          $partition
+          $indexed-block
+          (surp 042 block-support-cache-hit)
+          (surp 043 count-block-support)
+          (surp 044 deliver-block-support)
+          -> block-support)
+        $gate-p $gate-t))
     (O
-        ;; Keep the generated query visible for debugging.
-        (pure
-            (debug-block-query $partition $indexed-block $query)
-            $query
-            (indices_to_vars
-                (cons , (' $indexed-block))))
-
-        ;; Create a real exec from the generated query.  When that exec runs it
-        ;; counts support for this block.
-        (pure
-            (exec (surp 041 count-block-support)
-                $query
-                (O
-                    (count
-                        (block-support $partition $indexed-block $support)
-                        $support
-                        $query)))
-            $query
-            (indices_to_vars
-                (cons , (' $indexed-block))))))
-
-
-;; Direct fallback for common one-clause binary predicate blocks:
-;;
-;;   ((Inheritance (var 0) man))
-;;
-;; Some current MORK/helper combinations do not materialize the dynamic
-;; `indices_to_vars` query above for already-indexed input patterns.  This
-;; fallback keeps support counting available for the common binary predicate
-;; shape used in the ISurp integration tests.
-(exec (surp 040 block-support-fallback)
-    (, (block $partition (($rel (var $n) $arg))))
-    (,
-        (exec (surp 041 count-block-support)
-            (, ($rel $x $arg))
-            (O
-                (count
-                    (block-support $partition (($rel (var $n) $arg)) $support)
-                    $support
-                    ($rel $x $arg))))))
+        (+ (exec (surp 041 run-block-support-gate) $gate-p $gate-t))))

@@ -57,6 +57,18 @@ it does not maintain a separate copy of the database.
 The first argument after `EXPECTED-RESULT` is the test identifier. The second
 argument is the fact that must be present in the final MORK output.
 
+The integrated frequent-miner coverage is intentionally kept in two files:
+
+- `frequent-pattern-miner-test.metta` runs the real iterative miner and
+  conjunction expansion through `frequent-pattern-miner-fn`. It checks flat
+  candidates, calculated support, singleton-support reuse, and expanded
+  conjunctions.
+- `iterative-miner-nested-test.metta` covers the distinct recursive path by
+  verifying that a nested candidate starts another mining generation.
+
+The integrated test loads the shared fixture in raw form for conjunction
+matching and materializes `(FACT ...)` wrappers for the frequent miner.
+
 5. Run all tests.
 
 ```sh
@@ -67,6 +79,12 @@ scripts/run-tests.sh
 
 ```sh
 scripts/run-tests.sh tests/frequent-miner/conjunction-expansion-test.metta
+```
+
+Run the real end-to-end pipeline with:
+
+```sh
+scripts/run-tests.sh tests/frequent-miner/frequent-pattern-miner-test.metta
 ```
 
 ## Optional Step Limit
