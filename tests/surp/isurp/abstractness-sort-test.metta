@@ -1,4 +1,4 @@
-;; TEST-AUX src/isurp-modules/abstractness-sort.metta
+;; TEST-AUX src/surp/isurp-modules/abstractness-sort.metta
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Abstractness sorting component test

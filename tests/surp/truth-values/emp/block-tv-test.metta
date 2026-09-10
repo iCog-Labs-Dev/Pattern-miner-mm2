@@ -1,7 +1,7 @@
-;; TEST-AUX src/isurp-modules/pro-prob-wout-joint.metta
+;; TEST-AUX src/surp/truth-values/emp/block-tv.metta
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; pro-prob-wout-joint component test
+;; Block empirical truth value component test.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (INPUT DB-SIZE 4)
@@ -18,6 +18,4 @@
     ((Inheritance (var 0) ugly))
     2)
 
-(EXPECTED-RESULT pro-block-man (pro-block-prob (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly))) ((Inheritance (var 0) man)) 0.5))
-
-(EXPECTED-RESULT pro-prob-wout-joint (pro-prob-wout-joint-of (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly))) 0.25))
+(EXPECTED-RESULT block-tv-man (block-tv-of (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly))) ((Inheritance (var 0) man)) (EMPTV 0.5 0.0004975124378109452)))

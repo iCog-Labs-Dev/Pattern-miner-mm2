@@ -62,11 +62,11 @@ The project has exactly two module namespaces:
 - `freq` owns frequent mining, including connected conjunction expansion.
 - `surp` owns surprisingness scoring.
 
-`src/conjunction-expansion-triplet.metta` is a standalone development
+`src/freq/conjunction-expansion-triplet.metta` is a standalone development
 component, not a third module namespace. It therefore follows the `freq`
 priority convention while keeping its temporary facts under the `ce-` prefix.
 
-`src/frequent-pattern-miner.metta` integrates recursive candidate mining with
+`src/freq/frequent-pattern-miner.metta` integrates recursive candidate mining with
 conjunction expansion. Iterative-miner work and cleanup end at priority `970`;
 the integrated entry point reserves priority `999` for the handoff to
 conjunction expansion. Work created by the expansion then re-enters its normal

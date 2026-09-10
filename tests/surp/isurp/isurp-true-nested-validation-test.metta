@@ -1,14 +1,14 @@
 ;; TEST-AUX src/common-utils/utils.metta
-;; TEST-AUX src/isurp-modules/input-bootstrap.metta
-;; TEST-AUX src/isurp-modules/bootstrap-partitions.metta
-;; TEST-AUX src/isurp-modules/block-support.metta
-;; TEST-AUX src/isurp-modules/abstractness-sort.metta
-;; TEST-AUX src/isurp-modules/eq-prob.metta
-;; TEST-AUX src/isurp-modules/pro-prob-wout-joint.metta
-;; TEST-AUX src/isurp-modules/ji-prob-est.metta
-;; TEST-AUX src/isurp-modules/do-ji-prob.metta
-;; TEST-AUX src/isurp-modules/emp-prob-pbs.metta
-;; TEST-AUX src/isurp-modules/isurp-new.metta
+;; TEST-AUX src/surp/isurp-modules/input-bootstrap.metta
+;; TEST-AUX src/surp/isurp-modules/bootstrap-partitions.metta
+;; TEST-AUX src/surp/isurp-modules/block-support.metta
+;; TEST-AUX src/surp/isurp-modules/abstractness-sort.metta
+;; TEST-AUX src/surp/isurp-modules/eq-prob.metta
+;; TEST-AUX src/surp/isurp-modules/pro-prob-wout-joint.metta
+;; TEST-AUX src/surp/isurp-modules/ji-prob-est.metta
+;; TEST-AUX src/surp/isurp-modules/do-ji-prob.metta
+;; TEST-AUX src/surp/isurp-modules/emp-prob-pbs.metta
+;; TEST-AUX src/surp/isurp-modules/isurp-new.metta
 ;; TEST-AUX data/isurp-true-nested.metta
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

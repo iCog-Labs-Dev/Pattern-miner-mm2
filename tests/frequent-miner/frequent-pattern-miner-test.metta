@@ -1,9 +1,9 @@
 ;; TEST-AUX data/ugly-sodaDrinker.metta
 ;; TEST-AUX src/common-utils/utils.metta
-;; TEST-AUX src/frequent-miner.metta
-;; TEST-AUX src/iterative-miner.metta
-;; TEST-AUX src/conjunction-expansion-triplet.metta
-;; TEST-AUX src/frequent-pattern-miner.metta
+;; TEST-AUX src/freq/frequent-miner.metta
+;; TEST-AUX src/freq/iterative-miner.metta
+;; TEST-AUX src/freq/conjunction-expansion-triplet.metta
+;; TEST-AUX src/freq/frequent-pattern-miner.metta
 
 (INPUT DB db)
 (INPUT MIN-SUPPORT 2)

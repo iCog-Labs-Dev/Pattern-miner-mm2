@@ -1,7 +1,7 @@
 # Conjunction Expansion
 
-`src/conjunction-expansion-triplet.metta` expands connected triplet patterns
-without modifying or loading `src/frequent-miner.metta`. Its caller also loads
+`src/freq/conjunction-expansion-triplet.metta` expands connected triplet patterns
+without modifying or loading `src/freq/frequent-miner.metta`. Its caller also loads
 `src/common-utils/utils.metta`.
 
 ## Contract

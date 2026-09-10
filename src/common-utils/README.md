@@ -191,7 +191,7 @@ Divides the support from `INPUT PATTERN` by `total-count-of` and writes:
 
 Consumes a `dst-request` and classifies the empirical value relative to the
 closed interval `[emin, emax]`. It writes the three boolean branch facts used
-by `surp.metta`:
+by `isurp-old.metta`:
 
 ```metta
 (dst-above? ... true-or-false)
@@ -208,4 +208,4 @@ These utilities expect MORK to register:
 - MM2-Helper for `factorial` and `falling_factorial`.
 
 The current regression example is `tests/surp/isurp-old-test.metta`, which
-loads this file through `TEST-AUX` before loading `src/surp.metta`.
+loads this file through `TEST-AUX` before loading `src/surp/isurp-old.metta`.

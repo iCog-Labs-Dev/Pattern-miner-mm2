@@ -33,7 +33,7 @@ tests/frequent-miner/conjunction-expansion-test.metta
 ```metta
 ;; TEST-AUX data/ugly-sodaDrinker.metta
 ;; TEST-AUX src/common-utils/utils.metta
-;; TEST-AUX src/conjunction-expansion-triplet.metta
+;; TEST-AUX src/freq/conjunction-expansion-triplet.metta
 ```
 
 List shared utilities before the implementation that calls them. The current
