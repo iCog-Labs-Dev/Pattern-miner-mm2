@@ -1,5 +1,5 @@
 ;; TEST-AUX data/ugly-sodaDrinker.metta
-;; TEST-AUX src/frequent-miner.metta
+;; TEST-AUX src/freq/frequent-miner.metta
 
 ;;;;;;;;;;;;;;
 ;; TEST INPUT ;;

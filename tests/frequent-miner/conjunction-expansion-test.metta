@@ -1,6 +1,6 @@
 ;; TEST-AUX data/ugly-sodaDrinker.metta
 ;; TEST-AUX src/common-utils/utils.metta
-;; TEST-AUX src/conjunction-expansion-triplet.metta
+;; TEST-AUX src/freq/conjunction-expansion-triplet.metta
 
 (INPUT DB db)
 (INPUT MIN-SUPPORT 2)

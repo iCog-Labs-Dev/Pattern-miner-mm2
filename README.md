@@ -18,18 +18,22 @@ data/
 
 src/
   common-utils/              Reusable MM2 callable definitions
-  conjunction-expansion-triplet.metta
+  freq/                      Frequent pattern miner modules
+    conjunction-expansion-triplet.metta
                              Standalone triplet conjunction expansion
-  surp.metta                 Current MM2 implementation of isurp-old
-  frequent-miner.metta       One-generation frequent candidate miner
-  iterative-miner.metta      Recursive candidate generation and depth checks
-  frequent-pattern-miner.metta
+    frequent-miner.metta     One-generation frequent candidate miner
+    iterative-miner.metta    Recursive candidate generation and depth checks
+    frequent-pattern-miner.metta
                              Integrated miner/expansion entry point
+  surp/isurp-old.metta       Current MM2 implementation of isurp-old
   dummy.metta                Scratch file
 
 tests/
   frequent-miner/            Runnable frequent-miner test cases
   surp/                      Runnable surprisingness test cases
+    isurp/                   Modular ISurp test cases
+    jsd/                     JSD surprisingness test cases
+    truth-values/            Truth-value test cases
 
 scripts/
   run-tests.sh               Test runner for *-test.metta files
@@ -69,7 +73,7 @@ Test files keep runner metadata in MM2 comments:
 
 ```metta
 ;; TEST-AUX data/ugly-sodaDrinker.metta
-;; TEST-AUX src/surp.metta
+;; TEST-AUX src/surp/isurp-old.metta
 
 (EXPECTED-RESULT test-id (...))
 ```
@@ -92,15 +96,15 @@ facts:
 gate. Use `cached` for normal operation or `uncached` to benchmark the same
 pipeline while forcing every support request to query the database.
 
-`src/conjunction-expansion-triplet.metta` is independent of
-`src/frequent-miner.metta`. Load `src/common-utils/utils.metta` alongside it.
+`src/freq/conjunction-expansion-triplet.metta` is independent of
+`src/freq/frequent-miner.metta`. Load `src/common-utils/utils.metta` alongside it.
 Its public result is:
 
 ```metta
 (expanded-conjunct size indexed-candidate support)
 ```
 
-`src/frequent-miner.metta` contains variable extraction, positional lookup,
+`src/freq/frequent-miner.metta` contains variable extraction, positional lookup,
 valuation, shallow abstraction, specialization, support filtering, and the
 one-generation frequent-candidate driver.
 See `docs/conjunction-expansion-walkthrough.md` for the expansion algorithm.

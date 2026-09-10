@@ -1,15 +1,15 @@
 # isurp-old validation against PeTTa
 
-This document records validation of the MM2 `surp.metta` implementation against the PeTTa `isurp-old` tests in:
+This document records validation of the MM2 `isurp-old.metta` implementation against the PeTTa `isurp-old` tests in:
 
 ```text
-/Users/tewodrosnibret/Documents/icog/hyperon-miner/experiments/surprisingness/tests/test-isurp-old.metta
+<hyperon-miner-root>/experiments/surprisingness/tests/test-isurp-old.metta
 ```
 
 The MM2 implementation under test is:
 
 ```text
-/Users/tewodrosnibret/Documents/icog/hyperon-miner-mm2/src/surp.metta
+src/surp/isurp-old.metta
 ```
 
 Validation was run by generating temporary MM2 files under `/tmp` with:
@@ -17,7 +17,7 @@ Validation was run by generating temporary MM2 files under `/tmp` with:
 - the same PeTTa test pattern
 - the same dataset atoms
 - `INPUT DB-SIZE` set to the number of atoms in the PeTTa dataset
-- `INPUT PATTERN` support computed with MORK count before running `surp.metta`
+- `INPUT PATTERN` support computed with MORK count before running `isurp-old.metta`
 - `INPUT NORMALIZATION TRUE/FALSE` set to match the PeTTa test
 
 ## Results
@@ -109,7 +109,7 @@ Direct support-count probes for N-ary facts work. For example:
 
 produce counts in isolation.
 
-However, the current MM2 `surp.metta` pipeline does not produce all required `block-support`, `block-prob`, and `partition-product` facts for the N-ary PeTTa cases. This blocks final `partition-product-range` and therefore final `surprisingess-of`.
+However, the current MM2 `isurp-old.metta` pipeline does not produce all required `block-support`, `block-prob`, and `partition-product` facts for the N-ary PeTTa cases. This blocks final `partition-product-range` and therefore final `surprisingess-of`.
 
 The likely next area to inspect is the dynamic support query generated in `exec 6`:
 

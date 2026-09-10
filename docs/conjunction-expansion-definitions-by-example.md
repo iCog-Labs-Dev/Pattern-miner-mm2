@@ -1,7 +1,7 @@
 # Conjunction Expansion Definition Map
 
 This is a compact map of the facts transformed by
-`src/conjunction-expansion-triplet.metta`. Generic operations come from
+`src/freq/conjunction-expansion-triplet.metta`. Generic operations come from
 `src/common-utils/utils.metta`.
 
 ## Iterative Candidate Intake

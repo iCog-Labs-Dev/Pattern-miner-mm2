@@ -98,7 +98,7 @@ The full pipeline expects raw DB facts and these input facts:
 (INPUT PATTERN (<comma-pattern> <support>))
 ```
 
-Example from `tests/isurp/isurp-pipeline-test.metta`:
+Example from `tests/surp/isurp/isurp-pipeline-test.metta`:
 
 ```metta
 (INPUT DB db)
@@ -123,19 +123,19 @@ The pattern support is `1` because only `Allen` satisfies both clauses.
 Run the tested pipeline through the project test runner:
 
 ```bash
-scripts/run-tests.sh tests/isurp/isurp-pipeline-test.metta
+scripts/run-tests.sh tests/surp/isurp/isurp-pipeline-test.metta
 ```
 
 Run all ISurp module tests:
 
 ```bash
-scripts/run-tests.sh tests/isurp/*.metta
+scripts/run-tests.sh tests/surp/isurp/*.metta
 ```
 
 If `mork` is not on `PATH`, pass the binary explicitly:
 
 ```bash
-MORK_BIN=/path/to/mork scripts/run-tests.sh tests/isurp/*.metta
+MORK_BIN=/path/to/mork scripts/run-tests.sh tests/surp/isurp/*.metta
 ```
 
 To run manually, load `src/common-utils/utils.metta` and each ISurp module as an
@@ -186,7 +186,7 @@ with expected output:
 The matching MM2 test is:
 
 ```text
-tests/isurp/isurp-validation-test.metta
+tests/surp/isurp/isurp-validation-test.metta
 ```
 
 It loads the same `ugly_man_sodaDrinker` corpus facts into MORK, with:
@@ -240,17 +240,17 @@ because MORK test files load facts into one unscoped Space, while the PeTTa
 tests use separate database spaces (`&db`, `&dbc`, `&dbn`):
 
 ```text
-tests/isurp/isurp-coupled-validation-test.metta
-tests/isurp/isurp-true-nested-validation-test.metta
+tests/surp/isurp/isurp-coupled-validation-test.metta
+tests/surp/isurp/isurp-true-nested-validation-test.metta
 ```
 
 Run it with:
 
 ```bash
 scripts/run-tests.sh \
-  tests/isurp/isurp-validation-test.metta \
-  tests/isurp/isurp-coupled-validation-test.metta \
-  tests/isurp/isurp-true-nested-validation-test.metta
+  tests/surp/isurp/isurp-validation-test.metta \
+  tests/surp/isurp/isurp-coupled-validation-test.metta \
+  tests/surp/isurp/isurp-true-nested-validation-test.metta
 ```
 
 Expected result:
@@ -269,7 +269,7 @@ Failed: 0
 
 ## Small Pipeline Sanity Case
 
-`tests/isurp/isurp-pipeline-test.metta` is a smaller controlled test for the
+`tests/surp/isurp/isurp-pipeline-test.metta` is a smaller controlled test for the
 same pipeline stages. It uses a two-clause pattern:
 
 ```metta

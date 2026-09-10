@@ -1,10 +1,10 @@
 ;; Integrated frequent-pattern mining entry point.
 ;;
 ;; Required sibling modules in the same atomspace:
-;;   src/frequent-miner.metta
-;;   src/iterative-miner.metta
+;;   src/freq/frequent-miner.metta
+;;   src/freq/iterative-miner.metta
 ;;   src/common-utils/utils.metta
-;;   src/conjunction-expansion-triplet.metta
+;;   src/freq/conjunction-expansion-triplet.metta
 ;;
 ;; Public request:
 ;;   (run-frequent-pattern-miner $run-id $root-pattern)
