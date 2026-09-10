@@ -17,6 +17,7 @@
 (INPUT DB db)
 (INPUT DB-SIZE 4)
 (INPUT NORMALIZATION FALSE)
+(INPUT SUPPORT-MODE cached)
 
 (INPUT PATTERN
     ((, (Inheritance $x man)

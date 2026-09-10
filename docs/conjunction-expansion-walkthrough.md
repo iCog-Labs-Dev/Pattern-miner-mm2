@@ -1,4 +1,4 @@
-# Standalone Conjunction Expansion
+# Conjunction Expansion
 
 `src/conjunction-expansion-triplet.metta` expands connected triplet patterns
 without modifying or loading `src/frequent-miner.metta`. Its caller also loads
@@ -51,6 +51,40 @@ The implementation uses the project’s `(freq NNN label)` priority convention.
 Small scheduler definitions are retained because MORK consumes an `exec` after
 running it and large substituted rules can exceed its variable limit.
 
+## Iterative-Miner Candidate Intake
+
+The integrated entry point is:
+
+```metta
+(run-frequent-pattern-miner iter-smoke (Inheritance $a $b))
+```
+
+`frequent-pattern-miner-fn` runs `iterative-miner-fn` first. It schedules
+`conjunction-expansion-fn` at priority `999`, after the iterative miner's last
+cleanup stage at priority `970`. Lower-priority recursive work also completes
+before this handoff.
+
+`conjunction-expansion-fn` selects only facts whose run id matches the request:
+
+```metta
+(iterative-candidate-pattern
+  $run-id $root-pattern $indexed-candidate $support)
+```
+
+Intake has two ordered phases. First, every indexed candidate is registered as
+a `ce-base`. Then each singleton enters the existing filter and expansion
+cycle with the iterative miner's support value. This ordering makes the full
+candidate pool available before any connected pair is built. Generated
+conjunctions use the shared `support-gate`; only singleton intake bypasses
+the gate because the iterative miner already supplies its support.
+
+The root pattern remains iterative-miner lineage data. Expansion neither
+consumes nor rewrites the stored `iterative-candidate-pattern` facts.
+
+Candidate selection is run-id scoped, but private `ce-*` working facts are not.
+Run one conjunction expansion at a time; concurrent run isolation would require
+threading the run id through the complete private pipeline.
+
 ## Indexed Patterns
 
 Seeds are converted with `vars_to_indices`:
@@ -65,8 +99,9 @@ candidate back to real variables so it can match active database facts.
 
 ## Support And Depth
 
-The shared `count-indexed-conjunction-support` callable counts candidate
-matches. `support-at-least` compares the result with `MIN-SUPPORT`.
+In `cached` mode, the shared `support-gate` callable first checks the
+durable support cache and counts only misses. `support-at-least` compares the
+result with `MIN-SUPPORT`.
 
 A frequent candidate is expanded only when:
 
@@ -129,6 +164,9 @@ source.
 ```sh
 scripts/run-tests.sh tests/frequent-miner/conjunction-expansion-test.metta
 ```
+
+`tests/frequent-miner/frequent-pattern-miner-test.metta` covers the real
+iterative-miner-to-expansion handoff.
 
 The current component accepts triplet atoms. `MAX-SIZE` limits conjunct count,
 not seed arity.

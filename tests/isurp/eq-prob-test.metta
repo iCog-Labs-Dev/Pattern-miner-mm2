@@ -1,3 +1,4 @@
+;; TEST-AUX src/common-utils/utils.metta
 ;; TEST-AUX src/isurp-modules/abstractness-sort.metta
 ;; TEST-AUX src/isurp-modules/eq-prob.metta
 
@@ -8,6 +9,7 @@
 (partition (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly))))
 
 (INPUT DB-SIZE 4)
+(INPUT SUPPORT-MODE cached)
 
 (block
     (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly)))

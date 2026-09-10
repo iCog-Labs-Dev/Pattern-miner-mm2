@@ -1,3 +1,17 @@
+;; One-generation frequent candidate miner.
+;;
+;; Inputs:
+;;   (INPUT MIN-SUPPORT n)
+;;   (FACT $database-expression)
+;;
+;; Public request:
+;;   (run-frequent-miner $generation-id $pattern)
+;;
+;; Public result:
+;;   (candidate-pattern $generation-id $indexed-pattern $support)
+;;
+;; `iterative-miner.metta` supplies generation scoping and recursive depth.
+
 (DEF gv-expand
   (, (gv-visit $id $path $node))
   (O
@@ -217,7 +231,8 @@
   (O
     (- (gap-valuation-binding (VAL-VALUE $id $candidate-expr $path) $id $path $var))
     (- (get-value-at-position-result (VAL-VALUE $id $candidate-expr $path) $path $value))
-    (+ (valuation-binding $id $path $var $value)))
+    (+ (valuation-binding $id $path $var $value))
+    (+ (valuation-binding $id $path $var $var)))
 )
 
 ; Reusable valuation function.
@@ -287,6 +302,7 @@
 (DEF sae-start-walk
   (, (sae-args $id (var $source-index) $args))
   (O
+    (- (sae-args $id (var $source-index) $args))
     (+ (sae-walk $id (var $source-index) $args 1 ()))))
 
 (DEF sae-step
@@ -403,6 +419,7 @@
      (sae-step-result $sae-id (var $source-index) $abstracted-value))
   (O
     (- (shallow-abstraction-wait $id $path (var $source-index) $sae-id))
+    (- (sae-step-result $sae-id (var $source-index) $abstracted-value))
     (+ (shallow-abstraction-binding $id $path (var $source-index) $abstracted-value))))
 
 (DEF shallow-abstraction-fn
@@ -444,7 +461,7 @@
 (DEF specialization-start
   (, (run-specialization $id $pattern))
   (O
-    (+ (specialization-position spec-test 1 (var 0)))
+    (+ (specialization-position $id 1 (var 0)))
     (+ (specialization-partial $id 1 ()))))
 
 (DEF specialization-extend
@@ -496,3 +513,365 @@
 ;   (, (run-specialization spec-test (Inheritance $x $y))
 ;      (DEF specialization-combinations-fn $spec-p $spec-t))
 ;   (O (+ (exec (freq 001 run-specialization-combinations) $spec-p $spec-t))))
+
+
+(DEF var-conversion-fn
+  (, (specialization-result $id $specialized-pattern))
+  (O
+    (pure (candidate-specialization $id $specialized-pattern $converted-pattern) $converted-pattern
+      (indices_to_vars (' $specialized-pattern)))))
+
+(DEF support-count-fn
+  (, (candidate-specialization $id $display-pattern $match-pattern)
+     (FACT $match-pattern))
+  (O
+    (- (candidate-specialization $id $display-pattern $match-pattern))
+    (count (support-count-result $id $display-pattern $count) $count $match-pattern)
+    ))
+
+(DEF candidate-pattern-check-fn
+  (, (support-count-result $id $pattern $support)
+     (INPUT MIN-SUPPORT $min-support))
+  (O
+    (pure (minimum-support-check-result $id $pattern $support $min-support $passes) $passes
+      (le_f64 (f64_from_string $min-support) (f64_from_string $support)))
+    (+ (exec (freq 630 minimum-support-pass)
+         (, (minimum-support-check-result $pass-id $pass-pattern $pass-support $pass-min true))
+         (O (- (minimum-support-check-result $pass-id $pass-pattern $pass-support $pass-min true))
+            (+ (candidate-pattern $pass-id $pass-pattern $pass-support)))))))
+        
+(DEF candidate-pattern-fn
+  (, (DEF var-conversion-fn $conv-p $conv-t)
+     (DEF support-count-fn $support-p $support-t)
+     (DEF candidate-pattern-check-fn $min-p $min-t))
+  (O
+    (+ (exec (freq 610 run-var-conversion) $conv-p $conv-t))
+    (+ (exec (freq 620 run-support-count) $support-p $support-t))
+    (+ (exec (freq 621 run-candidate-pattern-check) $min-p $min-t))))
+
+
+; (exec (freq 600 call-candidate-pattern)
+;   (, (support-count support-smoke $pattern)
+;      (DEF candidate-pattern-fn $candidate-p $candidate-t))
+;   (O
+;     (+ (exec (freq 601 run-candidate-pattern) $candidate-p $candidate-t))))
+
+
+; (support-count support-smoke (Inheritance $x sodaDrinker))
+
+; (FACT (Inheritance Allen sodaDrinker))
+; (FACT (Inheritance Abe sodaDrinker))
+; (FACT (Inheritance Cason sodaDrinker))
+; (FACT (Inheritance Casogn sodaDrinker))
+; (FACT (Inheritance Casogcn sodaDrinker))
+; (FACT (Inheritance Lily ugly))
+
+; (INPUT MIN-SUPPORT 3)
+
+(DEF frequent-miner-cleanup-blocks
+  (, (candidate-pattern $id $pattern $support))
+  (O
+    (+ (cleanup (support-count-result $id $support-pattern $support-count)))
+    (+ (cleanup (candidate-specialization $id $display-pattern $match-pattern)))
+    (+ (cleanup (specialization-result $id $specialized-pattern)))
+    (+ (cleanup (specialization-combination $id $combination)))
+    (+ (cleanup (specialization-position $id $pos $var)))
+    (+ (cleanup (shallow-abstraction-binding $id $path $shallow-var $value)))
+    (+ (cleanup (shallow-abstract-expression $sae-id $var $expr)))
+    (+ (cleanup (shallow-abstraction-request-expr $id $path $var $value $is-exp)))
+    (+ (cleanup (shallow-abstraction-request-var $id $path $var $value $is-var)))
+    (+ (cleanup (valuation-binding $id $binding-path $binding-var $binding-value)))
+    (+ (cleanup (valuation-pattern $id $valuation-pattern)))
+    (+ (cleanup (run-shallow-abstraction $id)))
+    (+ (cleanup (run-specialization $id $run-pattern)))
+    (+ (cleanup (run-frequent-miner $id $run-pattern)))))
+
+(DEF frequent-miner-cleanup-all-at-once-fn
+    (, (cleanup $intermediate-result) $intermediate-result)
+    (O
+        (- (cleanup $intermediate-result))
+        (- $intermediate-result)
+        ))
+
+(DEF frequent-miner-cleanup-target-task-fn
+  (, (cleanup $fact))
+  (O
+    (- (cleanup $fact))))
+
+;; Remove the generic cleanup tasks after they are no longer useful.
+(DEF frequent-miner-cleanup-all-fn
+    (, (DEF frequent-miner-cleanup-blocks $blocks-p $blocks-t)
+       (DEF frequent-miner-cleanup-all-at-once-fn $all-p $all-t)
+       (DEF frequent-miner-cleanup-target-task-fn $target-p $target-t))
+    (O
+        (+ (exec (freq 701 frequent-miner-cleanup-blocks) $blocks-p $blocks-t))
+        (+ (exec (freq 702 frequent-miner-cleanup-all-at-once) $all-p $all-t))
+        (+ (exec (freq 703 frequent-miner-cleanup-target-task) $target-p $target-t))))
+
+; frequent miner integration
+;
+; Request:
+;   (run-frequent-miner $id $pattern)
+;
+; Result:
+;   (candidate-pattern $id $pattern $support)
+
+(DEF frequent-miner-fn
+  (, (run-frequent-miner $id $pattern)
+     (DEF valuation-fn $valuation-p $valuation-t)
+     (DEF shallow-abstraction-fn $shallow-p $shallow-t)
+     (DEF specialization-combinations-fn $specialization-p $specialization-t)
+     (DEF candidate-pattern-fn $candidate-p $candidate-t)
+     (DEF frequent-miner-cleanup-all-fn $cleanup-p $cleanup-t))
+  (O
+    (+ (valuation $id $pattern))
+    (+ (run-shallow-abstraction $id))
+    (+ (run-specialization $id $pattern))
+    (+ (exec (freq 200 frequent-valuation) $valuation-p $valuation-t))
+    (+ (exec (freq 350 frequent-shallow-abstraction) $shallow-p $shallow-t))
+    (+ (exec (freq 500 frequent-specialization) $specialization-p $specialization-t))
+    (+ (exec (freq 600 frequent-candidate-patterns) $candidate-p $candidate-t))
+    (+ (exec (freq 700 frequent-miner-cleanup) $cleanup-p $cleanup-t))))
+
+; (exec (freq 000 call-frequent-miner)
+;   (, (run-frequent-miner fm-test (Inheritance $x $y))
+;      (DEF frequent-miner-fn $freq-p $freq-t))
+;   (O
+;     (+ (exec (freq 001 run-frequent-miner) $freq-p $freq-t))))
+
+
+
+; nested-depth checker
+;
+; Positive-only continuation check for the iterative miner.
+;
+; Request:
+;   (has-nested-expression-with-respect-to $id $parent $candidate)
+;
+; Result, emitted only when a deeper candidate position is found:
+;   (has-nested-expression-result $id $parent $candidate true)
+;
+; Stop behavior:
+;   Every step requires (hne-active $id). The first true removes hne-active,
+;   so remaining queued checks for the same id cannot continue.
+
+(DEF has-nested-expression-step
+  (, (hne-active $id)
+     (DEF has-nested-expression-dispatch $dispatch-p $dispatch-t))
+  (O
+    (+ (exec (freq 800 hne-empty-parent)
+         (, (hne-active $empty-id)
+            (hne-check $empty-id () $empty-candidate))
+         (O
+           (- (hne-check $empty-id () $empty-candidate)))))
+
+    (+ (exec (freq 801 hne-split)
+         (, (hne-active $split-id)
+            (hne-check $split-id $parent $candidate))
+         (O
+           (- (hne-check $split-id $parent $candidate))
+           (pure (hne-parent-head $split-id $parent $candidate $parent-head)
+             $parent-head (car-atom (' $parent)))
+           (pure (hne-candidate-head $split-id $parent $candidate $candidate-head)
+             $candidate-head (car-atom (' $candidate)))
+           (pure (hne-parent-tail $split-id $parent $candidate $parent-tail)
+             $parent-tail (cdr-atom (' $parent)))
+           (pure (hne-candidate-tail $split-id $parent $candidate $candidate-tail)
+             $candidate-tail (cdr-atom (' $candidate)))
+           (+ (hne-dispatch $split-id $parent $candidate))
+           (+ (exec (freq 810 hne-dispatch) $dispatch-p $dispatch-t)))))))
+
+(DEF has-nested-expression-dispatch
+  (, (hne-active $id)
+     (hne-dispatch $id $parent $candidate)
+     (hne-parent-head $id $parent $candidate $parent-head)
+     (hne-candidate-head $id $parent $candidate $candidate-head)
+     (hne-parent-tail $id $parent $candidate $parent-tail)
+     (hne-candidate-tail $id $parent $candidate $candidate-tail)
+     (DEF has-nested-expression-decide $decide-p $decide-t))
+  (O
+    (- (hne-dispatch $id $parent $candidate))
+    (pure (hne-parent-head-var $id $parent $candidate $parent-head $is-parent-var)
+      $is-parent-var (i8_to_string (is_var (' $parent-head))))
+    (pure (hne-parent-head-exp $id $parent $candidate $parent-head $is-parent-exp)
+      $is-parent-exp (i8_to_string (is_exp (' $parent-head))))
+    (pure (hne-candidate-head-exp $id $parent $candidate $candidate-head $is-candidate-exp)
+      $is-candidate-exp (i8_to_string (is_exp (' $candidate-head))))
+    (+ (hne-decision $id $parent $candidate $parent-head $candidate-head $parent-tail $candidate-tail))
+    (+ (exec (freq 820 hne-decide) $decide-p $decide-t))))
+
+(DEF has-nested-expression-decide
+  (, (DEF has-nested-expression-step $step-p $step-t))
+  (O
+    (+ (exec (freq 820 hne-found)
+         (, (hne-active $found-id)
+            (hne-decision $found-id $found-parent $found-candidate $found-parent-head $found-candidate-head $found-parent-tail $found-candidate-tail)
+            (hne-parent-head-var $found-id $found-parent $found-candidate $found-parent-head 1)
+            (hne-candidate-head-exp $found-id $found-parent $found-candidate $found-candidate-head 1)
+            (hne-top $found-id $top-parent $top-candidate))
+         (O
+           (- (hne-active $found-id))
+           (- (hne-decision $found-id $found-parent $found-candidate $found-parent-head $found-candidate-head $found-parent-tail $found-candidate-tail))
+           (- (hne-parent-head-var $found-id $found-parent $found-candidate $found-parent-head 1))
+           (- (hne-candidate-head-exp $found-id $found-parent $found-candidate $found-candidate-head 1))
+           (- (hne-top $found-id $top-parent $top-candidate))
+           (+ (has-nested-expression-result $found-id $top-parent $top-candidate true)))))
+
+    (+ (exec (freq 821 hne-var-flat-continue-tail)
+         (, (hne-active $flat-id)
+            (hne-decision $flat-id $flat-parent $flat-candidate $flat-parent-head $flat-candidate-head $flat-parent-tail $flat-candidate-tail)
+            (hne-parent-head-var $flat-id $flat-parent $flat-candidate $flat-parent-head 1)
+            (hne-candidate-head-exp $flat-id $flat-parent $flat-candidate $flat-candidate-head 0))
+         (O
+           (- (hne-decision $flat-id $flat-parent $flat-candidate $flat-parent-head $flat-candidate-head $flat-parent-tail $flat-candidate-tail))
+           (- (hne-parent-head-var $flat-id $flat-parent $flat-candidate $flat-parent-head 1))
+           (- (hne-candidate-head-exp $flat-id $flat-parent $flat-candidate $flat-candidate-head 0))
+           (+ (hne-check $flat-id $flat-parent-tail $flat-candidate-tail))
+           (+ (exec (freq 800 hne-step) $step-p $step-t)))))
+
+    (+ (exec (freq 822 hne-expression-recurse-and-tail)
+         (, (hne-active $expr-id)
+            (hne-decision $expr-id $expr-parent $expr-candidate $expr-parent-head $expr-candidate-head $expr-parent-tail $expr-candidate-tail)
+            (hne-parent-head-var $expr-id $expr-parent $expr-candidate $expr-parent-head 0)
+            (hne-parent-head-exp $expr-id $expr-parent $expr-candidate $expr-parent-head 1)
+            (hne-candidate-head-exp $expr-id $expr-parent $expr-candidate $expr-candidate-head 1))
+         (O
+           (- (hne-decision $expr-id $expr-parent $expr-candidate $expr-parent-head $expr-candidate-head $expr-parent-tail $expr-candidate-tail))
+           (- (hne-parent-head-var $expr-id $expr-parent $expr-candidate $expr-parent-head 0))
+           (- (hne-parent-head-exp $expr-id $expr-parent $expr-candidate $expr-parent-head 1))
+           (- (hne-candidate-head-exp $expr-id $expr-parent $expr-candidate $expr-candidate-head 1))
+           (+ (hne-check $expr-id $expr-parent-head $expr-candidate-head))
+           (+ (hne-check $expr-id $expr-parent-tail $expr-candidate-tail))
+           (+ (exec (freq 800 hne-step) $step-p $step-t)))))
+
+    (+ (exec (freq 824 hne-atom-continue-tail)
+         (, (hne-active $atom-id)
+            (hne-decision $atom-id $atom-parent $atom-candidate $atom-parent-head $atom-candidate-head $atom-parent-tail $atom-candidate-tail)
+            (hne-parent-head-var $atom-id $atom-parent $atom-candidate $atom-parent-head 0)
+            (hne-parent-head-exp $atom-id $atom-parent $atom-candidate $atom-parent-head 0))
+         (O
+           (- (hne-decision $atom-id $atom-parent $atom-candidate $atom-parent-head $atom-candidate-head $atom-parent-tail $atom-candidate-tail))
+           (- (hne-parent-head-var $atom-id $atom-parent $atom-candidate $atom-parent-head 0))
+           (- (hne-parent-head-exp $atom-id $atom-parent $atom-candidate $atom-parent-head 0))
+           (+ (hne-check $atom-id $atom-parent-tail $atom-candidate-tail))
+           (+ (exec (freq 800 hne-step) $step-p $step-t)))))))
+
+(DEF has-nested-expression-with-respect-to-fn
+  (, (has-nested-expression-with-respect-to $id $parent $candidate)
+     (DEF has-nested-expression-step $step-p $step-t))
+  (O
+    (- (has-nested-expression-with-respect-to $id $parent $candidate))
+    (+ (hne-active $id))
+    (+ (hne-top $id $parent $candidate))
+    (+ (hne-check $id $parent $candidate))
+    (+ (exec (freq 800 hne-step) $step-p $step-t))))
+
+; Example smoke, kept inactive:
+; (has-nested-expression-with-respect-to hne-smoke
+;   (Inheritance (var 0) (var 1))
+;   (Inheritance (var 0) (Evaluation Allen sodaDrinker)))
+; (exec (freq 000 call-hne-smoke)
+;   (, (has-nested-expression-with-respect-to hne-smoke
+;        (Inheritance (var 0) (var 1))
+;        (Inheritance (var 0) (Evaluation Allen sodaDrinker)))
+;      (DEF has-nested-expression-with-respect-to-fn $hne-p $hne-t))
+;   (O (+ (exec (freq 001 run-hne-smoke) $hne-p $hne-t))))
+
+
+; Remove HNE scratch facts after an iterative candidate has been checked.
+; The positive result is intentionally kept for the iterator continuation stage.
+(DEF hne-cleanup-blocks
+  (, (hne-cleanup $id))
+  (O
+    (- (hne-cleanup $id))
+    (+ (hne-cleanup-target (hne-active $id)))
+    (+ (hne-cleanup-target (hne-top $id $parent $candidate)))
+    (+ (hne-cleanup-target (hne-check $id $parent $candidate)))
+    (+ (hne-cleanup-target (hne-dispatch $id $parent $candidate)))
+    (+ (hne-cleanup-target (hne-decision $id $parent $candidate $parent-head $candidate-head $parent-tail $candidate-tail)))
+    (+ (hne-cleanup-target (hne-parent-head $id $parent $candidate $parent-head)))
+    (+ (hne-cleanup-target (hne-candidate-head $id $parent $candidate $candidate-head)))
+    (+ (hne-cleanup-target (hne-parent-tail $id $parent $candidate $parent-tail)))
+    (+ (hne-cleanup-target (hne-candidate-tail $id $parent $candidate $candidate-tail)))
+    (+ (hne-cleanup-target (hne-parent-head-var $id $parent $candidate $parent-head $is-parent-var)))
+    (+ (hne-cleanup-target (hne-parent-head-exp $id $parent $candidate $parent-head $is-parent-exp)))
+    (+ (hne-cleanup-target (hne-candidate-head-exp $id $parent $candidate $candidate-head $is-candidate-exp)))))
+
+(DEF hne-cleanup-target-fn
+  (, (hne-cleanup-target $fact) $fact)
+  (O
+    (- (hne-cleanup-target $fact))
+    (- $fact)))
+
+(DEF hne-cleanup-target-task-fn
+  (, (hne-cleanup-target $fact))
+  (O
+    (- (hne-cleanup-target $fact))))
+
+(DEF hne-cleanup-fn
+  (, (DEF hne-cleanup-blocks $blocks-p $blocks-t)
+     (DEF hne-cleanup-target-fn $target-p $target-t)
+     (DEF hne-cleanup-target-task-fn $task-p $task-t))
+  (O
+    (+ (exec (freq 910 hne-cleanup-blocks) $blocks-p $blocks-t))
+    (+ (exec (freq 911 hne-cleanup-targets) $target-p $target-t))
+    (+ (exec (freq 912 hne-cleanup-target-tasks) $task-p $task-t))))
+    
+
+; iterative miner
+;
+; Runs one frequent-miner generation, checks each candidate against its parent,
+; then recursively mines only candidates that introduce nested depth.
+;
+; Request:
+;   (run-iterative-miner $id $pattern)
+;
+; Results:
+;   (iterative-candidate-pattern $id $parent $candidate $support)
+;   (iterative-recursive-candidate $id $parent $candidate $support)
+
+(DEF iterative-miner-candidate-step
+  (, (iter-parent $id $parent $miner-id)
+     (candidate-pattern $miner-id $candidate $support)
+     (DEF has-nested-expression-with-respect-to-fn $hne-p $hne-t)
+     (DEF iterative-miner-continue-fn $continue-p $continue-t))
+  (O
+    (- (candidate-pattern $miner-id $candidate $support))
+    (+ (iterative-candidate-pattern $id $parent $candidate $support))
+    (+ (has-nested-expression-with-respect-to (HNE $id $parent $candidate) $parent $candidate))
+    (+ (hne-cleanup (HNE $id $parent $candidate)))
+    (+ (exec (freq 900 iterative-check-depth) $hne-p $hne-t))
+    (+ (exec (freq 950 iterative-continue) $continue-p $continue-t))))
+
+(DEF iterative-miner-continue-fn
+  (, (iter-parent $id $parent $miner-id)
+     (iterative-candidate-pattern $id $parent $candidate $support)
+     (has-nested-expression-result (HNE $id $parent $candidate) $parent $candidate true)
+     (DEF hne-cleanup-fn $hne-cleanup-p $hne-cleanup-t)
+     (DEF iterative-miner-fn $iter-p $iter-t))
+  (O
+    (- (has-nested-expression-result (HNE $id $parent $candidate) $parent $candidate true))
+    (- (iter-parent $id $parent $miner-id))
+    (+ (iterative-recursive-candidate $id $parent $candidate $support))
+    (pure (run-iterative-miner $id $pat-candidate) $pat-candidate (indices_to_vars (' $candidate)))
+    (+ (exec (freq 910 iterative-hne-cleanup) $hne-cleanup-p $hne-cleanup-t))
+    (+ (exec (freq 000 iterative-run-next) $iter-p $iter-t))))
+
+(DEF iterative-miner-fn
+  (, (run-iterative-miner $id $pattern)
+     (DEF frequent-miner-fn $freq-p $freq-t)
+     (DEF iterative-miner-candidate-step $candidate-p $candidate-t))
+  (O
+    (- (run-iterative-miner $id $pattern))
+    (+ (iter-parent $id $pattern (ITER $id)))
+    (+ (run-frequent-miner (ITER $id) $pattern))
+    (+ (exec (freq 100 iterative-run-generation) $freq-p $freq-t))
+    (+ (exec (freq 850 iterative-check-candidates) $candidate-p $candidate-t))))
+
+
+; Example smoke, kept inactive:
+; (run-iterative-miner iter-smoke (Inheritance $x $y))
+; (exec (freq 000 call-iterative-miner)
+;   (, (run-iterative-miner iter-smoke (Inheritance $x $y))
+;      (DEF iterative-miner-fn $iter-p $iter-t))
+;   (O (+ (exec (freq 001 run-iterative-miner) $iter-p $iter-t))))

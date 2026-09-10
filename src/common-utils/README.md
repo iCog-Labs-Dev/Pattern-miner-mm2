@@ -52,6 +52,39 @@ candidate into a query, and schedules a count at the caller-provided
 ($out $context $candidate $support)
 ```
 
+This is the low-level uncached counter. New pipeline code should normally use
+the mode-selectable support gate below.
+
+### `support-gate`
+
+```metta
+((support-gate
+    $mode
+    $fact
+    $context
+    $canonical-candidate
+    $hit-priority
+    $count-priority
+    $deliver-priority
+    -> $out)
+  $source $sink)
+```
+
+This is the single support-counting gate for all miner pipelines. Callers read
+`(INPUT SUPPORT-MODE $mode)` and pass either `cached` or `uncached`. Both modes
+consume `$fact` and write:
+
+```metta
+($out $context $canonical-candidate $support)
+```
+
+In `cached` mode, the gate coalesces simultaneous work, serves existing cache
+facts, and caches zero and positive results. In `uncached` mode, every request
+performs a database count and no `(support-cache ...)` facts are read or
+written. `$context` is opaque and never becomes part of the cache key. The
+caller owns the three ordered exec priorities; hit and delivery priorities are
+unused in uncached mode.
+
 ### `support-at-least`
 
 ```metta

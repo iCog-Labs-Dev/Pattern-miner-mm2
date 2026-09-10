@@ -5,6 +5,7 @@
 (INPUT DB db)
 (INPUT MIN-SUPPORT 2)
 (INPUT MAX-SIZE 3)
+(INPUT SUPPORT-MODE cached)
 
 (pattern 0 (Inheritance $x $y))
 (pattern 0 (Inheritance $x human))
