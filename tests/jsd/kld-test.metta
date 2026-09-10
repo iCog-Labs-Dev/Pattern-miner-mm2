@@ -1,4 +1,4 @@
-;; TEST-AUX src/jsd/kld.metta
+;; TEST-AUX src/surp/jsd/kld.metta
 
 (jsd-kld-request (0.5 1.0) (0.5 1.0))
 

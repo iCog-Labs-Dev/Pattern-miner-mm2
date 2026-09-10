@@ -1,7 +1,7 @@
-;; TEST-AUX src/truth-values/est/truth-value-defs.metta
-;; TEST-AUX src/truth-values/est/beta-distribution.metta
-;; TEST-AUX src/truth-values/est/average-tv.metta
-;; TEST-AUX src/truth-values/est/pro-tv-wout-joint.metta
+;; TEST-AUX src/surp/truth-values/est/truth-value-defs.metta
+;; TEST-AUX src/surp/truth-values/est/beta-distribution.metta
+;; TEST-AUX src/surp/truth-values/est/average-tv.metta
+;; TEST-AUX src/surp/truth-values/est/pro-tv-wout-joint.metta
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; pro-tv-wout-joint component test.

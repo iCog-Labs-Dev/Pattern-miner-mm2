@@ -62,7 +62,7 @@ isurp                    = distance(empirical probability, expected interval)
 The MM2 implementation is split across small staged files under:
 
 ```text
-src/isurp-modules/
+src/surp/isurp-modules/
 ```
 
 Each `exec` priority uses this project convention:
@@ -143,16 +143,16 @@ auxiliary input:
 
 ```bash
 mork run Pattern-miner-mm2/src/common-utils/utils.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/input-bootstrap.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/bootstrap-partitions.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/block-support.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/abstractness-sort.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/eq-prob.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/pro-prob-wout-joint.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/ji-prob-est.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/do-ji-prob.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/emp-prob-pbs.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/isurp-new.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/input-bootstrap.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/bootstrap-partitions.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/block-support.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/abstractness-sort.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/eq-prob.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/pro-prob-wout-joint.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/ji-prob-est.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/do-ji-prob.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/emp-prob-pbs.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/isurp-new.metta \
   --aux-path path/to/input-db.metta
 ```
 

@@ -52,25 +52,25 @@ Run:
 
 ```bash
 mork run Pattern-miner-mm2/src/common-utils/utils.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/input-bootstrap.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/bootstrap-partitions.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/block-support.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/abstractness-sort.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/eq-prob.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/pro-prob-wout-joint.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/ji-prob-est.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/do-ji-prob.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/emp-prob-pbs.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/isurp-new.metta \
-  --aux-path Pattern-miner-mm2/src/truth-values/est/truth-value-defs.metta \
-  --aux-path Pattern-miner-mm2/src/truth-values/est/beta-distribution.metta \
-  --aux-path Pattern-miner-mm2/src/truth-values/est/average-tv.metta \
-  --aux-path Pattern-miner-mm2/src/truth-values/emp/emp-tv.metta \
-  --aux-path Pattern-miner-mm2/src/truth-values/emp/block-tv.metta \
-  --aux-path Pattern-miner-mm2/src/truth-values/est/pro-tv-wout-joint.metta \
-  --aux-path Pattern-miner-mm2/src/truth-values/est/ji-tv-est.metta \
-  --aux-path Pattern-miner-mm2/src/truth-values/est/do-ji-tv-est.metta \
-  --aux-path Pattern-miner-mm2/src/truth-values/est/est-tv.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/input-bootstrap.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/bootstrap-partitions.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/block-support.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/abstractness-sort.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/eq-prob.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/pro-prob-wout-joint.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/ji-prob-est.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/do-ji-prob.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/emp-prob-pbs.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/isurp-new.metta \
+  --aux-path Pattern-miner-mm2/src/surp/truth-values/est/truth-value-defs.metta \
+  --aux-path Pattern-miner-mm2/src/surp/truth-values/est/beta-distribution.metta \
+  --aux-path Pattern-miner-mm2/src/surp/truth-values/est/average-tv.metta \
+  --aux-path Pattern-miner-mm2/src/surp/truth-values/emp/emp-tv.metta \
+  --aux-path Pattern-miner-mm2/src/surp/truth-values/emp/block-tv.metta \
+  --aux-path Pattern-miner-mm2/src/surp/truth-values/est/pro-tv-wout-joint.metta \
+  --aux-path Pattern-miner-mm2/src/surp/truth-values/est/ji-tv-est.metta \
+  --aux-path Pattern-miner-mm2/src/surp/truth-values/est/do-ji-tv-est.metta \
+  --aux-path Pattern-miner-mm2/src/surp/truth-values/est/est-tv.metta \
   --aux-path path/to/your-isurp-input-db.metta
 ```
 

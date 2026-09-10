@@ -1,6 +1,6 @@
 ;; TEST-AUX src/common-utils/utils.metta
-;; TEST-AUX src/isurp-modules/abstractness-sort.metta
-;; TEST-AUX src/isurp-modules/eq-prob.metta
+;; TEST-AUX src/surp/isurp-modules/abstractness-sort.metta
+;; TEST-AUX src/surp/isurp-modules/eq-prob.metta
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; eq-prob component test

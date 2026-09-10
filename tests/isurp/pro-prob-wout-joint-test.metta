@@ -1,4 +1,4 @@
-;; TEST-AUX src/isurp-modules/pro-prob-wout-joint.metta
+;; TEST-AUX src/surp/isurp-modules/pro-prob-wout-joint.metta
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; pro-prob-wout-joint component test

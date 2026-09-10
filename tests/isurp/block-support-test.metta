@@ -1,5 +1,5 @@
 ;; TEST-AUX src/common-utils/utils.metta
-;; TEST-AUX src/isurp-modules/block-support.metta
+;; TEST-AUX src/surp/isurp-modules/block-support.metta
 
 (INPUT PATTERN ((, (Inheritance $x human) (Inheritance $x ugly)) 1))
 (INPUT SUPPORT-MODE cached)

@@ -1,5 +1,5 @@
-;; TEST-AUX src/truth-values/est/truth-value-defs.metta
-;; TEST-AUX src/truth-values/est/beta-distribution.metta
+;; TEST-AUX src/surp/truth-values/est/truth-value-defs.metta
+;; TEST-AUX src/surp/truth-values/est/beta-distribution.metta
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Beta distribution truth-value helper tests.

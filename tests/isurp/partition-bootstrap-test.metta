@@ -1,4 +1,4 @@
-;; TEST-AUX src/isurp-modules/bootstrap-partitions.metta
+;; TEST-AUX src/surp/isurp-modules/bootstrap-partitions.metta
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Partition component test

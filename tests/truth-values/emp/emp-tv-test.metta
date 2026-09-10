@@ -1,4 +1,4 @@
-;; TEST-AUX src/truth-values/emp/emp-tv.metta
+;; TEST-AUX src/surp/truth-values/emp/emp-tv.metta
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Empirical truth value component test.
