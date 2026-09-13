@@ -62,9 +62,15 @@ The project has exactly two module namespaces:
 - `freq` owns frequent mining, including connected conjunction expansion.
 - `surp` owns surprisingness scoring.
 
-`src/conjunction-expansion-triplet.metta` is a standalone development
+`src/freq/conjunction-expansion-triplet.metta` is a standalone development
 component, not a third module namespace. It therefore follows the `freq`
 priority convention while keeping its temporary facts under the `ce-` prefix.
+
+`src/freq/frequent-pattern-miner.metta` integrates recursive candidate mining with
+conjunction expansion. Iterative-miner work and cleanup end at priority `970`;
+the integrated entry point reserves priority `999` for the handoff to
+conjunction expansion. Work created by the expansion then re-enters its normal
+lower `freq` stages.
 
 Helpers, cleanup, tracing, and debugging remain stages inside their owning
 module. They do not introduce `shared`, `debug`, `conj-exp`, or similar module
@@ -116,7 +122,7 @@ Use explicit predicates to make each fact type clear.
 | Database facts | Facts being mined | `(Inheritance Allen man)` |
 | Function definitions | Reusable pipeline definitions | `((count-conjuncts ... -> ...) $src $sink)` |
 | Intermediate facts | Temporary pipeline state | `(block-support $partition $block $support)` |
-| Final results | Intended output | `(frequent-pattern $pattern $support)`, `(expanded-conjunct $size $candidate $support)`, `(surprisingness-of $pattern $score)` |
+| Final results | Intended output | `(frequent-pattern $pattern $support)`, `(iterative-candidate-pattern $run-id $parent $candidate $support)`, `(expanded-conjunct $size $candidate $support)`, `(surprisingness-of $pattern $score)` |
 | Debug facts | Temporary inspection facts | `(DEBUG stage value)` |
 | Dummy facts | Development-only facts | `(DUMMY ...)` |
 

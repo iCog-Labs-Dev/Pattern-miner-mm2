@@ -62,7 +62,7 @@ isurp                    = distance(empirical probability, expected interval)
 The MM2 implementation is split across small staged files under:
 
 ```text
-src/isurp-modules/
+src/surp/isurp-modules/
 ```
 
 Each `exec` priority uses this project convention:
@@ -98,7 +98,7 @@ The full pipeline expects raw DB facts and these input facts:
 (INPUT PATTERN (<comma-pattern> <support>))
 ```
 
-Example from `tests/isurp/isurp-pipeline-test.metta`:
+Example from `tests/surp/isurp/isurp-pipeline-test.metta`:
 
 ```metta
 (INPUT DB db)
@@ -123,19 +123,19 @@ The pattern support is `1` because only `Allen` satisfies both clauses.
 Run the tested pipeline through the project test runner:
 
 ```bash
-scripts/run-tests.sh tests/isurp/isurp-pipeline-test.metta
+scripts/run-tests.sh tests/surp/isurp/isurp-pipeline-test.metta
 ```
 
 Run all ISurp module tests:
 
 ```bash
-scripts/run-tests.sh tests/isurp/*.metta
+scripts/run-tests.sh tests/surp/isurp/*.metta
 ```
 
 If `mork` is not on `PATH`, pass the binary explicitly:
 
 ```bash
-MORK_BIN=/path/to/mork scripts/run-tests.sh tests/isurp/*.metta
+MORK_BIN=/path/to/mork scripts/run-tests.sh tests/surp/isurp/*.metta
 ```
 
 To run manually, load `src/common-utils/utils.metta` and each ISurp module as an
@@ -143,16 +143,16 @@ auxiliary input:
 
 ```bash
 mork run Pattern-miner-mm2/src/common-utils/utils.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/input-bootstrap.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/bootstrap-partitions.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/block-support.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/abstractness-sort.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/eq-prob.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/pro-prob-wout-joint.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/ji-prob-est.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/do-ji-prob.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/emp-prob-pbs.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/isurp-new.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/input-bootstrap.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/bootstrap-partitions.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/block-support.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/abstractness-sort.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/eq-prob.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/pro-prob-wout-joint.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/ji-prob-est.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/do-ji-prob.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/emp-prob-pbs.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/isurp-new.metta \
   --aux-path path/to/input-db.metta
 ```
 
@@ -186,7 +186,7 @@ with expected output:
 The matching MM2 test is:
 
 ```text
-tests/isurp/isurp-validation-test.metta
+tests/surp/isurp/isurp-validation-test.metta
 ```
 
 It loads the same `ugly_man_sodaDrinker` corpus facts into MORK, with:
@@ -240,17 +240,17 @@ because MORK test files load facts into one unscoped Space, while the PeTTa
 tests use separate database spaces (`&db`, `&dbc`, `&dbn`):
 
 ```text
-tests/isurp/isurp-coupled-validation-test.metta
-tests/isurp/isurp-true-nested-validation-test.metta
+tests/surp/isurp/isurp-coupled-validation-test.metta
+tests/surp/isurp/isurp-true-nested-validation-test.metta
 ```
 
 Run it with:
 
 ```bash
 scripts/run-tests.sh \
-  tests/isurp/isurp-validation-test.metta \
-  tests/isurp/isurp-coupled-validation-test.metta \
-  tests/isurp/isurp-true-nested-validation-test.metta
+  tests/surp/isurp/isurp-validation-test.metta \
+  tests/surp/isurp/isurp-coupled-validation-test.metta \
+  tests/surp/isurp/isurp-true-nested-validation-test.metta
 ```
 
 Expected result:
@@ -269,7 +269,7 @@ Failed: 0
 
 ## Small Pipeline Sanity Case
 
-`tests/isurp/isurp-pipeline-test.metta` is a smaller controlled test for the
+`tests/surp/isurp/isurp-pipeline-test.metta` is a smaller controlled test for the
 same pipeline stages. It uses a two-clause pattern:
 
 ```metta
