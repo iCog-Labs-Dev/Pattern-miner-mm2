@@ -1,10 +1,11 @@
 ;; TEST-AUX data/ugly-sodaDrinker.metta
 ;; TEST-AUX src/common-utils/utils.metta
-;; TEST-AUX src/conjunction-expansion-triplet.metta
+;; TEST-AUX src/freq/conjunction-expansion-triplet.metta
 
 (INPUT DB db)
 (INPUT MIN-SUPPORT 2)
 (INPUT MAX-SIZE 3)
+(INPUT SUPPORT-MODE cached)
 
 (pattern 0 (Inheritance $x $y))
 (pattern 0 (Inheritance $x human))

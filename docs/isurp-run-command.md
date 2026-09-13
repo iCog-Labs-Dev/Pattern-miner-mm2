@@ -15,26 +15,26 @@ main file and load the ISurp implementation modules with `--aux-path`.
 The ISurp tests are regular project runner tests. Run all modular ISurp tests:
 
 ```bash
-scripts/run-tests.sh tests/isurp/abstractness-sort-test.metta \
-  tests/isurp/eq-prob-test.metta \
-  tests/isurp/pro-prob-wout-joint-test.metta \
-  tests/isurp/ji-prob-est-test.metta \
-  tests/isurp/do-ji-prob-test.metta \
-  tests/isurp/emp-prob-pbs-test.metta \
-  tests/truth-values/emp/emp-tv-test.metta \
-  tests/truth-values/emp/block-tv-test.metta \
-  tests/truth-values/est/truth-value-defs-test.metta \
-  tests/truth-values/est/est-tv-pipeline-test.metta \
-  tests/isurp/isurp-validation-test.metta \
-  tests/isurp/isurp-coupled-validation-test.metta \
-  tests/isurp/isurp-true-nested-validation-test.metta \
-  tests/isurp/isurp-pipeline-test.metta
+scripts/run-tests.sh tests/surp/isurp/abstractness-sort-test.metta \
+  tests/surp/isurp/eq-prob-test.metta \
+  tests/surp/isurp/pro-prob-wout-joint-test.metta \
+  tests/surp/isurp/ji-prob-est-test.metta \
+  tests/surp/isurp/do-ji-prob-test.metta \
+  tests/surp/isurp/emp-prob-pbs-test.metta \
+  tests/surp/truth-values/emp/emp-tv-test.metta \
+  tests/surp/truth-values/emp/block-tv-test.metta \
+  tests/surp/truth-values/est/truth-value-defs-test.metta \
+  tests/surp/truth-values/est/est-tv-pipeline-test.metta \
+  tests/surp/isurp/isurp-validation-test.metta \
+  tests/surp/isurp/isurp-coupled-validation-test.metta \
+  tests/surp/isurp/isurp-true-nested-validation-test.metta \
+  tests/surp/isurp/isurp-pipeline-test.metta
 ```
 
 Or run one component test:
 
 ```bash
-scripts/run-tests.sh tests/isurp/eq-prob-test.metta
+scripts/run-tests.sh tests/surp/isurp/eq-prob-test.metta
 ```
 
 ## Full ISurp Pipeline
@@ -52,30 +52,30 @@ Run:
 
 ```bash
 mork run Pattern-miner-mm2/src/common-utils/utils.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/input-bootstrap.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/bootstrap-partitions.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/block-support.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/abstractness-sort.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/eq-prob.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/pro-prob-wout-joint.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/ji-prob-est.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/do-ji-prob.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/emp-prob-pbs.metta \
-  --aux-path Pattern-miner-mm2/src/isurp-modules/isurp-new.metta \
-  --aux-path Pattern-miner-mm2/src/truth-values/est/truth-value-defs.metta \
-  --aux-path Pattern-miner-mm2/src/truth-values/est/beta-distribution.metta \
-  --aux-path Pattern-miner-mm2/src/truth-values/est/average-tv.metta \
-  --aux-path Pattern-miner-mm2/src/truth-values/emp/emp-tv.metta \
-  --aux-path Pattern-miner-mm2/src/truth-values/emp/block-tv.metta \
-  --aux-path Pattern-miner-mm2/src/truth-values/est/pro-tv-wout-joint.metta \
-  --aux-path Pattern-miner-mm2/src/truth-values/est/ji-tv-est.metta \
-  --aux-path Pattern-miner-mm2/src/truth-values/est/do-ji-tv-est.metta \
-  --aux-path Pattern-miner-mm2/src/truth-values/est/est-tv.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/input-bootstrap.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/bootstrap-partitions.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/block-support.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/abstractness-sort.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/eq-prob.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/pro-prob-wout-joint.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/ji-prob-est.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/do-ji-prob.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/emp-prob-pbs.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/isurp-new.metta \
+  --aux-path Pattern-miner-mm2/src/surp/truth-values/est/truth-value-defs.metta \
+  --aux-path Pattern-miner-mm2/src/surp/truth-values/est/beta-distribution.metta \
+  --aux-path Pattern-miner-mm2/src/surp/truth-values/est/average-tv.metta \
+  --aux-path Pattern-miner-mm2/src/surp/truth-values/emp/emp-tv.metta \
+  --aux-path Pattern-miner-mm2/src/surp/truth-values/emp/block-tv.metta \
+  --aux-path Pattern-miner-mm2/src/surp/truth-values/est/pro-tv-wout-joint.metta \
+  --aux-path Pattern-miner-mm2/src/surp/truth-values/est/ji-tv-est.metta \
+  --aux-path Pattern-miner-mm2/src/surp/truth-values/est/do-ji-tv-est.metta \
+  --aux-path Pattern-miner-mm2/src/surp/truth-values/est/est-tv.metta \
   --aux-path path/to/your-isurp-input-db.metta
 ```
 
 Each component test keeps its fixture data and expected facts in one runnable
-file under `tests/isurp/`.
+file under `tests/surp/isurp/`.
 
 ## Module Map
 

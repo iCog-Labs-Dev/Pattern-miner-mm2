@@ -39,6 +39,119 @@
         (- (count-indexed-conjunction-support-request
             $context $candidate $priority $out))))
 
+;; Shared support cache gate.
+;;
+;; Every pipeline uses this same callable and supplies:
+;;   - the request fact to consume;
+;;   - an opaque context copied to the result;
+;;   - a canonical indexed conjunction;
+;;   - ordered priorities for cache lookup, counting, and delivery;
+;;   - its desired output predicate.
+;;
+;; Public cache:
+;;   (support-cache $canonical-candidate $support)
+;;
+;; Output:
+;;   ($out $context $canonical-candidate $support)
+;;
+;; The candidate must already be canonical. Keeping this contract at the gate
+;; makes the cache reusable by miners whose patterns are canonicalized at
+;; different stages. `canonicalize-indexed-conjunction` below is the shared
+;; utility for callers that still have a raw candidate.
+;;
+;; `support-cache-work` intentionally contains only the candidate. Atomspace
+;; fact deduplication therefore coalesces simultaneous requests from unrelated
+;; callers into one database count.
+((support-cache-drop-hit -> removed)
+    (, (support-cache-work $candidate)
+       (support-cache $candidate $support))
+    (O (- (support-cache-work $candidate))))
+
+((support-cache-count-miss $priority -> counted)
+    (, (support-cache-work $candidate))
+    (O
+        ;; Seed zero before running the query. MORK's count sink only fires
+        ;; when the generated query has matches, so this is also the negative
+        ;; cache entry for an unsupported pattern.
+        (+ (support-cache $candidate 0))
+        (pure
+            (exec $priority
+                $query
+                (O
+                    (count
+                        (support-cache $candidate $support)
+                        $support
+                        $query)
+                    (- (support-cache $candidate 0))))
+            $query
+            (indices_to_vars
+                (cons , (' $candidate))))
+        (- (support-cache-work $candidate))))
+
+((support-cache-deliver -> delivered)
+    (, (support-cache-wait $out $context $candidate)
+       (support-cache $candidate $support))
+    (O
+        (+ ($out $context $candidate $support))
+        (- (support-cache-wait $out $context $candidate))))
+
+;; Mode-selectable support gate used by production pipelines.
+;;
+;; Callers read `(INPUT SUPPORT-MODE $mode)` and pass either `cached` or
+;; `uncached` here.  The mode is part of the callable signature so dispatch
+;; happens while the source/sink pair is generated; no extra exec layer is
+;; introduced around the scheduled gate.
+((support-gate
+    cached
+    $fact
+    $context
+    $candidate
+    $hit-priority
+    $count-priority
+    $deliver-priority
+    -> $out)
+    (, $fact
+       ((support-cache-drop-hit -> removed) $hit-p $hit-t)
+       ((support-cache-count-miss $count-priority -> counted)
+        $count-p $count-t)
+       ((support-cache-deliver -> delivered) $deliver-p $deliver-t))
+    (O
+        (+ (support-cache-wait $out $context $candidate))
+        (+ (support-cache-work $candidate))
+        (+ (exec $hit-priority $hit-p $hit-t))
+        (+ (exec $count-priority $count-p $count-t))
+        (+ (exec $deliver-priority $deliver-p $deliver-t))
+        (- $fact)))
+
+;; Always count this request.  Seed a zero result first because MORK's count
+;; sink only runs when the query matches; a positive count replaces that zero.
+;; This branch never reads or writes `(support-cache ...)` facts.
+((support-gate
+    uncached
+    $fact
+    $context
+    $candidate
+    $hit-priority
+    $count-priority
+    $deliver-priority
+    -> $out)
+    (, $fact)
+    (O
+        (+ ($out $context $candidate 0))
+        (pure
+            (exec $count-priority
+                $query
+                (O
+                    (count
+                        ($out $context $candidate $support)
+                        $support
+                        $query)
+                    (- ($out $context $candidate 0))))
+            $query
+            (indices_to_vars
+                (cons , (' $candidate))))
+        (- $fact)))
+
 ;; Compare a support value against a caller-provided threshold. The opaque
 ;; context keeps the decision associated with the fact that requested it.
 ((support-at-least $context $support $threshold -> $out)
