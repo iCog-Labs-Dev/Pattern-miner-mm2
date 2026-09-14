@@ -13,10 +13,10 @@
 (shallow-abstraction-binding spec-test (root arg/2) (var 1) sodaDrinker)
 (shallow-abstraction-binding spec-test (root arg/2) (var 1) (var 1))
 
-(exec (freq 000 call-specialization-combinations)
+(exec (freq f000 call-specialization-combinations)
   (, (run-specialization spec-test (Inheritance $x $y))
      (DEF specialization-combinations-fn $spec-p $spec-t))
-  (O (+ (exec (freq 001 run-specialization-combinations) $spec-p $spec-t))))
+  (O (+ (exec (freq f001 run-specialization-combinations) $spec-p $spec-t))))
   
 (EXPECTED-RESULT specialization-var-var (specialization-result spec-test (Inheritance (var 0) (var 1))))
 (EXPECTED-RESULT specialization-var-human (specialization-result spec-test (Inheritance (var 0) human)))

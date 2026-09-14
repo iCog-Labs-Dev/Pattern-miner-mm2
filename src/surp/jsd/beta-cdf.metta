@@ -15,7 +15,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(exec (surp 300 jsd-cdf-count-stv)
+(exec (surp s300 jsd-cdf-count-stv)
     (, (jsd-cdf-request (STV $strength $confidence) $bins))
     (O
         (pure
@@ -35,7 +35,7 @@
                             (f64_from_string 0.9999998))))))))
 
 
-(exec (surp 300 jsd-cdf-count-emptv)
+(exec (surp s300 jsd-cdf-count-emptv)
     (, (jsd-cdf-request (EMPTV $strength $confidence) $bins))
     (O
         (pure
@@ -55,7 +55,7 @@
                             (f64_from_string 0.9999998))))))))
 
 
-(exec (surp 301 jsd-cdf-alpha-beta-stv)
+(exec (surp s301 jsd-cdf-alpha-beta-stv)
     (, (jsd-tv-count (STV $strength $confidence) $count))
     (O
         (pure
@@ -80,7 +80,7 @@
                             (f64_from_string $count))))))))
 
 
-(exec (surp 301 jsd-cdf-alpha-beta-emptv)
+(exec (surp s301 jsd-cdf-alpha-beta-emptv)
     (, (jsd-tv-count (EMPTV $strength $confidence) $count))
     (O
         (pure
@@ -105,14 +105,14 @@
                             (f64_from_string $count))))))))
 
 
-(exec (surp 302 jsd-cdf-start)
+(exec (surp s302 jsd-cdf-start)
     (, (jsd-cdf-request $tv $bins)
        (jsd-tv-alpha $tv $alpha)
        (jsd-tv-beta $tv $beta)
        (DEF jsd-cdf-check $check-p $check-t))
     (O
         (+ (jsd-cdf-acc $tv $bins $alpha $beta 0 ()))
-        (+ (exec (surp 303 jsd-cdf-check) $check-p $check-t))))
+        (+ (exec (surp s303 jsd-cdf-check) $check-p $check-t))))
 
 
 (DEF jsd-cdf-check
@@ -129,8 +129,8 @@
                     (i32_from_string $bins))
                 then done
                 else more))
-        (+ (exec (surp 304 jsd-cdf-step) $step-p $step-t))
-        (+ (exec (surp 305 jsd-cdf-final) $final-p $final-t))))
+        (+ (exec (surp s304 jsd-cdf-step) $step-p $step-t))
+        (+ (exec (surp s305 jsd-cdf-final) $final-p $final-t))))
 
 
 (DEF jsd-cdf-step
@@ -173,7 +173,7 @@
         (- (jsd-cdf-acc $tv $bins $alpha $beta $index $cdf-list))
         (- (jsd-cdf-state $tv $bins $alpha $beta $index more))
         (+ (jsd-cdf-pending $tv $bins $alpha $beta $index $cdf-list))
-        (+ (exec (surp 304 jsd-cdf-continue) $continue-p $continue-t))))
+        (+ (exec (surp s304 jsd-cdf-continue) $continue-p $continue-t))))
 
 
 (DEF jsd-cdf-continue
@@ -189,7 +189,7 @@
         (- (jsd-cdf-pending $tv $bins $alpha $beta $index $cdf-list))
         (- (jsd-cdf-value $tv $bins $index $value))
         (- (jsd-cdf-next-index $tv $bins $index $next-index))
-        (+ (exec (surp 303 jsd-cdf-check) $check-p $check-t))))
+        (+ (exec (surp s303 jsd-cdf-check) $check-p $check-t))))
 
 
 (DEF jsd-cdf-final

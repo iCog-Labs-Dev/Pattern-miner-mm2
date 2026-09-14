@@ -27,8 +27,8 @@
 ;;   -> canonicalize -> queue the next size
 ;;
 ;; All `ce-*` facts are private pipeline state. This file has no dependency on
-;; frequent-miner.metta; it uses the shared `freq` priority namespace required
-;; by docs/data-model.md.
+;; frequent-miner.metta; it uses the `freq` module with `fNNN` as the middle
+;; priority field, as required by docs/data-model.md.
 
 ;; Read every candidate produced by one completed iterative-miner run. Matching
 ;; candidates are registered at priority 010 before any support/expansion cycle
@@ -63,10 +63,10 @@
   (O
     (- (conjunction-expansion $run-id))
     (+ (ce-intake-run $run-id))
-    (+ (exec (freq 010 intake-iterative-candidates) $intake-p $intake-t))
-    (+ (exec (freq 011 finish-iterative-intake) $finish-p $finish-t))
-    (+ (exec (freq 106 schedule-iterative-cycles) $cycle-p $cycle-t))
-    (+ (exec (freq 900 cleanup-bases) $cleanup-p $cleanup-t))))
+    (+ (exec (freq f010 intake-iterative-candidates) $intake-p $intake-t))
+    (+ (exec (freq f011 finish-iterative-intake) $finish-p $finish-t))
+    (+ (exec (freq f106 schedule-iterative-cycles) $cycle-p $cycle-t))
+    (+ (exec (freq f900 cleanup-bases) $cleanup-p $cleanup-t))))
 
 ;; Count a queued candidate through common-utils, then install the later stages
 ;; needed by the same cycle. Splitting request/count scheduling from the
@@ -79,8 +79,8 @@
     (- (ce-pending $size $candidate))
     (+ (ce-count-work $size $candidate))
     (+ (ce-support-cycle $size $candidate))
-    (+ (exec (freq 105 request-count) $request-p $request-t))
-    (+ (exec (freq 106 schedule-cycle) $cycle-p $cycle-t))))
+    (+ (exec (freq f105 request-count) $request-p $request-t))
+    (+ (exec (freq f106 schedule-cycle) $cycle-p $cycle-t))))
 
 (DEF ce-request-count-fn
   (, (ce-count-work $size $candidate)
@@ -90,13 +90,13 @@
         (ce-count-work $size $candidate)
         $size
         $candidate
-        (freq 110 support-cache-hit)
-        (freq 111 count-support)
-        (freq 112 deliver-support)
+        (freq f110 support-cache-hit)
+        (freq f111 count-support)
+        (freq f112 deliver-support)
         -> ce-support)
        $gate-p $gate-t))
   (O
-    (+ (exec (freq 110 support-gate) $gate-p $gate-t))))
+    (+ (exec (freq f110 support-gate) $gate-p $gate-t))))
 
 (DEF ce-schedule-cycle-fn
   (, (ce-support-cycle $size $candidate)
@@ -105,10 +105,10 @@
      (DEF ce-build-fn $build-p $build-t)
      (DEF ce-schedule-candidate-fn $candidate-p $candidate-t))
   (O
-    (+ (exec (freq 120 schedule-filter) $filter-p $filter-t))
-    (+ (exec (freq 200 schedule-depth) $depth-p $depth-t))
-    (+ (exec (freq 300 schedule-build) $build-p $build-t))
-    (+ (exec (freq 500 schedule-candidate) $candidate-p $candidate-t))
+    (+ (exec (freq f120 schedule-filter) $filter-p $filter-t))
+    (+ (exec (freq f200 schedule-depth) $depth-p $depth-t))
+    (+ (exec (freq f300 schedule-build) $build-p $build-t))
+    (+ (exec (freq f500 schedule-candidate) $candidate-p $candidate-t))
     (- (ce-support-cycle $size $candidate))))
 
 ;; Support filtering.
@@ -121,9 +121,9 @@
         -> removed)
       $drop-p $drop-t))
   (O
-    (+ (exec (freq 130 check-support) $pass-p $pass-t))
-    (+ (exec (freq 140 save-frequent) $save-p $save-t))
-    (+ (exec (freq 141 drop-infrequent) $drop-p $drop-t))))
+    (+ (exec (freq f130 check-support) $pass-p $pass-t))
+    (+ (exec (freq f140 save-frequent) $save-p $save-t))
+    (+ (exec (freq f141 drop-infrequent) $drop-p $drop-t))))
 
 (DEF ce-support-pass-fn
   (, (ce-support $size $candidate $support)
@@ -134,7 +134,7 @@
   (O
     (+ (support-at-least-request
       (ce-candidate $size $candidate) $support $threshold ce-support-pass))
-    (+ (exec (freq 131 evaluate-support) $pass-p $pass-t))
+    (+ (exec (freq f131 evaluate-support) $pass-p $pass-t))
     (- (ce-support $size $candidate $support))))
 
 (DEF ce-save-pass-fn
@@ -155,9 +155,9 @@
      ((drop-matched (ce-expand-pass $size $candidate false) -> removed)
       $drop-p $drop-t))
   (O
-    (+ (exec (freq 210 check-depth) $pass-p $pass-t))
-    (+ (exec (freq 220 queue-expansion) $todo-p $todo-t))
-    (+ (exec (freq 221 stop-expansion) $drop-p $drop-t))))
+    (+ (exec (freq f210 check-depth) $pass-p $pass-t))
+    (+ (exec (freq f220 queue-expansion) $todo-p $todo-t))
+    (+ (exec (freq f221 stop-expansion) $drop-p $drop-t))))
 
 (DEF ce-expand-pass-fn
   (, (ce-expand-check $size $candidate)
@@ -178,10 +178,10 @@
      (DEF ce-schedule-choice-fn $choice-p $choice-t)
      (DEF ce-schedule-map-fn $map-p $map-t))
   (O
-    (+ (exec (freq 310 schedule-scan) $scan-p $scan-t))
-    (+ (exec (freq 350 schedule-classify) $classify-p $classify-t))
-    (+ (exec (freq 370 schedule-choice) $choice-p $choice-t))
-    (+ (exec (freq 400 schedule-map) $map-p $map-t))))
+    (+ (exec (freq f310 schedule-scan) $scan-p $scan-t))
+    (+ (exec (freq f350 schedule-classify) $classify-p $classify-t))
+    (+ (exec (freq f370 schedule-choice) $choice-p $choice-t))
+    (+ (exec (freq f400 schedule-map) $map-p $map-t))))
 
 ;; Pair each expandable conjunction with every normalized base, start its
 ;; shape classification, and scan the conjunction's atoms.
@@ -195,9 +195,9 @@
      (DEF ce-pair-details-fn $details-p $details-t)
      (DEF ce-scan-fn $scan-p $scan-t))
   (O
-    (+ (exec (freq 320 pair-base) $pair-p $pair-t))
-    (+ (exec (freq 330 inspect-pair) $details-p $details-t))
-    (+ (exec (freq 340 scan-conjunct) $scan-p $scan-t))))
+    (+ (exec (freq f320 pair-base) $pair-p $pair-t))
+    (+ (exec (freq f330 inspect-pair) $details-p $details-t))
+    (+ (exec (freq f340 scan-conjunct) $scan-p $scan-t))))
 
 (DEF ce-pair-details-fn
   (, (ce-expand-todo $old-size $conjunct)
@@ -228,7 +228,7 @@
       $rest
       (cdr-atom (' $remaining)))
     (- (ce-scan $old-size $conjunct $base $remaining))
-    (+ (exec (freq 340 scan-conjunct) $scan-p $scan-t))))
+    (+ (exec (freq f340 scan-conjunct) $scan-p $scan-t))))
 
 ;; Indexed variables in either triplet slot become existing choices. Facts are
 ;; removed only after both slot rules have seen them.
@@ -255,10 +255,10 @@
         (ce-conjunct-atom $old-size $conjunct $base $atom) -> removed)
       $drop-p $drop-t))
   (O
-    (+ (exec (freq 351 left-choice) $left-p $left-t))
-    (+ (exec (freq 352 right-choice) $right-p $right-t))
-    (+ (exec (freq 353 complete-base-shape) $shape-p $shape-t))
-    (+ (exec (freq 354 drop-scanned-atom) $drop-p $drop-t))))
+    (+ (exec (freq f351 left-choice) $left-p $left-t))
+    (+ (exec (freq f352 right-choice) $right-p $right-t))
+    (+ (exec (freq f353 complete-base-shape) $shape-p $shape-t))
+    (+ (exec (freq f354 drop-scanned-atom) $drop-p $drop-t))))
 
 (DEF ce-complete-base-shape-fn
   (, (ce-expand-todo $old-size $conjunct)
@@ -288,10 +288,10 @@
       $save-p $save-t)
      (DEF ce-source-relation-fn $relation-p $relation-t))
   (O
-    (+ (exec (freq 371 propose-fresh) $fresh-p $fresh-t))
-    (+ (exec (freq 372 drop-used-fresh) $drop-p $drop-t))
-    (+ (exec (freq 373 save-fresh) $save-p $save-t))
-    (+ (exec (freq 374 source-relation) $relation-p $relation-t))))
+    (+ (exec (freq f371 propose-fresh) $fresh-p $fresh-t))
+    (+ (exec (freq f372 drop-used-fresh) $drop-p $drop-t))
+    (+ (exec (freq f373 save-fresh) $save-p $save-t))
+    (+ (exec (freq f374 source-relation) $relation-p $relation-t))))
 
 (DEF ce-fresh-candidate-fn
   (, (ce-expand-todo $old-size $conjunct)
@@ -383,14 +383,14 @@
         (ce-expand-todo $old-size $conjunct) -> removed)
       $finish-p $finish-t))
   (O
-    (+ (exec (freq 410 map-same-source) $same-p $same-t))
-    (+ (exec (freq 411 map-distinct-left) $left-p $left-t))
-    (+ (exec (freq 412 map-distinct-right) $right-p $right-t))
-    (+ (exec (freq 413 map-left-slot) $left-slot-p $left-slot-t))
-    (+ (exec (freq 414 map-right-slot) $right-slot-p $right-slot-t))
-    (+ (exec (freq 420 build-candidate) $candidate-p $candidate-t))
-    (+ (exec (freq 430 cleanup-build) $clean-p $clean-t))
-    (+ (exec (freq 431 finish-build) $finish-p $finish-t))))
+    (+ (exec (freq f410 map-same-source) $same-p $same-t))
+    (+ (exec (freq f411 map-distinct-left) $left-p $left-t))
+    (+ (exec (freq f412 map-distinct-right) $right-p $right-t))
+    (+ (exec (freq f413 map-left-slot) $left-slot-p $left-slot-t))
+    (+ (exec (freq f414 map-right-slot) $right-slot-p $right-slot-t))
+    (+ (exec (freq f420 build-candidate) $candidate-p $candidate-t))
+    (+ (exec (freq f430 cleanup-build) $clean-p $clean-t))
+    (+ (exec (freq f431 finish-build) $finish-p $finish-t))))
 
 ;; Build the raw union. The shared canonicalization callable keeps the later
 ;; grounded transformations separate because quoted list results cannot safely
@@ -415,8 +415,8 @@
      ((canonicalize-indexed-conjunction
         (ce-raw-candidate $old-size $raw)
         $old-size $raw
-        (freq 502 candidate-to-vars)
-        (freq 503 alpha-normalize) -> ce-candidate)
+        (freq f502 candidate-to-vars)
+        (freq f503 alpha-normalize) -> ce-candidate)
       $canonical-p $canonical-t)
      ((conjunction-size
         (ce-candidate $old-size $candidate)
@@ -427,11 +427,11 @@
      ((drop-matched (ce-candidate-pass $candidate $size false) -> removed)
       $drop-p $drop-t))
   (O
-    (+ (exec (freq 501 canonicalize-candidate) $canonical-p $canonical-t))
-    (+ (exec (freq 510 candidate-size) $size-p $size-t))
-    (+ (exec (freq 520 check-candidate) $pass-p $pass-t))
-    (+ (exec (freq 530 queue-candidate) $queue-p $queue-t))
-    (+ (exec (freq 531 drop-candidate) $drop-p $drop-t))))
+    (+ (exec (freq f501 canonicalize-candidate) $canonical-p $canonical-t))
+    (+ (exec (freq f510 candidate-size) $size-p $size-t))
+    (+ (exec (freq f520 check-candidate) $pass-p $pass-t))
+    (+ (exec (freq f530 queue-candidate) $queue-p $queue-t))
+    (+ (exec (freq f531 drop-candidate) $drop-p $drop-t))))
 
 (DEF ce-candidate-pass-fn
   (, (ce-candidate-size $old-size $candidate $size)
@@ -450,11 +450,11 @@
      (DEF ce-support-fn $support-p $support-t))
   (O
     (+ (ce-pending $size $candidate))
-    (+ (exec (freq 100 support-cycle) $support-p $support-t))
+    (+ (exec (freq f100 support-cycle) $support-p $support-t))
     (- (ce-candidate-pass $candidate $size true))))
 
 ;; Normalize all seed patterns before starting the first support cycle.
-(exec (freq 010 normalize-seeds)
+(exec (freq f010 normalize-seeds)
   (, (pattern 0 $pattern))
   (O
     (pure
@@ -466,12 +466,12 @@
       $base
       (vars_to_indices (' $pattern)))))
 
-(exec (freq 020 start)
+(exec (freq f020 start)
   (, (DEF ce-support-fn $support-p $support-t))
-  (O (+ (exec (freq 100 support-cycle) $support-p $support-t))))
+  (O (+ (exec (freq f100 support-cycle) $support-p $support-t))))
 
 ;; Bases are derived input, not output. Priority 900 runs only after all
 ;; recursively queued mining cycles have finished.
-(exec (freq 900 cleanup-bases)
+(exec (freq f900 cleanup-bases)
   (, (DEF ce-cleanup-bases-fn $cleanup-p $cleanup-t))
-  (O (+ (exec (freq 900 cleanup-bases) $cleanup-p $cleanup-t))))
+  (O (+ (exec (freq f900 cleanup-bases) $cleanup-p $cleanup-t))))

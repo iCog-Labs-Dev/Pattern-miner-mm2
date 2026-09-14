@@ -121,10 +121,10 @@ expansion, and integrated entry-point files into the same atomspace. Then issue:
 Specialize and run the public callable:
 
 ```metta
-(exec (freq 001 call-frequent-pattern-miner)
+(exec (freq f001 call-frequent-pattern-miner)
   (, (run-frequent-pattern-miner iter-smoke (Inheritance $a $b))
      (DEF frequent-pattern-miner-fn $miner-p $miner-t))
-  (O (+ (exec (freq 002 run-frequent-pattern-miner)
+  (O (+ (exec (freq f002 run-frequent-pattern-miner)
        $miner-p $miner-t))))
 ```
 

@@ -9,16 +9,16 @@
 
 (run-frequent-miner fm-test (Inheritance $x $y))
 
-(exec (freq 000 load-frequent-miner-facts)
+(exec (freq f000 load-frequent-miner-facts)
   (, (Inheritance $entity $class))
   (O
     (+ (FACT (Inheritance $entity $class)))))
 
-(exec (freq 001 call-frequent-miner)
+(exec (freq f001 call-frequent-miner)
   (, (run-frequent-miner fm-test (Inheritance $x $y))
      (DEF frequent-miner-fn $freq-p $freq-t))
   (O
-    (+ (exec (freq 002 run-frequent-miner) $freq-p $freq-t))))
+    (+ (exec (freq f002 run-frequent-miner) $freq-p $freq-t))))
 
 (EXPECTED-RESULT frequent-miner-all (candidate-pattern fm-test (Inheritance (var 0) (var 1)) 59))
 (EXPECTED-RESULT frequent-miner-human (candidate-pattern fm-test (Inheritance (var 0) human) 19))

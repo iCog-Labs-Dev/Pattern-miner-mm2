@@ -17,7 +17,7 @@
 
 ;; Explicit fallback partitions for indexed inputs.  These follow
 ;; `partitions-wout-pattern`: the original full pattern is excluded.
-(exec (surp 030 explicit-partition-2)
+(exec (surp s030 explicit-partition-2)
     (, (indexed-pattern ($c1 $c2)))
     (,
         (ji-prob-partitions-of ($c1 $c2) ((($c1) ($c2))))
@@ -27,7 +27,7 @@
         (block (($c1) ($c2)) ($c2))))
 
 
-(exec (surp 030 explicit-partition-3)
+(exec (surp s030 explicit-partition-3)
     (, (indexed-pattern ($c1 $c2 $c3)))
     (,
         (ji-prob-partitions-of ($c1 $c2 $c3)
@@ -70,7 +70,7 @@
 ;; and each block is a list of conjuncts.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(exec (surp 031 generate-partitions)
+(exec (surp s031 generate-partitions)
     (, (indexed-pattern $indexed-pattern))
     (O
         (pure
@@ -97,9 +97,9 @@
 ;;   4. writes itself back
 ;;
 ;; It halts naturally when the remaining list no longer has a first element.
-(exec (surp 032 partition-iterator)
+(exec (surp s032 partition-iterator)
     (, (partitions-of $indexed-pattern $indexed-partition)
-       (exec (surp 032 partition-iterator) $src $sink))
+       (exec (surp s032 partition-iterator) $src $sink))
     (O
         (pure
             (partition $car)
@@ -110,7 +110,7 @@
             $cdr
             (cdr-atom (' $indexed-partition)))
         (- (partitions-of $indexed-pattern $indexed-partition))
-        (+ (exec (surp 032 partition-iterator) $src $sink))))
+        (+ (exec (surp s032 partition-iterator) $src $sink))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -132,16 +132,16 @@
 
 ;; Copy the partition so the block iterator can consume the copy without losing
 ;; the original partition shape.
-(exec (surp 033 copy-partition)
+(exec (surp s033 copy-partition)
     (, (partition $partition))
     (, (copy-of-partition $partition $partition)))
 
 
 ;; Iterate through the copied partition and write one `(block partition block)`
 ;; fact per block.
-(exec (surp 034 block-iterator)
+(exec (surp s034 block-iterator)
     (, (copy-of-partition $partition $partition-copy)
-       (exec (surp 034 block-iterator) $src $sink))
+       (exec (surp s034 block-iterator) $src $sink))
     (O
         (pure
             (block $partition $block)
@@ -152,4 +152,4 @@
             $cdr
             (cdr-atom (' $partition-copy)))
         (- (copy-of-partition $partition $partition-copy))
-        (+ (exec (surp 034 block-iterator) $src $sink))))
+        (+ (exec (surp s034 block-iterator) $src $sink))))

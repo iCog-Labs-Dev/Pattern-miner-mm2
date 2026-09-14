@@ -14,7 +14,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(exec (surp 160 block-tv-universe)
+(exec (surp s160 block-tv-universe)
     (, (INPUT DB-SIZE $db-size)
        (block-support $partition $block $support))
     (O
@@ -28,7 +28,7 @@
                         (size-atom (' $block))))))))
 
 
-(exec (surp 161 block-tv-strength)
+(exec (surp s161 block-tv-strength)
     (, (block-support $partition $block $support)
        (pro-block-universe-count $partition $block $universe-count))
     (O
@@ -41,7 +41,7 @@
                     (f64_from_string $universe-count))))))
 
 
-(exec (surp 162 block-tv-final)
+(exec (surp s162 block-tv-final)
     (, (pro-block-prob $partition $block $strength)
        (pro-block-universe-count $partition $block $universe-count))
     (O

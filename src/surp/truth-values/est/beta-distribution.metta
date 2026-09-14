@@ -18,17 +18,17 @@
 
 
 ;; Request confidence->count for any TV that needs beta conversion.
-(exec (surp 181 tv-beta-count-request-stv)
+(exec (surp s181 tv-beta-count-request-stv)
     (, (tv-beta-request (STV $strength $confidence)))
     (, (confidence-count-request $confidence)))
 
-(exec (surp 181 tv-beta-count-request-emptv)
+(exec (surp s181 tv-beta-count-request-emptv)
     (, (tv-beta-request (EMPTV $strength $confidence)))
     (, (confidence-count-request $confidence)))
 
 
 ;; Convert STV to a beta distribution.
-(exec (surp 183 tv-beta-stv)
+(exec (surp s183 tv-beta-stv)
     (, (tv-beta-request (STV $strength $confidence))
        (confidence-count-of $confidence $count)
        (tv-prior-alpha $prior-alpha)
@@ -57,7 +57,7 @@
 
 
 ;; Convert EMPTV to a beta distribution.
-(exec (surp 183 tv-beta-emptv)
+(exec (surp s183 tv-beta-emptv)
     (, (tv-beta-request (EMPTV $strength $confidence))
        (confidence-count-of $confidence $count)
        (tv-prior-alpha $prior-alpha)
@@ -87,7 +87,7 @@
 
 ;; beta_mean = alpha / (alpha + beta)
 ;; beta_var  = alpha * beta / ((alpha + beta)^2 * (alpha + beta + 1))
-(exec (surp 184 tv-beta-final)
+(exec (surp s184 tv-beta-final)
     (, (tv-beta-alpha $tv $alpha)
        (tv-beta-beta $tv $beta))
     (O
@@ -123,7 +123,7 @@
                             (f64_from_string 1.0))))))))
 
 
-(exec (surp 184 tv-beta-assemble)
+(exec (surp s184 tv-beta-assemble)
     (, (tv-beta-mean $tv $mean)
        (tv-beta-variance $tv $variance))
     (, (tv-beta-of $tv (Beta (mean $mean) (variance $variance)))))
@@ -131,15 +131,15 @@
 
 ;; Late beta conversion pass for TV requests created after the first average
 ;; pass, mainly from `do-ji-tv-est`.
-(exec (surp 203 tv-beta-count-request-stv-late)
+(exec (surp s203 tv-beta-count-request-stv-late)
     (, (tv-beta-request (STV $strength $confidence)))
     (, (confidence-count-request-late $confidence)))
 
-(exec (surp 203 tv-beta-count-request-emptv-late)
+(exec (surp s203 tv-beta-count-request-emptv-late)
     (, (tv-beta-request (EMPTV $strength $confidence)))
     (, (confidence-count-request-late $confidence)))
 
-(exec (surp 204 confidence-count-late)
+(exec (surp s204 confidence-count-late)
     (, (confidence-count-request-late $confidence)
        (tv-default-k $default-k)
        (tv-confidence-max $confidence-max))
@@ -160,7 +160,7 @@
                             (f64_from_string $confidence)
                             (f64_from_string $confidence-max))))))))
 
-(exec (surp 205 tv-beta-stv-late)
+(exec (surp s205 tv-beta-stv-late)
     (, (tv-beta-request (STV $strength $confidence))
        (confidence-count-of-late $confidence $count)
        (tv-prior-alpha $prior-alpha)
@@ -187,7 +187,7 @@
                             (f64_from_string $strength)
                             (f64_from_string $count))))))))
 
-(exec (surp 205 tv-beta-emptv-late)
+(exec (surp s205 tv-beta-emptv-late)
     (, (tv-beta-request (EMPTV $strength $confidence))
        (confidence-count-of-late $confidence $count)
        (tv-prior-alpha $prior-alpha)
@@ -214,7 +214,7 @@
                             (f64_from_string $strength)
                             (f64_from_string $count))))))))
 
-(exec (surp 206 tv-beta-final-late)
+(exec (surp s206 tv-beta-final-late)
     (, (tv-beta-alpha-late $tv $alpha)
        (tv-beta-beta-late $tv $beta))
     (O
@@ -249,14 +249,14 @@
                                 (f64_from_string $beta))
                             (f64_from_string 1.0))))))))
 
-(exec (surp 206 tv-beta-assemble-late)
+(exec (surp s206 tv-beta-assemble-late)
     (, (tv-beta-mean-late $tv $mean)
        (tv-beta-variance-late $tv $variance))
     (, (tv-beta-of $tv (Beta (mean $mean) (variance $variance)))))
 
 
 ;; mk_stv, part 1: compute alpha and beta from mean + variance.
-(exec (surp 188 mk-stv-alpha-beta)
+(exec (surp s188 mk-stv-alpha-beta)
     (, (mk-stv-request $mean $variance))
     (O
         (pure
@@ -294,7 +294,7 @@
 
 
 ;; mk_stv, part 2: confidence from reconstructed count.
-(exec (surp 189 mk-stv-confidence)
+(exec (surp s189 mk-stv-confidence)
     (, (mk-stv-alpha $mean $variance $alpha)
        (mk-stv-beta $mean $variance $beta)
        (tv-prior-alpha $prior-alpha)
@@ -348,7 +348,7 @@
 ;;   mode = (alpha - 1) / (alpha + beta - 2)
 ;;
 ;; Edge cases are materialized separately to match PeTTa's branch shape.
-(exec (surp 190 mk-stv-mode-normal)
+(exec (surp s190 mk-stv-mode-normal)
     (, (mk-stv-alpha $mean $variance $alpha)
        (mk-stv-beta $mean $variance $beta)
        (mk-stv-confidence $mean $variance $confidence))
@@ -380,7 +380,7 @@
                         (f64_from_string 2.0)))))))
 
 
-(exec (surp 191 mk-stv-result-normal)
+(exec (surp s191 mk-stv-result-normal)
     (, (mk-stv-alpha-gt-one $mean $variance true)
        (mk-stv-beta-gt-one $mean $variance true)
        (mk-stv-normal-mode $mean $variance $mode)
@@ -391,19 +391,19 @@
 ;; Edge branches for degenerate beta distributions.  These keep the executable
 ;; path stable for zero/one means without introducing a Python-style nested
 ;; `if`.
-(exec (surp 191 mk-stv-result-edge-alpha)
+(exec (surp s191 mk-stv-result-edge-alpha)
     (, (mk-stv-alpha-gt-one $mean $variance false)
        (mk-stv-beta-gt-one $mean $variance true)
        (mk-stv-confidence $mean $variance $confidence))
     (, (mk-stv-of $mean $variance (STV 0 $confidence))))
 
-(exec (surp 191 mk-stv-result-edge-beta)
+(exec (surp s191 mk-stv-result-edge-beta)
     (, (mk-stv-alpha-gt-one $mean $variance true)
        (mk-stv-beta-gt-one $mean $variance false)
        (mk-stv-confidence $mean $variance $confidence))
     (, (mk-stv-of $mean $variance (STV 1 $confidence))))
 
-(exec (surp 191 mk-stv-result-edge-both)
+(exec (surp s191 mk-stv-result-edge-both)
     (, (mk-stv-alpha-gt-one $mean $variance false)
        (mk-stv-beta-gt-one $mean $variance false)
        (mk-stv-confidence $mean $variance $confidence))

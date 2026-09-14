@@ -87,7 +87,7 @@ The MM2 implementation now stages this as:
 The PeTTa nested test has 4 conjuncts. The current MM2 implementation has a 3-conjunct-specific min/max rule:
 
 ```lisp
-(exec 9
+(exec (surp s090 count-block-support)
     (, (indexed-pattern ($c1 $c2 $c3))
        ...)
     ...)

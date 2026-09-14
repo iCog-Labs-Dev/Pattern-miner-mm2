@@ -25,5 +25,5 @@
     (- (run-frequent-pattern-miner $run-id $root-pattern))
     (+ (run-iterative-miner $run-id $root-pattern))
     (+ (conjunction-expansion $run-id))
-    (+ (exec (freq 010 run-iterative-miner) $iter-p $iter-t))
-    (+ (exec (freq 999 run-conjunction-expansion) $expand-p $expand-t))))
+    (+ (exec (freq f010 run-iterative-miner) $iter-p $iter-t))
+    (+ (exec (freq f999 run-conjunction-expansion) $expand-p $expand-t))))

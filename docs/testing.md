@@ -50,8 +50,7 @@ it does not maintain a separate copy of the database.
 4. Add one or more expected results.
 
 ```metta
-(EXPECTED-RESULT conjunction-expansion-singleton
-  (expanded-conjunct 1 ((Inheritance (var 0) human)) 10))
+(EXPECTED-RESULT conjunction-expansion-singleton (expanded-conjunct 1 ((Inheritance (var 0) human)) 10))
 ```
 
 The first argument after `EXPECTED-RESULT` is the test identifier. The second

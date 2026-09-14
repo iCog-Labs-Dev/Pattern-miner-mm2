@@ -14,12 +14,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(exec (surp 170 pro-tv-start)
+(exec (surp s170 pro-tv-start)
     (, (partition $partition)
        (DEF pro-tv-step $step-p $step-t))
     (O
         (+ (pro-tv-acc $partition $partition ()))
-        (+ (exec (surp 171 pro-tv-step) $step-p $step-t))))
+        (+ (exec (surp s171 pro-tv-step) $step-p $step-t))))
 
 
 (DEF pro-tv-step
@@ -36,7 +36,7 @@
             (cdr-atom (' $remaining)))
         (- (pro-tv-acc $partition $remaining $tv-list))
         (+ (pro-tv-pending $partition $remaining $tv-list))
-        (+ (exec (surp 172 pro-tv-resolve) $resolve-p $resolve-t))))
+        (+ (exec (surp s172 pro-tv-resolve) $resolve-p $resolve-t))))
 
 
 (DEF pro-tv-resolve
@@ -54,8 +54,8 @@
         (- (pro-tv-pending $partition $remaining $tv-list))
         (- (pro-tv-current $partition $remaining $block))
         (- (pro-tv-rest $partition $remaining $rest))
-        (+ (exec (surp 170 pro-tv-final) $final-p $final-t))
-        (+ (exec (surp 171 pro-tv-step) $step-p $step-t))))
+        (+ (exec (surp s170 pro-tv-final) $final-p $final-t))
+        (+ (exec (surp s171 pro-tv-step) $step-p $step-t))))
 
 
 (DEF pro-tv-final
@@ -66,7 +66,7 @@
         (+ (avrg-tv-request $tv-list))))
 
 
-(exec (surp 193 pro-tv-assemble)
+(exec (surp s193 pro-tv-assemble)
     (, (pro-tv-request $partition $tv-list)
        (avrg-tv-of $tv-list $stv))
     (, (pro-tv-wout-joint-of $partition $stv)))

@@ -11,18 +11,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(exec (surp 196 do-ji-tv-start-empty)
+(exec (surp s196 do-ji-tv-start-empty)
     (, (do-ji-tv-est-request ()))
     (, (do-ji-tv-est-list-of () ())
        (do-ji-tv-est-of () ())))
 
 
-(exec (surp 196 do-ji-tv-start)
+(exec (surp s196 do-ji-tv-start)
     (, (do-ji-tv-est-request $partitions)
        (DEF do-ji-tv-step $step-p $step-t))
     (O
         (+ (do-ji-tv-acc $partitions $partitions ()))
-        (+ (exec (surp 197 do-ji-tv-step) $step-p $step-t))))
+        (+ (exec (surp s197 do-ji-tv-step) $step-p $step-t))))
 
 
 (DEF do-ji-tv-step
@@ -39,7 +39,7 @@
             (cdr-atom (' $remaining)))
         (- (do-ji-tv-acc $partitions $remaining $tv-list))
         (+ (do-ji-tv-pending $partitions $remaining $tv-list))
-        (+ (exec (surp 198 do-ji-tv-resolve) $resolve-p $resolve-t))))
+        (+ (exec (surp s198 do-ji-tv-resolve) $resolve-p $resolve-t))))
 
 
 (DEF do-ji-tv-resolve
@@ -57,8 +57,8 @@
         (- (do-ji-tv-pending $partitions $remaining $tv-list))
         (- (do-ji-tv-current $partitions $remaining $partition))
         (- (do-ji-tv-rest $partitions $remaining $rest))
-        (+ (exec (surp 196 do-ji-tv-final-request) $final-p $final-t))
-        (+ (exec (surp 197 do-ji-tv-step) $step-p $step-t))))
+        (+ (exec (surp s196 do-ji-tv-final-request) $final-p $final-t))
+        (+ (exec (surp s197 do-ji-tv-step) $step-p $step-t))))
 
 
 (DEF do-ji-tv-final-request
@@ -69,7 +69,7 @@
         (+ (avrg-tv-request $tv-list))))
 
 
-(exec (surp 230 do-ji-tv-final)
+(exec (surp s230 do-ji-tv-final)
     (, (do-ji-tv-est-list-of $partitions $tv-list)
        (avrg-tv-of $tv-list $stv))
     (, (do-ji-tv-est-of $partitions $stv)))

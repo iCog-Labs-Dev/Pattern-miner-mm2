@@ -11,17 +11,17 @@
 (jsd-kld-epsilon 1e-32)
 
 
-(exec (surp 320 jsd-kld-identical)
+(exec (surp s320 jsd-kld-identical)
     (, (jsd-kld-request $cdf $cdf))
     (, (jsd-kld-of $cdf $cdf 0.0)))
 
 
-(exec (surp 320 jsd-kld-start)
+(exec (surp s320 jsd-kld-start)
     (, (jsd-kld-request $left-cdf $right-cdf)
        (DEF jsd-kld-size $size-p $size-t))
     (O
         (+ (jsd-kld-acc $left-cdf $right-cdf $left-cdf $right-cdf 0.0 0.0 0.0))
-        (+ (exec (surp 321 jsd-kld-size) $size-p $size-t))))
+        (+ (exec (surp s321 jsd-kld-size) $size-p $size-t))))
 
 
 (DEF jsd-kld-size
@@ -36,7 +36,7 @@
             (jsd-kld-right-size $left-cdf $right-cdf $left-rem $right-rem $right-size)
             $right-size
             (size-atom (' $right-rem)))
-        (+ (exec (surp 322 jsd-kld-compare-size) $compare-p $compare-t))))
+        (+ (exec (surp s322 jsd-kld-compare-size) $compare-p $compare-t))))
 
 
 (DEF jsd-kld-compare-size
@@ -53,7 +53,7 @@
                 (i32_from_string 0)))
         (- (jsd-kld-left-size $left-cdf $right-cdf $left-rem $right-rem $left-size))
         (- (jsd-kld-right-size $left-cdf $right-cdf $left-rem $right-rem $right-size))
-        (+ (exec (surp 323 jsd-kld-state) $state-p $state-t))))
+        (+ (exec (surp s323 jsd-kld-state) $state-p $state-t))))
 
 
 (DEF jsd-kld-state
@@ -61,8 +61,8 @@
        (DEF jsd-kld-state-done $done-p $done-t)
        (DEF jsd-kld-state-more $more-p $more-t))
     (O
-        (+ (exec (surp 324 jsd-kld-state-done) $done-p $done-t))
-        (+ (exec (surp 324 jsd-kld-state-more) $more-p $more-t))))
+        (+ (exec (surp s324 jsd-kld-state-done) $done-p $done-t))
+        (+ (exec (surp s324 jsd-kld-state-more) $more-p $more-t))))
 
 
 (DEF jsd-kld-state-done
@@ -71,7 +71,7 @@
     (O
         (- (jsd-kld-left-has-items $left-cdf $right-cdf $left-rem $right-rem false))
         (+ (jsd-kld-loop-state $left-cdf $right-cdf $left-rem $right-rem done))
-        (+ (exec (surp 323 jsd-kld-final) $final-p $final-t))
+        (+ (exec (surp s323 jsd-kld-final) $final-p $final-t))
     ))
 
 
@@ -81,7 +81,7 @@
     (O
         (- (jsd-kld-left-has-items $left-cdf $right-cdf $left-rem $right-rem true))
         (+ (jsd-kld-loop-state $left-cdf $right-cdf $left-rem $right-rem more))
-        (+ (exec (surp 324 jsd-kld-step) $step-p $step-t))))
+        (+ (exec (surp s324 jsd-kld-step) $step-p $step-t))))
 
 
 (DEF jsd-kld-step
@@ -108,7 +108,7 @@
             (cdr-atom (' $right-rem)))
         (- (jsd-kld-loop-state $left-cdf $right-cdf $left-rem $right-rem more))
         (+ (jsd-kld-deconsed $left-cdf $right-cdf $left-rem $right-rem $last-left $last-right $sum))
-        (+ (exec (surp 323 jsd-kld-decons) $decons-p $decons-t))))
+        (+ (exec (surp s323 jsd-kld-decons) $decons-p $decons-t))))
 
 
 (DEF jsd-kld-decons
@@ -127,7 +127,7 @@
         (- (jsd-kld-left-rest $left-cdf $right-cdf $left-rem $right-rem $left-rest))
         (- (jsd-kld-right-rest $left-cdf $right-cdf $left-rem $right-rem $right-rest))
         (+ (jsd-kld-prob-pending $left-cdf $right-cdf $left-rest $right-rest $last-left $last-right $sum $left-head $right-head))
-        (+ (exec (surp 322 jsd-kld-prob-step) $prob-p $prob-t))))
+        (+ (exec (surp s322 jsd-kld-prob-step) $prob-p $prob-t))))
 
 
 (DEF jsd-kld-prob-step
@@ -166,7 +166,7 @@
                 (f64_from_string 1e-32)))
         (+ (jsd-kld-pending $left-cdf $right-cdf $left-rest $right-rest $left-head $right-head $sum))
         (- (jsd-kld-prob-pending $left-cdf $right-cdf $left-rest $right-rest $last-left $last-right $sum $left-head $right-head))
-        (+ (exec (surp 322 jsd-kld-classify) $classify-p $classify-t))))
+        (+ (exec (surp s322 jsd-kld-classify) $classify-p $classify-t))))
 
 
 (DEF jsd-kld-classify
@@ -180,9 +180,9 @@
         (- (jsd-kld-left-prob $left-cdf $right-cdf $left-rest $right-rest $left-head $right-head $sum $lp))
         (- (jsd-kld-right-prob $left-cdf $right-cdf $left-rest $right-rest $left-head $right-head $sum $rp))
         (+ (jsd-kld-classified $left-cdf $right-cdf $left-rest $right-rest $left-head $right-head $sum $lp $rp))
-        (+ (exec (surp 322 jsd-kld-branch-use) $use-p $use-t))
-        (+ (exec (surp 322 jsd-kld-branch-skip-left) $skip-left-p $skip-left-t))
-        (+ (exec (surp 322 jsd-kld-branch-skip-right) $skip-right-p $skip-right-t))))
+        (+ (exec (surp s322 jsd-kld-branch-use) $use-p $use-t))
+        (+ (exec (surp s322 jsd-kld-branch-skip-left) $skip-left-p $skip-left-t))
+        (+ (exec (surp s322 jsd-kld-branch-skip-right) $skip-right-p $skip-right-t))))
 
 
 (DEF jsd-kld-branch-use
@@ -203,7 +203,7 @@
                             (f64_from_string $rp))))))
         (- (jsd-kld-left-positive $left-cdf $right-cdf $left-rest $right-rest $left-head $right-head $sum true))
         (- (jsd-kld-right-positive $left-cdf $right-cdf $left-rest $right-rest $left-head $right-head $sum true))
-        (+ (exec (surp 323 jsd-kld-continue) $continue-p $continue-t))))
+        (+ (exec (surp s323 jsd-kld-continue) $continue-p $continue-t))))
 
 
 (DEF jsd-kld-branch-skip-left
@@ -215,7 +215,7 @@
         (+ (jsd-kld-contribution $left-cdf $right-cdf $left-rest $right-rest $left-head $right-head $sum 0.0))
         (- (jsd-kld-left-positive $left-cdf $right-cdf $left-rest $right-rest $left-head $right-head $sum false))
         (- (jsd-kld-right-positive $left-cdf $right-cdf $left-rest $right-rest $left-head $right-head $sum $right-pos))
-        (+ (exec (surp 323 jsd-kld-continue) $continue-p $continue-t))))
+        (+ (exec (surp s323 jsd-kld-continue) $continue-p $continue-t))))
 
 
 (DEF jsd-kld-branch-skip-right
@@ -227,7 +227,7 @@
         (+ (jsd-kld-contribution $left-cdf $right-cdf $left-rest $right-rest $left-head $right-head $sum 0.0))
         (- (jsd-kld-left-positive $left-cdf $right-cdf $left-rest $right-rest $left-head $right-head $sum true))
         (- (jsd-kld-right-positive $left-cdf $right-cdf $left-rest $right-rest $left-head $right-head $sum false))
-        (+ (exec (surp 323 jsd-kld-continue) $continue-p $continue-t))))
+        (+ (exec (surp s323 jsd-kld-continue) $continue-p $continue-t))))
 
 
 (DEF jsd-kld-continue
@@ -245,7 +245,7 @@
         (- (jsd-kld-pending $left-cdf $right-cdf $left-rest $right-rest $left-head $right-head $sum))
         (- (jsd-kld-classified $left-cdf $right-cdf $left-rest $right-rest $left-head $right-head $sum $lp $rp))
         (- (jsd-kld-contribution $left-cdf $right-cdf $left-rest $right-rest $left-head $right-head $sum $term))
-        (+ (exec (surp 321 jsd-kld-size) $size-p $size-t))))
+        (+ (exec (surp s321 jsd-kld-size) $size-p $size-t))))
 
 
 (DEF jsd-kld-final

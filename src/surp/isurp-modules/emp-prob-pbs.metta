@@ -33,7 +33,7 @@
 ;; One-conjunct pattern:
 ;;
 ;;   universe-count = DB-SIZE
-(exec (surp 110 emp-prob-pbs-1)
+(exec (surp s110 emp-prob-pbs-1)
     (, (INPUT DB-SIZE $db-size)
        (INPUT PATTERN ((, $c1) $support)))
     (O
@@ -49,7 +49,7 @@
 ;; Two-conjunct pattern:
 ;;
 ;;   universe-count = DB-SIZE ^ 2
-(exec (surp 110 emp-prob-pbs-2)
+(exec (surp s110 emp-prob-pbs-2)
     (, (INPUT DB-SIZE $db-size)
        (INPUT PATTERN ((, $c1 $c2) $support)))
     (O
@@ -76,7 +76,7 @@
 ;; Three-conjunct pattern:
 ;;
 ;;   universe-count = DB-SIZE ^ 3
-(exec (surp 110 emp-prob-pbs-3)
+(exec (surp s110 emp-prob-pbs-3)
     (, (INPUT DB-SIZE $db-size)
        (INPUT PATTERN ((, $c1 $c2 $c3) $support)))
     (O

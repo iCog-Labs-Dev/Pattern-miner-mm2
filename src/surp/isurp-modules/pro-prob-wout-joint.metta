@@ -38,7 +38,7 @@
 ;; These rules are explicit by block arity.  That is intentionally similar to
 ;; the rest of the MM2 ISurp port: current MORK builds are more reliable with
 ;; concrete tuple shapes than with deeply nested dynamic tuple-size expressions.
-(exec (surp 080 pro-block-prob-1)
+(exec (surp s080 pro-block-prob-1)
     (, (INPUT DB-SIZE $db-size)
        (block-support $partition ($c1) $support))
     (O
@@ -51,7 +51,7 @@
                     (f64_from_string $db-size))))))
 
 
-(exec (surp 080 pro-block-prob-2)
+(exec (surp s080 pro-block-prob-2)
     (, (INPUT DB-SIZE $db-size)
        (block-support $partition ($c1 $c2) $support))
     (O
@@ -75,7 +75,7 @@
                                 (i64_from_string 2)))))))))
 
 
-(exec (surp 080 pro-block-prob-3)
+(exec (surp s080 pro-block-prob-3)
     (, (INPUT DB-SIZE $db-size)
        (block-support $partition ($c1 $c2 $c3) $support))
     (O
@@ -102,7 +102,7 @@
 ;; One-block partition:
 ;;
 ;;   pro-prob-wout-joint = P(block-1)
-(exec (surp 081 pro-partition-prob-1)
+(exec (surp s081 pro-partition-prob-1)
     (, (partition ($b1))
        (pro-block-prob ($b1) $b1 $p1))
     (, (pro-prob-wout-joint-of ($b1) $p1)))
@@ -111,7 +111,7 @@
 ;; Two-block partition:
 ;;
 ;;   pro-prob-wout-joint = P(block-1) * P(block-2)
-(exec (surp 081 pro-partition-prob-2)
+(exec (surp s081 pro-partition-prob-2)
     (, (partition ($b1 $b2))
        (pro-block-prob ($b1 $b2) $b1 $p1)
        (pro-block-prob ($b1 $b2) $b2 $p2))
@@ -128,7 +128,7 @@
 ;; Three-block partition:
 ;;
 ;;   pro-prob-wout-joint = P(block-1) * P(block-2) * P(block-3)
-(exec (surp 081 pro-partition-prob-3)
+(exec (surp s081 pro-partition-prob-3)
     (, (partition ($b1 $b2 $b3))
        (pro-block-prob ($b1 $b2 $b3) $b1 $p1)
        (pro-block-prob ($b1 $b2 $b3) $b2 $p2)

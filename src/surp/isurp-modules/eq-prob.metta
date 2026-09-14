@@ -50,29 +50,29 @@
 ;;
 ;; Expand every block into individual clauses so variable scanning does not need
 ;; to know whether a block has one, two, or more clauses.
-(exec (surp 050 eq-copy-block)
+(exec (surp s050 eq-copy-block)
     (, (block $partition $block))
     (, (eq-copy-block $partition $block $block)))
 
 ;; Direct block-shape extraction.  These rules are intentionally kept in
 ;; addition to the iterator above because some MORK builds do not reliably emit
 ;; `car-atom` for single-clause block tuples whose element is itself a tuple.
-(exec (surp 051 eq-block-clause-1)
+(exec (surp s051 eq-block-clause-1)
     (, (block $partition ($c1)))
     (, (eq-block-clause $partition ($c1) $c1)))
 
-(exec (surp 051 eq-block-clause-2)
+(exec (surp s051 eq-block-clause-2)
     (, (block $partition ($c1 $c2)))
     (, (eq-block-clause $partition ($c1 $c2) $c1)
        (eq-block-clause $partition ($c1 $c2) $c2)))
 
-(exec (surp 051 eq-block-clause-3)
+(exec (surp s051 eq-block-clause-3)
     (, (block $partition ($c1 $c2 $c3)))
     (, (eq-block-clause $partition ($c1 $c2 $c3) $c1)
        (eq-block-clause $partition ($c1 $c2 $c3) $c2)
        (eq-block-clause $partition ($c1 $c2 $c3) $c3)))
 
-(exec (surp 051 eq-block-clause-4)
+(exec (surp s051 eq-block-clause-4)
     (, (block $partition ($c1 $c2 $c3 $c4)))
     (, (eq-block-clause $partition ($c1 $c2 $c3 $c4) $c1)
        (eq-block-clause $partition ($c1 $c2 $c3 $c4) $c2)
@@ -87,9 +87,9 @@
 ;;   (eq-block-clause $partition $block $clause)
 ;;
 ;; for each clause in that block.
-(exec (surp 052 eq-block-iterator)
+(exec (surp s052 eq-block-iterator)
     (, (eq-copy-block $partition $block $copy)
-       (exec (surp 052 eq-block-iterator) $src $sink))
+       (exec (surp s052 eq-block-iterator) $src $sink))
     (O
         (pure
             (eq-block-clause $partition $block $clause)
@@ -100,7 +100,7 @@
             $tail
             (cdr-atom (' $copy)))
         (- (eq-copy-block $partition $block $copy))
-        (+ (exec (surp 052 eq-block-iterator) $src $sink))))
+        (+ (exec (surp s052 eq-block-iterator) $src $sink))))
 
 
 ;; get-var / connected-subpatterns-with-var:
@@ -113,27 +113,27 @@
 ;; positions are checked.  This intentionally excludes n-ary predicate atoms
 ;; such as `($rel $x $a $b)`.  The PeTTa validation shapes with nested
 ;; `(Person (var N))` subjects are handled by explicit rules below.
-(exec (surp 053 eq-scan-left-var)
+(exec (surp s053 eq-scan-left-var)
     (, (eq-block-clause $partition $block ($rel (var $n) $a)))
     (, (eq-block-has-var $partition $block (var $n))))
 
-(exec (surp 053 eq-scan-right-var)
+(exec (surp s053 eq-scan-right-var)
     (, (eq-block-clause $partition $block ($rel $a (var $n))))
     (, (eq-block-has-var $partition $block (var $n))))
 
-(exec (surp 053 eq-scan-left-person-var)
+(exec (surp s053 eq-scan-left-person-var)
     (, (eq-block-clause $partition $block ($rel (Person (var $n)) $a)))
     (, (eq-block-has-var $partition $block (var $n))))
 
-(exec (surp 053 eq-scan-right-person-var)
+(exec (surp s053 eq-scan-right-person-var)
     (, (eq-block-clause $partition $block ($rel $a (Person (var $n)))))
     (, (eq-block-has-var $partition $block (var $n))))
 
-(exec (surp 053 eq-scan-left-and-person-var)
+(exec (surp s053 eq-scan-left-and-person-var)
     (, (eq-block-clause $partition $block ($rel (And (And (Person (var $n)) $a) $b) $c)))
     (, (eq-block-has-var $partition $block (var $n))))
 
-(exec (surp 053 eq-scan-right-and-person-var)
+(exec (surp s053 eq-scan-right-and-person-var)
     (, (eq-block-clause $partition $block ($rel $a (And (And (Person (var $n)) $b) $c))))
     (, (eq-block-has-var $partition $block (var $n))))
 
@@ -142,25 +142,25 @@
 ;;
 ;; A variable is joint for a partition when it appears in at least two different
 ;; blocks of that partition.
-(exec (surp 054 eq-joint-var-2)
+(exec (surp s054 eq-joint-var-2)
     (, (partition ($b1 $b2))
        (eq-block-has-var ($b1 $b2) $b1 $var)
        (eq-block-has-var ($b1 $b2) $b2 $var))
     (, (eq-joint-var ($b1 $b2) $var)))
 
-(exec (surp 054 eq-joint-var-3-12)
+(exec (surp s054 eq-joint-var-3-12)
     (, (partition ($b1 $b2 $b3))
        (eq-block-has-var ($b1 $b2 $b3) $b1 $var)
        (eq-block-has-var ($b1 $b2 $b3) $b2 $var))
     (, (eq-joint-var ($b1 $b2 $b3) $var)))
 
-(exec (surp 054 eq-joint-var-3-13)
+(exec (surp s054 eq-joint-var-3-13)
     (, (partition ($b1 $b2 $b3))
        (eq-block-has-var ($b1 $b2 $b3) $b1 $var)
        (eq-block-has-var ($b1 $b2 $b3) $b3 $var))
     (, (eq-joint-var ($b1 $b2 $b3) $var)))
 
-(exec (surp 054 eq-joint-var-3-23)
+(exec (surp s054 eq-joint-var-3-23)
     (, (partition ($b1 $b2 $b3))
        (eq-block-has-var ($b1 $b2 $b3) $b2 $var)
        (eq-block-has-var ($b1 $b2 $b3) $b3 $var))
@@ -177,7 +177,7 @@
 ;; generated query, but this MORK build panics on that sink shape.  This MM2
 ;; fallback therefore counts the generated block query.  It is a conservative
 ;; support-count approximation and keeps the pipeline executable.
-(exec (surp 055 eq-value-query)
+(exec (surp s055 eq-value-query)
     (, (eq-joint-var $partition $var)
        (eq-block-has-var $partition $block $var))
     (O
@@ -193,7 +193,7 @@
 ;; The current fallback is block support, so it uses the same shared cache gate
 ;; as frequent mining and block-support. The variable stays in the opaque
 ;; context and does not affect the cache key.
-(exec (surp 056 eq-value-support-gate)
+(exec (surp s056 eq-value-support-gate)
     (, (eq-value-query $partition $block $var $query)
        (INPUT SUPPORT-MODE $support-mode)
        ((support-gate
@@ -201,15 +201,15 @@
           (eq-value-query $partition $block $var $query)
           ($partition $var)
           $block
-          (surp 056 eq-support-cache-hit)
-          (surp 057 count-eq-support)
-          (surp 058 deliver-eq-support)
+          (surp s056 eq-support-cache-hit)
+          (surp s057 count-eq-support)
+          (surp s058 deliver-eq-support)
           -> eq-value-support-result)
         $gate-p $gate-t))
     (O
-        (+ (exec (surp 056 run-eq-value-support-gate) $gate-p $gate-t))))
+        (+ (exec (surp s056 run-eq-value-support-gate) $gate-p $gate-t))))
 
-(exec (surp 059 eq-value-support-result)
+(exec (surp s059 eq-value-support-result)
     (, (eq-value-support-result ($partition $var) $block $count))
     (, (eq-value-count $partition $block $var $count)))
 
@@ -230,15 +230,15 @@
 ;; blocks:
 ;;
 ;;   factor(var) = 1 / DB-SIZE ^ (connected-block-count(var) - 1)
-(exec (surp 057 eq-abstractness-request)
+(exec (surp s057 eq-abstractness-request)
     (, (eq-joint-var $partition $var))
     (, (abstractness-sort-request $partition $var)))
 
-(exec (surp 058 eq-connected-block-count)
+(exec (surp s058 eq-connected-block-count)
     (, (eq-joint-var $partition $var)
-       (exec (surp 058 eq-connected-block-count) $src $sink))
+       (exec (surp s058 eq-connected-block-count) $src $sink))
     (,
-        (exec (surp 058 eq-connected-block-count)
+        (exec (surp s058 eq-connected-block-count)
             (, (eq-block-has-var $partition $block $var))
             (O
                 (count
@@ -246,7 +246,7 @@
                     $count
                     $block)))))
 
-(exec (surp 070 eq-var-factor-2-blocks)
+(exec (surp s070 eq-var-factor-2-blocks)
     (, (eq-connected-block-count $partition $var 2)
        (INPUT DB-SIZE $db-size))
     (O
@@ -258,7 +258,7 @@
                     (f64_from_string 1.0)
                     (f64_from_string $db-size))))))
 
-(exec (surp 070 eq-var-factor-3-blocks)
+(exec (surp s070 eq-var-factor-3-blocks)
     (, (eq-connected-block-count $partition $var 3)
        (INPUT DB-SIZE $db-size))
     (O
@@ -272,7 +272,7 @@
                         (f64_from_string $db-size)
                         (f64_from_string $db-size)))))))
 
-(exec (surp 070 eq-var-factor-4-blocks)
+(exec (surp s070 eq-var-factor-4-blocks)
     (, (eq-connected-block-count $partition $var 4)
        (INPUT DB-SIZE $db-size))
     (O
@@ -298,16 +298,16 @@
 
 ;; One-block partitions have no cross-block joint variables, so the correction
 ;; factor is the multiplicative identity.
-(exec (surp 071 eq-prob-identity)
+(exec (surp s071 eq-prob-identity)
     (, (partition ($b1)))
     (, (eq-prob-of ($b1) 1.0)))
 
-(exec (surp 071 eq-prob-single)
+(exec (surp s071 eq-prob-single)
     (, (eq-var-factor $partition $v1 $f1))
     (, (eq-prob-of $partition $f1)))
 
 
-(exec (surp 071 eq-prob-var-01)
+(exec (surp s071 eq-prob-var-01)
     (, (eq-var-factor $partition (var 0) $f0)
        (eq-var-factor $partition (var 1) $f1))
     (O
@@ -319,7 +319,7 @@
                     (f64_from_string $f0)
                     (f64_from_string $f1))))))
 
-(exec (surp 071 eq-prob-var-02)
+(exec (surp s071 eq-prob-var-02)
     (, (eq-var-factor $partition (var 0) $f0)
        (eq-var-factor $partition (var 2) $f2))
     (O
@@ -331,7 +331,7 @@
                     (f64_from_string $f0)
                     (f64_from_string $f2))))))
 
-(exec (surp 071 eq-prob-var-03)
+(exec (surp s071 eq-prob-var-03)
     (, (eq-var-factor $partition (var 0) $f0)
        (eq-var-factor $partition (var 3) $f3))
     (O
@@ -343,7 +343,7 @@
                     (f64_from_string $f0)
                     (f64_from_string $f3))))))
 
-(exec (surp 071 eq-prob-var-12)
+(exec (surp s071 eq-prob-var-12)
     (, (eq-var-factor $partition (var 1) $f1)
        (eq-var-factor $partition (var 2) $f2))
     (O
@@ -355,7 +355,7 @@
                     (f64_from_string $f1)
                     (f64_from_string $f2))))))
 
-(exec (surp 071 eq-prob-var-13)
+(exec (surp s071 eq-prob-var-13)
     (, (eq-var-factor $partition (var 1) $f1)
        (eq-var-factor $partition (var 3) $f3))
     (O
@@ -367,7 +367,7 @@
                     (f64_from_string $f1)
                     (f64_from_string $f3))))))
 
-(exec (surp 071 eq-prob-var-23)
+(exec (surp s071 eq-prob-var-23)
     (, (eq-var-factor $partition (var 2) $f2)
        (eq-var-factor $partition (var 3) $f3))
     (O
@@ -381,7 +381,7 @@
 
 ;; Triple and four-variable products for partitions that expose multiple joint
 ;; variables across binary predicate clauses.
-(exec (surp 071 eq-prob-var-012)
+(exec (surp s071 eq-prob-var-012)
     (, (eq-var-factor $partition (var 0) $f0)
        (eq-var-factor $partition (var 1) $f1)
        (eq-var-factor $partition (var 2) $f2))
@@ -396,7 +396,7 @@
                         (f64_from_string $f1))
                     (f64_from_string $f2))))))
 
-(exec (surp 071 eq-prob-var-013)
+(exec (surp s071 eq-prob-var-013)
     (, (eq-var-factor $partition (var 0) $f0)
        (eq-var-factor $partition (var 1) $f1)
        (eq-var-factor $partition (var 3) $f3))
@@ -411,7 +411,7 @@
                         (f64_from_string $f1))
                     (f64_from_string $f3))))))
 
-(exec (surp 071 eq-prob-var-023)
+(exec (surp s071 eq-prob-var-023)
     (, (eq-var-factor $partition (var 0) $f0)
        (eq-var-factor $partition (var 2) $f2)
        (eq-var-factor $partition (var 3) $f3))
@@ -426,7 +426,7 @@
                         (f64_from_string $f2))
                     (f64_from_string $f3))))))
 
-(exec (surp 071 eq-prob-var-123)
+(exec (surp s071 eq-prob-var-123)
     (, (eq-var-factor $partition (var 1) $f1)
        (eq-var-factor $partition (var 2) $f2)
        (eq-var-factor $partition (var 3) $f3))
@@ -441,7 +441,7 @@
                         (f64_from_string $f2))
                     (f64_from_string $f3))))))
 
-(exec (surp 071 eq-prob-var-0123)
+(exec (surp s071 eq-prob-var-0123)
     (, (eq-var-factor $partition (var 0) $f0)
        (eq-var-factor $partition (var 1) $f1)
        (eq-var-factor $partition (var 2) $f2)

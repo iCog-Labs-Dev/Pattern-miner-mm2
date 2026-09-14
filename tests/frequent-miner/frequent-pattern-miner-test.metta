@@ -12,16 +12,16 @@
 
 ;; The iterative miner consumes FACT wrappers; conjunction expansion consumes
 ;; the raw triplets loaded from the same fixture.
-(exec (freq 000 materialize-frequent-miner-facts)
+(exec (freq f000 materialize-frequent-miner-facts)
   (, (Inheritance $entity $class))
   (O (+ (FACT (Inheritance $entity $class)))))
 
 (run-frequent-pattern-miner integration-test (Inheritance $x $y))
 
-(exec (freq 001 call-frequent-pattern-miner)
+(exec (freq f001 call-frequent-pattern-miner)
   (, (run-frequent-pattern-miner integration-test (Inheritance $x $y))
      (DEF frequent-pattern-miner-fn $miner-p $miner-t))
-  (O (+ (exec (freq 002 run-frequent-pattern-miner) $miner-p $miner-t))))
+  (O (+ (exec (freq f002 run-frequent-pattern-miner) $miner-p $miner-t))))
 
 (EXPECTED-RESULT generic-candidate (iterative-candidate-pattern integration-test (Inheritance $a $b) (Inheritance (var 0) (var 1)) 59))
 (EXPECTED-RESULT soda-candidate (iterative-candidate-pattern integration-test (Inheritance $a $b) (Inheritance (var 0) sodaDrinker) 10))
