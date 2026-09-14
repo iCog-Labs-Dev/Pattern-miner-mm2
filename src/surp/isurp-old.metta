@@ -28,12 +28,11 @@
             (vars_to_indices
                 (cdr-atom (' $pattern))))))
 
-;; Scoped input for pattern-miner integration. `$run-id` separates one mining
-;; run from another, and `$pattern-id` separates each frequent pattern inside
-;; the run.
+;; Scoped input for pattern-miner integration. A run handles one mining job, so
+;; `$pattern-id` separates each frequent pattern inside that job.
 (exec (surp s010 normalize-scoped-input)
-    (, (INPUT SCOPED-PATTERN ($run-id $pattern-id $pattern $support)))
-    (, (isurp-pattern (isurp-run $run-id $pattern-id) $pattern-id $pattern $support)))
+    (, (INPUT SCOPED-PATTERN ($pattern-id $pattern $support)))
+    (, (isurp-pattern (isurp-pattern $pattern-id) $pattern-id $pattern $support)))
 
 (exec (surp s020 init)
     (, (isurp-pattern $ctx $pattern-id $pattern $support))
@@ -347,7 +346,6 @@
     (O
         (- (cleanup $ctx $fact))
         ))
-
 
 
 
