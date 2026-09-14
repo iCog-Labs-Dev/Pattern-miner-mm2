@@ -51,6 +51,31 @@ expected_results() {
   sed -n 's/^[[:space:]]*(EXPECTED-RESULT[[:space:]]\{1,\}\([^[:space:])][^[:space:])]*\)[[:space:]]\{1,\}\(.*\))[[:space:]]*$/\1 \2/p' "$case_file"
 }
 
+canonicalize_fact() {
+  local fact="$1"
+  local canon_in
+  local canon_out
+  local canon_line
+
+  canon_in="$(mktemp "$OUT_DIR/canon-input.XXXXXX.metta")"
+  canon_out="$(mktemp "$OUT_DIR/canon-output.XXXXXX.metta")"
+
+  printf '%s\n' "$fact" > "$canon_in"
+
+  if "$MORK_BIN" run "$canon_in" "$canon_out" --steps 100 --instrumentation 0 >/dev/null 2>&1; then
+    canon_line="$(sed -n '/^[[:space:]]*$/d; /^[[:space:]]*;;/d; p' "$canon_out" | head -n 1)"
+    if [[ -n "$canon_line" ]]; then
+      printf '%s' "$canon_line"
+    else
+      printf '%s' "$fact"
+    fi
+  else
+    printf '%s' "$fact"
+  fi
+
+  rm -f "$canon_in" "$canon_out"
+}
+
 run_case() {
   local case_file="$1"
   local rel_case
@@ -96,6 +121,7 @@ run_case() {
     expected_count=$((expected_count + 1))
     test_id="${expected_entry%% *}"
     expected="${expected_entry#* }"
+    expected="$(canonicalize_fact "$expected")"
 
     if ! grep -Fx -- "$expected" "$out_file" >/dev/null; then
       echo "FAIL $rel_case"
