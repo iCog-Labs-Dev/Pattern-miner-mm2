@@ -13,12 +13,12 @@
 ;;
 ;; MM2 public result:
 ;;
-;;   (ji-prob-est-of $partition $prob)
+;;   (ji-prob-est-of $pattern $partition $prob)
 ;;
 ;; Required input/intermediate facts:
 ;;
-;;   (pro-prob-wout-joint-of $partition $independent-prob)
-;;   (eq-prob-of $partition $eq-prob)
+;;   (pro-prob-wout-joint-of $pattern $partition $independent-prob)
+;;   (eq-prob-of $pattern $partition $eq-prob)
 ;;
 ;; `pattern`, `db`, and `db_ratio` are not explicit fields in this materialized
 ;; fact yet.  The required context is already carried by the loaded Space:
@@ -27,11 +27,11 @@
 
 
 (exec (surp s090 ji-prob-est)
-    (, (pro-prob-wout-joint-of $partition $independent-prob)
-       (eq-prob-of $partition $eq-prob))
+    (, (pro-prob-wout-joint-of $pattern $partition $independent-prob)
+       (eq-prob-of $pattern $partition $eq-prob))
     (O
         (pure
-            (ji-prob-est-of $partition $prob)
+            (ji-prob-est-of $pattern $partition $prob)
             $prob
             (f64_to_string
                 (product_f64

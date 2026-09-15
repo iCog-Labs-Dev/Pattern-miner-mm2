@@ -21,7 +21,7 @@
 ;; Required input facts:
 ;;
 ;;   (INPUT DB-SIZE $db-size)
-;;   (INPUT PATTERN ($pattern $support))
+;;   (isurp-pattern $pattern $support)
 ;;
 ;; `prob-estimate` and `db-ratio` are intentionally ignored here because the
 ;; sampling branch is intentionally not ported.
@@ -29,13 +29,13 @@
 
 
 (exec (surp s110 emp-prob-pbs-pattern-size)
-    (, (INPUT PATTERN ($pattern $support)))
+    (, (isurp-pattern $pattern $support))
     (O
         (pure
             (emp-prob-pbs-pattern-size-of $pattern $size)
             $size
             (size-atom
-                (cdr-atom (' $pattern))))))
+                (' $pattern)))))
 
 
 (exec (surp s111 emp-prob-pbs-universe)
@@ -52,7 +52,7 @@
 
 
 (exec (surp s112 emp-prob-pbs-strength)
-    (, (INPUT PATTERN ($pattern $support))
+    (, (isurp-pattern $pattern $support)
        (emp-prob-pbs-universe-count $pattern $universe-count))
     (O
         (pure

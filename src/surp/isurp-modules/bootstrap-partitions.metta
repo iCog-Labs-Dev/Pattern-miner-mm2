@@ -9,10 +9,10 @@
 ;;
 ;; Output facts produced here:
 ;;
-;;   (ji-prob-partitions-of $indexed-pattern $partitions)
-;;   (do-ji-prob-request $partitions)
-;;   (partition $partition)
-;;   (block $partition $block)
+;;   (ji-prob-partitions-of $pattern $partitions)
+;;   (do-ji-prob-request $pattern $partitions)
+;;   (partition $pattern $partition)
+;;   (block $pattern $partition $block)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -31,20 +31,20 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (exec (surp s031 generate-partitions)
-    (, (indexed-pattern $indexed-pattern))
+    (, (indexed-pattern $pattern))
     (O
         (pure
-            (partitions-of $indexed-pattern $indexed-partition)
+            (partitions-of $pattern $indexed-partition)
             $indexed-partition
-            (partitions (' $indexed-pattern)))
+            (partitions (' $pattern)))
         (pure
-            (ji-prob-partitions-of $indexed-pattern $indexed-partition)
+            (ji-prob-partitions-of $pattern $indexed-partition)
             $indexed-partition
-            (partitions (' $indexed-pattern)))
+            (partitions (' $pattern)))
         (pure
-            (do-ji-prob-request $indexed-partition)
+            (do-ji-prob-request $pattern $indexed-partition)
             $indexed-partition
-            (partitions (' $indexed-pattern)))))
+            (partitions (' $pattern)))))
 
 
 ;; Iterate through the partition list.
@@ -58,18 +58,18 @@
 ;;
 ;; It halts naturally when the remaining list no longer has a first element.
 (exec (surp s032 partition-iterator)
-    (, (partitions-of $indexed-pattern $indexed-partition)
+    (, (partitions-of $pattern $indexed-partition)
        (exec (surp s032 partition-iterator) $src $sink))
     (O
         (pure
-            (partition $car)
+            (partition $pattern $car)
             $car
             (car-atom (' $indexed-partition)))
         (pure
-            (partitions-of $indexed-pattern $cdr)
+            (partitions-of $pattern $cdr)
             $cdr
             (cdr-atom (' $indexed-partition)))
-        (- (partitions-of $indexed-pattern $indexed-partition))
+        (- (partitions-of $pattern $indexed-partition))
         (+ (exec (surp s032 partition-iterator) $src $sink))))
 
 
@@ -83,8 +83,8 @@
 ;;
 ;; MM2 materializes:
 ;;
-;;   (partition $partition)
-;;   (block $partition $block)
+;;   (partition $pattern $partition)
+;;   (block $pattern $partition $block)
 ;;
 ;; Keeping `$partition` on every `block` fact is important because later stages
 ;; must know which block probabilities should be multiplied together.
@@ -93,23 +93,23 @@
 ;; Copy the partition so the block iterator can consume the copy without losing
 ;; the original partition shape.
 (exec (surp s033 copy-partition)
-    (, (partition $partition))
-    (, (copy-of-partition $partition $partition)))
+    (, (partition $pattern $partition))
+    (, (copy-of-partition $pattern $partition $partition)))
 
 
 ;; Iterate through the copied partition and write one `(block partition block)`
 ;; fact per block.
 (exec (surp s034 block-iterator)
-    (, (copy-of-partition $partition $partition-copy)
+    (, (copy-of-partition $pattern $partition $partition-copy)
        (exec (surp s034 block-iterator) $src $sink))
     (O
         (pure
-            (block $partition $block)
+            (block $pattern $partition $block)
             $block
             (car-atom (' $partition-copy)))
         (pure
-            (copy-of-partition $partition $cdr)
+            (copy-of-partition $pattern $partition $cdr)
             $cdr
             (cdr-atom (' $partition-copy)))
-        (- (copy-of-partition $partition $partition-copy))
+        (- (copy-of-partition $pattern $partition $partition-copy))
         (+ (exec (surp s034 block-iterator) $src $sink))))

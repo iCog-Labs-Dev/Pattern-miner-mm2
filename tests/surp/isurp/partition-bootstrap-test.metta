@@ -9,6 +9,10 @@
 ;;   -> ji-prob-partitions-of
 ;;   -> partition
 ;;   -> block
+;;
+;; Partition and block facts carry the main pattern first, then the local
+;; parent component. This keeps partitions from different patterns isolated
+;; when many patterns are scored in one atomspace.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (indexed-pattern
@@ -18,13 +22,13 @@
 
 (EXPECTED-RESULT partition-list-3 (ji-prob-partitions-of ((Inheritance (var 0) man) (Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker)) ((((Inheritance (var 0) man) (Inheritance (var 0) ugly)) ((Inheritance (var 0) sodaDrinker))) (((Inheritance (var 0) man) (Inheritance (var 0) sodaDrinker)) ((Inheritance (var 0) ugly))) (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker))) (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly)) ((Inheritance (var 0) sodaDrinker))))))
 
-(EXPECTED-RESULT partition-first (partition (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker)))))
+(EXPECTED-RESULT partition-first (partition ((Inheritance (var 0) man) (Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker)) (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker)))))
 
-(EXPECTED-RESULT partition-singletons (partition (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly)) ((Inheritance (var 0) sodaDrinker)))))
+(EXPECTED-RESULT partition-singletons (partition ((Inheritance (var 0) man) (Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker)) (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly)) ((Inheritance (var 0) sodaDrinker)))))
 
-(EXPECTED-RESULT block-first-single (block (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker))) ((Inheritance (var 0) man))))
+(EXPECTED-RESULT block-first-single (block ((Inheritance (var 0) man) (Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker)) (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker))) ((Inheritance (var 0) man))))
 
-(EXPECTED-RESULT block-first-pair (block (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker))) ((Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker))))
+(EXPECTED-RESULT block-first-pair (block ((Inheritance (var 0) man) (Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker)) (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker))) ((Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -40,30 +44,30 @@
      (Inheritance (var 0) sodaDrinker)
      (Inheritance (var 0) human)))
 
-(EXPECTED-RESULT partition-4-1 (partition (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker) (Inheritance (var 0) human)))))
+(EXPECTED-RESULT partition-4-1 (partition ((Inheritance (var 0) man) (Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker) (Inheritance (var 0) human)) (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker) (Inheritance (var 0) human)))))
 
-(EXPECTED-RESULT partition-4-2 (partition (((Inheritance (var 0) man) (Inheritance (var 0) ugly)) ((Inheritance (var 0) sodaDrinker) (Inheritance (var 0) human)))))
+(EXPECTED-RESULT partition-4-2 (partition ((Inheritance (var 0) man) (Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker) (Inheritance (var 0) human)) (((Inheritance (var 0) man) (Inheritance (var 0) ugly)) ((Inheritance (var 0) sodaDrinker) (Inheritance (var 0) human)))))
 
-(EXPECTED-RESULT partition-4-3 (partition (((Inheritance (var 0) man) (Inheritance (var 0) human)) ((Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker)))))
+(EXPECTED-RESULT partition-4-3 (partition ((Inheritance (var 0) man) (Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker) (Inheritance (var 0) human)) (((Inheritance (var 0) man) (Inheritance (var 0) human)) ((Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker)))))
 
-(EXPECTED-RESULT partition-4-4 (partition (((Inheritance (var 0) man) (Inheritance (var 0) sodaDrinker)) ((Inheritance (var 0) ugly) (Inheritance (var 0) human)))))
+(EXPECTED-RESULT partition-4-4 (partition ((Inheritance (var 0) man) (Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker) (Inheritance (var 0) human)) (((Inheritance (var 0) man) (Inheritance (var 0) sodaDrinker)) ((Inheritance (var 0) ugly) (Inheritance (var 0) human)))))
 
-(EXPECTED-RESULT partition-4-5 (partition (((Inheritance (var 0) man) (Inheritance (var 0) ugly) (Inheritance (var 0) human)) ((Inheritance (var 0) sodaDrinker)))))
+(EXPECTED-RESULT partition-4-5 (partition ((Inheritance (var 0) man) (Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker) (Inheritance (var 0) human)) (((Inheritance (var 0) man) (Inheritance (var 0) ugly) (Inheritance (var 0) human)) ((Inheritance (var 0) sodaDrinker)))))
 
-(EXPECTED-RESULT partition-4-6 (partition (((Inheritance (var 0) man) (Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker)) ((Inheritance (var 0) human)))))
+(EXPECTED-RESULT partition-4-6 (partition ((Inheritance (var 0) man) (Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker) (Inheritance (var 0) human)) (((Inheritance (var 0) man) (Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker)) ((Inheritance (var 0) human)))))
 
-(EXPECTED-RESULT partition-4-7 (partition (((Inheritance (var 0) man) (Inheritance (var 0) sodaDrinker) (Inheritance (var 0) human)) ((Inheritance (var 0) ugly)))))
+(EXPECTED-RESULT partition-4-7 (partition ((Inheritance (var 0) man) (Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker) (Inheritance (var 0) human)) (((Inheritance (var 0) man) (Inheritance (var 0) sodaDrinker) (Inheritance (var 0) human)) ((Inheritance (var 0) ugly)))))
 
-(EXPECTED-RESULT partition-4-8 (partition (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly)) ((Inheritance (var 0) sodaDrinker) (Inheritance (var 0) human)))))
+(EXPECTED-RESULT partition-4-8 (partition ((Inheritance (var 0) man) (Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker) (Inheritance (var 0) human)) (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly)) ((Inheritance (var 0) sodaDrinker) (Inheritance (var 0) human)))))
 
-(EXPECTED-RESULT partition-4-9 (partition (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly) (Inheritance (var 0) human)) ((Inheritance (var 0) sodaDrinker)))))
+(EXPECTED-RESULT partition-4-9 (partition ((Inheritance (var 0) man) (Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker) (Inheritance (var 0) human)) (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly) (Inheritance (var 0) human)) ((Inheritance (var 0) sodaDrinker)))))
 
-(EXPECTED-RESULT partition-4-10 (partition (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker)) ((Inheritance (var 0) human)))))
+(EXPECTED-RESULT partition-4-10 (partition ((Inheritance (var 0) man) (Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker) (Inheritance (var 0) human)) (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker)) ((Inheritance (var 0) human)))))
 
-(EXPECTED-RESULT partition-4-11 (partition (((Inheritance (var 0) man) (Inheritance (var 0) ugly)) ((Inheritance (var 0) sodaDrinker)) ((Inheritance (var 0) human)))))
+(EXPECTED-RESULT partition-4-11 (partition ((Inheritance (var 0) man) (Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker) (Inheritance (var 0) human)) (((Inheritance (var 0) man) (Inheritance (var 0) ugly)) ((Inheritance (var 0) sodaDrinker)) ((Inheritance (var 0) human)))))
 
-(EXPECTED-RESULT partition-4-12 (partition (((Inheritance (var 0) man) (Inheritance (var 0) human)) ((Inheritance (var 0) ugly)) ((Inheritance (var 0) sodaDrinker)))))
+(EXPECTED-RESULT partition-4-12 (partition ((Inheritance (var 0) man) (Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker) (Inheritance (var 0) human)) (((Inheritance (var 0) man) (Inheritance (var 0) human)) ((Inheritance (var 0) ugly)) ((Inheritance (var 0) sodaDrinker)))))
 
-(EXPECTED-RESULT partition-4-13 (partition (((Inheritance (var 0) man) (Inheritance (var 0) sodaDrinker)) ((Inheritance (var 0) ugly)) ((Inheritance (var 0) human)))))
+(EXPECTED-RESULT partition-4-13 (partition ((Inheritance (var 0) man) (Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker) (Inheritance (var 0) human)) (((Inheritance (var 0) man) (Inheritance (var 0) sodaDrinker)) ((Inheritance (var 0) ugly)) ((Inheritance (var 0) human)))))
 
-(EXPECTED-RESULT partition-4-14 (partition (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly)) ((Inheritance (var 0) sodaDrinker)) ((Inheritance (var 0) human)))))
+(EXPECTED-RESULT partition-4-14 (partition ((Inheritance (var 0) man) (Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker) (Inheritance (var 0) human)) (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly)) ((Inheritance (var 0) sodaDrinker)) ((Inheritance (var 0) human)))))

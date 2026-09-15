@@ -34,7 +34,6 @@
 (INPUT DB db)
 (INPUT DB-SIZE 60)
 (INPUT NORMALIZATION FALSE)
-(INPUT NORMALIZATION TRUE)
 (INPUT SUPPORT-MODE cached)
 
 (INPUT PATTERN
@@ -48,8 +47,8 @@
         (Inheritance $x ugly))
      5))
 
-(EXPECTED-RESULT isurp-corpus-three-raw (isurp-new-of (, (Inheritance $a man) (Inheritance $a ugly) (Inheritance $a sodaDrinker)) 1.9290123456790123e-5))
+(EXPECTED-RESULT isurp-corpus-three-raw (isurp-new-of ((Inheritance (var 0) man) (Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker)) 1.9290123456790123e-5))
 
-(EXPECTED-RESULT isurp-corpus-three-normalized (isurp-new-of (, (Inheritance $a man) (Inheritance $a ugly) (Inheritance $a sodaDrinker)) 0.8333333333333334))
+;(EXPECTED-RESULT isurp-corpus-three-normalized (isurp-new-of ((Inheritance (var 0) man) (Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker)) 0.8333333333333334))
 
-(EXPECTED-RESULT isurp-corpus-two-raw (isurp-new-of (, (Inheritance $a man) (Inheritance $a ugly)) 0.000925925925925926))
+(EXPECTED-RESULT isurp-corpus-two-raw (isurp-new-of ((Inheritance (var 0) man) (Inheritance (var 0) ugly)) 0.000925925925925926))

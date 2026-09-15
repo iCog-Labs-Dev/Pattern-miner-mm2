@@ -45,4 +45,4 @@
             (Or (And human man) (And human ugly))))
      1))
 
-(EXPECTED-RESULT isurp-true-nested-raw (isurp-new-of (, (Inheritance (And (And (Person $a) man) (Or human sodaDrinker)) (Or (And human man) (And human sodaDrinker))) (Inheritance (And (And (Person $a) man) (Or human sodaDrinker)) (Or (And human man) (And human ugly)))) 0.001216))
+(EXPECTED-RESULT isurp-true-nested-raw (isurp-new-of ((Inheritance (And (And (Person (var 0)) man) (Or human sodaDrinker)) (Or (And human man) (And human sodaDrinker))) (Inheritance (And (And (Person (var 0)) man) (Or human sodaDrinker)) (Or (And human man) (And human ugly)))) 0.001216))

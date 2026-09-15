@@ -15,14 +15,13 @@
 
 
 (exec (surp s125 est-tv-request)
-    (, (INPUT PATTERN ($pattern $support))
-       (indexed-pattern-of $pattern $indexed-pattern)
-       (ji-prob-partitions-of $indexed-pattern $partitions))
-    (, (do-ji-tv-est-request $partitions)
+    (, (isurp-pattern $pattern $support)
+       (ji-prob-partitions-of $pattern $partitions))
+    (, (do-ji-tv-est-request $pattern $partitions)
        (est-tv-request $pattern $partitions)))
 
 
 (exec (surp s240 est-tv-final)
     (, (est-tv-request $pattern $partitions)
-       (do-ji-tv-est-of $partitions $stv))
+       (do-ji-tv-est-of $pattern $partitions $stv))
     (, (est-tv-of $pattern $stv)))

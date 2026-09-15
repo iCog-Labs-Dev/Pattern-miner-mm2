@@ -9,17 +9,17 @@
 ;;
 ;; MM2 public result:
 ;;
-;;   (block-tv-of $partition $block (EMPTV $strength $confidence))
+;;   (block-tv-of $pattern $partition $block (EMPTV $strength $confidence))
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 (exec (surp s160 block-tv-universe)
     (, (INPUT DB-SIZE $db-size)
-       (block-support $partition $block $support))
+       (block-support $pattern $partition $block $support))
     (O
         (pure
-            (pro-block-universe-count $partition $block $universe-count)
+            (pro-block-universe-count $pattern $partition $block $universe-count)
             $universe-count
             (i64_to_string
                 (pow_i64
@@ -29,11 +29,11 @@
 
 
 (exec (surp s161 block-tv-strength)
-    (, (block-support $partition $block $support)
-       (pro-block-universe-count $partition $block $universe-count))
+    (, (block-support $pattern $partition $block $support)
+       (pro-block-universe-count $pattern $partition $block $universe-count))
     (O
         (pure
-            (pro-block-prob $partition $block $strength)
+            (pro-block-prob $pattern $partition $block $strength)
             $strength
             (f64_to_string
                 (div_f64
@@ -42,11 +42,11 @@
 
 
 (exec (surp s162 block-tv-final)
-    (, (pro-block-prob $partition $block $strength)
-       (pro-block-universe-count $partition $block $universe-count))
+    (, (pro-block-prob $pattern $partition $block $strength)
+       (pro-block-universe-count $pattern $partition $block $universe-count))
     (O
         (pure
-            (block-tv-of $partition $block (EMPTV $strength $confidence))
+            (block-tv-of $pattern $partition $block (EMPTV $strength $confidence))
             $confidence
             (f64_to_string
                 (product_f64

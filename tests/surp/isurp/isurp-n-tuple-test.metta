@@ -45,12 +45,12 @@
 
 (Relation Mike left A tag)
 
-(EXPECTED-RESULT indexed-pattern-n-tuple (indexed-pattern-of (, (Relation $a left A tag) (Relation $a right B tag) (Relation $a extra C tag)) ((Relation (var 0) left A tag) (Relation (var 0) right B tag) (Relation (var 0) extra C tag))))
+(EXPECTED-RESULT indexed-pattern-n-tuple (indexed-pattern-of ((Relation (var 0) left A tag) (Relation (var 0) right B tag) (Relation (var 0) extra C tag)) ((Relation (var 0) left A tag) (Relation (var 0) right B tag) (Relation (var 0) extra C tag))))
 
-(EXPECTED-RESULT partition-singletons-n-tuple (partition (((Relation (var 0) left A tag)) ((Relation (var 0) right B tag)) ((Relation (var 0) extra C tag)))))
+(EXPECTED-RESULT partition-singletons-n-tuple (partition ((Relation (var 0) left A tag) (Relation (var 0) right B tag) (Relation (var 0) extra C tag)) (((Relation (var 0) left A tag)) ((Relation (var 0) right B tag)) ((Relation (var 0) extra C tag)))))
 
-(EXPECTED-RESULT eq-joint-var-n-tuple (eq-joint-var (((Relation (var 0) left A tag)) ((Relation (var 0) right B tag)) ((Relation (var 0) extra C tag))) (var 0)))
+(EXPECTED-RESULT eq-joint-var-n-tuple (eq-joint-var ((Relation (var 0) left A tag) (Relation (var 0) right B tag) (Relation (var 0) extra C tag)) (((Relation (var 0) left A tag)) ((Relation (var 0) right B tag)) ((Relation (var 0) extra C tag))) (var 0)))
 
-(EXPECTED-RESULT ji-interval-n-tuple (ji-prob-est-interval-of ((((Relation (var 0) left A tag) (Relation (var 0) right B tag)) ((Relation (var 0) extra C tag))) (((Relation (var 0) left A tag) (Relation (var 0) extra C tag)) ((Relation (var 0) right B tag))) (((Relation (var 0) left A tag)) ((Relation (var 0) right B tag) (Relation (var 0) extra C tag))) (((Relation (var 0) left A tag)) ((Relation (var 0) right B tag)) ((Relation (var 0) extra C tag)))) 0.00035999999999999997 0.0009))
+(EXPECTED-RESULT ji-interval-n-tuple (ji-prob-est-interval-of ((Relation (var 0) left A tag) (Relation (var 0) right B tag) (Relation (var 0) extra C tag)) ((((Relation (var 0) left A tag) (Relation (var 0) right B tag)) ((Relation (var 0) extra C tag))) (((Relation (var 0) left A tag) (Relation (var 0) extra C tag)) ((Relation (var 0) right B tag))) (((Relation (var 0) left A tag)) ((Relation (var 0) right B tag) (Relation (var 0) extra C tag))) (((Relation (var 0) left A tag)) ((Relation (var 0) right B tag)) ((Relation (var 0) extra C tag)))) 0.00035999999999999997 0.0009))
 
-(EXPECTED-RESULT isurp-n-tuple (isurp-new-of (, (Relation $a left A tag) (Relation $a right B tag) (Relation $a extra C tag)) 0.0011))
+(EXPECTED-RESULT isurp-n-tuple (isurp-new-of ((Relation (var 0) left A tag) (Relation (var 0) right B tag) (Relation (var 0) extra C tag)) 0.0011))

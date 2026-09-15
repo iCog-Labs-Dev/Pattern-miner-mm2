@@ -14,6 +14,9 @@
 ;; Generated partitions need stable variable identity across blocks.  Later,
 ;; `indices_to_vars` converts these markers back into real MM2 variables for
 ;; support-count queries.
+;;
+;; The canonical indexed pattern is the owner id for all intermediate values
+;; produced by the modular ISurp pipeline.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -49,23 +52,22 @@
 ;; Partitioning expects only the clause list, so `cdr-atom` removes the leading
 ;; comma marker.
 (exec (surp s020 index-pattern)
-    (, (INPUT PATTERN ($pattern $support)))
+    (, (INPUT PATTERN ($raw-pattern $support)))
     (O
         (pure
-            (indexed-comma-pattern $indexed-comma-pattern)
+            (indexed-comma-pattern $indexed-comma-pattern $support)
             $indexed-comma-pattern
-            (vars_to_indices (' $pattern)))))
+            (vars_to_indices (' $raw-pattern)))))
 
 (exec (surp s021 index-pattern-list)
-    (, (INPUT PATTERN ($pattern $support))
-       (indexed-comma-pattern $indexed-comma-pattern))
+    (, (indexed-comma-pattern $indexed-comma-pattern $support))
     (O
         (pure
-            (indexed-pattern-for $pattern $indexed-pattern)
+            (isurp-pattern $indexed-pattern $support)
             $indexed-pattern
             (cdr-atom (' $indexed-comma-pattern)))))
 
 (exec (surp s022 expose-indexed-pattern)
-    (, (indexed-pattern-for $pattern $indexed-pattern))
-    (, (indexed-pattern $indexed-pattern)
-       (indexed-pattern-of $pattern $indexed-pattern)))
+    (, (isurp-pattern $pattern $support))
+    (, (indexed-pattern $pattern)
+       (indexed-pattern-of $pattern $pattern)))

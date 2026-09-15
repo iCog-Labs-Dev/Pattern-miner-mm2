@@ -37,4 +37,4 @@
         (Inheritance $x sodaDrinker))
      5))
 
-(EXPECTED-RESULT petta-est-tv-ugly-man-soda (est-tv-of (, (Inheritance $a ugly) (Inheritance $a man) (Inheritance $a sodaDrinker)) (STV 0 0.00027229280235977334)))
+(EXPECTED-RESULT petta-est-tv-ugly-man-soda (est-tv-of ((Inheritance (var 0) ugly) (Inheritance (var 0) man) (Inheritance (var 0) sodaDrinker)) (STV 0 0.00027229280235977334)))

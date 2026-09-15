@@ -36,5 +36,5 @@
   (O
     (+ (exec (freq f001 run-pattern-miner) $pattern-miner-p $pattern-miner-t))))
 
-; (EXPECTED-RESULT frequent-before-surp (expanded-conjunct 3 ((Inheritance (var 0) man) (Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker)) 5))
-; (EXPECTED-RESULT scored-frequent-result (pattern-miner-surprisingness ((Inheritance (var 0) man) (Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker)) (, (Inheritance $a man) (Inheritance $a ugly) (Inheritance $a sodaDrinker)) 5 0.5))
+(EXPECTED-RESULT frequent-before-surp (expanded-conjunct 3 ((Inheritance (var 0) man) (Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker)) 5))
+(EXPECTED-RESULT scored-frequent-result (pattern-miner-surprisingness ((Inheritance (var 0) man) (Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker)) (, (Inheritance $a man) (Inheritance $a ugly) (Inheritance $a sodaDrinker)) 5 0.5))

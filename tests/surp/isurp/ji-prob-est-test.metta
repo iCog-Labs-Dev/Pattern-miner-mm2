@@ -10,22 +10,28 @@
 (INPUT DB-SIZE 4)
 (INPUT SUPPORT-MODE cached)
 
-(partition (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly))))
+(partition
+    ((Inheritance (var 0) man) (Inheritance (var 0) ugly))
+    (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly))))
 
 (block
+    ((Inheritance (var 0) man) (Inheritance (var 0) ugly))
     (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly)))
     ((Inheritance (var 0) man)))
 
 (block
+    ((Inheritance (var 0) man) (Inheritance (var 0) ugly))
     (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly)))
     ((Inheritance (var 0) ugly)))
 
 (block-support
+    ((Inheritance (var 0) man) (Inheritance (var 0) ugly))
     (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly)))
     ((Inheritance (var 0) man))
     2)
 
 (block-support
+    ((Inheritance (var 0) man) (Inheritance (var 0) ugly))
     (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly)))
     ((Inheritance (var 0) ugly))
     2)
@@ -35,4 +41,4 @@
 (Inheritance Allen ugly)
 (Inheritance Lily ugly)
 
-(EXPECTED-RESULT ji-prob-est (ji-prob-est-of (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly))) 0.0625))
+(EXPECTED-RESULT ji-prob-est (ji-prob-est-of ((Inheritance (var 0) man) (Inheritance (var 0) ugly)) (((Inheritance (var 0) man)) ((Inheritance (var 0) ugly))) 0.0625))

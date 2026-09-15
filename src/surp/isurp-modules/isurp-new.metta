@@ -27,26 +27,26 @@
 ;;
 ;; MM2 materialized result:
 ;;
-;;   (ji-prob-est-interval-of $partitions $emin $emax)
+;;   (ji-prob-est-interval-of $pattern $partitions $emin $emax)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (exec (surp s120 ji-interval)
-    (, (do-ji-prob-of $partitions $prob-list))
+    (, (do-ji-prob-of $pattern $partitions $prob-list))
     (O
         (pure
-            (ji-prob-est-min-of $partitions $emin)
+            (ji-prob-est-min-of $pattern $partitions $emin)
             $emin
             (min-atom (' $prob-list)))
         (pure
-            (ji-prob-est-max-of $partitions $emax)
+            (ji-prob-est-max-of $pattern $partitions $emax)
             $emax
             (max-atom (' $prob-list)))))
 
 
 (exec (surp s121 ji-interval)
-    (, (ji-prob-est-min-of $partitions $emin)
-       (ji-prob-est-max-of $partitions $emax))
-    (, (ji-prob-est-interval-of $partitions $emin $emax)))
+    (, (ji-prob-est-min-of $pattern $partitions $emin)
+       (ji-prob-est-max-of $pattern $partitions $emax))
+    (, (ji-prob-est-interval-of $pattern $partitions $emin $emax)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -54,10 +54,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (exec (surp s122 isurp-distance-request)
-    (, (INPUT PATTERN ($pattern $support))
-       (indexed-pattern-of $pattern $indexed-pattern)
-       (ji-prob-partitions-of $indexed-pattern $partitions)
-       (ji-prob-est-interval-of $partitions $emin $emax)
+    (, (isurp-pattern $pattern $support)
+       (ji-prob-partitions-of $pattern $partitions)
+       (ji-prob-est-interval-of $pattern $partitions $emin $emax)
        (emp-prob-pbs-of $pattern $emp)
        ((dst-from-interval $pattern $emin $emax $emp -> isurp-new-dst-of) $src $sink))
     (O
@@ -75,21 +74,7 @@
                     (sub_f64
                         (f64_from_string $emp)
                         (f64_from_string $emax))
-                    (f64_from_string 0.0))))
-        (pure
-            (isurp-new-of $pattern $direct-value)
-            $direct-value
-            (f64_to_string
-                (min_f64
-                    (max_f64
-                        (sub_f64
-                            (f64_from_string $emin)
-                            (f64_from_string $emp))
-                        (sub_f64
-                            (f64_from_string $emp)
-                            (f64_from_string $emax))
-                        (f64_from_string 0.0))
-                    (f64_from_string 1.0))))))
+                    (f64_from_string 0.0))))))
 
 
 ;; Local distance predicates.  These mirror `dst-from-interval`, but keep the
@@ -157,22 +142,7 @@
                         (max_f64
                             (f64_from_string $below-value)
                             (f64_from_string $above-value)
-                            (f64_from_string 0.0)))))))
-        (+ (exec (surp s125 isurp-distance-raw)
-            (, (INPUT NORMALIZATION FALSE)
-               (isurp-new-below-distance-candidate $raw-p $raw-below)
-               (isurp-new-above-distance-candidate $raw-p $raw-above))
-            (O
-                (pure
-                    (isurp-new-of $raw-p $raw-value)
-                    $raw-value
-                    (f64_to_string
-                        (min_f64
-                            (max_f64
-                                (f64_from_string $raw-below)
-                                (f64_from_string $raw-above)
-                                (f64_from_string 0.0))
-                            (f64_from_string 1.0)))))))))
+                            (f64_from_string 0.0)))))))))
 
 
 (exec (surp s125 isurp-distance-direct)
