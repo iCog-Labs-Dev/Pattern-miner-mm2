@@ -51,9 +51,81 @@ expected_results() {
   sed -n 's/^[[:space:]]*(EXPECTED-RESULT[[:space:]]\{1,\}\([^[:space:])][^[:space:])]*\)[[:space:]]\{1,\}\(.*\))[[:space:]]*$/\1 \2/p' "$case_file"
 }
 
+test_modes() {
+  local case_file="$1"
+  sed -n 's/^;; TEST-MODE[[:space:]]\{1,\}//p' "$case_file"
+}
+
+mode_expected_results() {
+  local case_file="$1"
+  local mode="$2"
+  sed -n "s/^;; TEST-EXPECTED[[:space:]]\\{1,\\}${mode}[[:space:]]\\{1,\\}\\([^[:space:])][^[:space:])]*\\)[[:space:]]\\{1,\\}\\(.*\\)$/\\1 \\2/p" "$case_file"
+}
+
+run_case_mode() {
+  local case_file="$1"
+  local rel_case="$2"
+  local mode="$3"
+  local out_file
+  local tmp_case
+  local steps
+  local expected_count=0
+  local expected_entry
+  local test_id
+  local expected
+  local aux_args=()
+
+  out_file="$OUT_DIR/${rel_case%.metta}.${mode}.out.metta"
+  tmp_case="$OUT_DIR/.generated/${rel_case%.metta}.${mode}.metta"
+
+  total=$((total + 1))
+
+  steps="$(read_test_value "$case_file" TEST-STEPS)"
+  steps="${steps:-100000}"
+  append_aux_paths "$case_file"
+
+  mkdir -p "$(dirname "$out_file")" "$(dirname "$tmp_case")"
+  sed '/^;; TEST-MODE[[:space:]]/d; /^;; TEST-EXPECTED[[:space:]]/d' "$case_file" > "$tmp_case"
+  printf '\n(INPUT SURP-MODE %s)\n' "$mode" >> "$tmp_case"
+
+  echo "RUN  ${rel_case}[${mode}]"
+  if ! "$MORK_BIN" run "$tmp_case" "$out_file" "${aux_args[@]}" --steps "$steps" --instrumentation 0 >/dev/null; then
+    echo "FAIL ${rel_case}[${mode}]"
+    echo "  mork run failed"
+    failures=$((failures + 1))
+    return
+  fi
+
+  while IFS= read -r expected_entry || [[ -n "$expected_entry" ]]; do
+    expected_count=$((expected_count + 1))
+    test_id="${expected_entry%% *}"
+    expected="${expected_entry#* }"
+
+    if ! grep -Fx -- "$expected" "$out_file" >/dev/null; then
+      echo "FAIL ${rel_case}[${mode}]"
+      echo "  missing expected fact for: $test_id"
+      echo "  $expected"
+      echo "  output: $out_file"
+      failures=$((failures + 1))
+      return
+    fi
+  done < <(mode_expected_results "$case_file" "$mode")
+
+  if [[ "$expected_count" -eq 0 ]]; then
+    echo "FAIL ${rel_case}[${mode}]"
+    echo "  missing TEST-EXPECTED fact for mode: $mode"
+    failures=$((failures + 1))
+    return
+  fi
+
+  echo "PASS ${rel_case}[${mode}]"
+}
+
 run_case() {
   local case_file="$1"
   local rel_case
+  local mode
+  local has_modes=0
   local out_file
   local steps
   local expected_count=0
@@ -67,6 +139,17 @@ run_case() {
   fi
 
   rel_case="${case_file#$TEST_ROOT/}"
+
+  while IFS= read -r mode || [[ -n "$mode" ]]; do
+    [[ -z "$mode" ]] && continue
+    has_modes=1
+    run_case_mode "$case_file" "$rel_case" "$mode"
+  done < <(test_modes "$case_file")
+
+  if [[ "$has_modes" -eq 1 ]]; then
+    return
+  fi
+
   out_file="$OUT_DIR/${rel_case%.metta}.out.metta"
 
   total=$((total + 1))

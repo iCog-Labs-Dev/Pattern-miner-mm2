@@ -1,5 +1,5 @@
 ;; TEST-AUX src/common-utils/utils.metta
-;; TEST-AUX src/surp/isurp-modules/input-bootstrap.metta
+;; TEST-AUX src/surp/surp.metta
 ;; TEST-AUX src/surp/isurp-modules/bootstrap-partitions.metta
 ;; TEST-AUX src/surp/isurp-modules/block-support.metta
 ;; TEST-AUX src/surp/isurp-modules/abstractness-sort.metta
@@ -45,4 +45,4 @@
             (Or (And human man) (And human ugly))))
      1))
 
-(EXPECTED-RESULT isurp-true-nested-raw (isurp-new-of ((Inheritance (And (And (Person (var 0)) man) (Or human sodaDrinker)) (Or (And human man) (And human sodaDrinker))) (Inheritance (And (And (Person (var 0)) man) (Or human sodaDrinker)) (Or (And human man) (And human ugly)))) 0.001216))
+(EXPECTED-RESULT isurp-true-nested-raw (isurp-of ((Inheritance (And (And (Person (var 0)) man) (Or human sodaDrinker)) (Or (And human man) (And human sodaDrinker))) (Inheritance (And (And (Person (var 0)) man) (Or human sodaDrinker)) (Or (And human man) (And human ugly)))) 0.001216))

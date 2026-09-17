@@ -1,5 +1,5 @@
 ;; TEST-AUX src/common-utils/utils.metta
-;; TEST-AUX src/surp/isurp-modules/input-bootstrap.metta
+;; TEST-AUX src/surp/surp.metta
 ;; TEST-AUX src/surp/isurp-modules/bootstrap-partitions.metta
 ;; TEST-AUX src/surp/isurp-modules/block-support.metta
 ;; TEST-AUX src/surp/isurp-modules/abstractness-sort.metta
@@ -33,4 +33,4 @@
 
 (EXPECTED-RESULT ji-interval (ji-prob-est-interval-of ((Inheritance (var 0) man) (Inheritance (var 0) ugly)) ((((Inheritance (var 0) man)) ((Inheritance (var 0) ugly)))) 0.0625 0.0625))
 
-(EXPECTED-RESULT isurp-pipeline (isurp-new-of ((Inheritance (var 0) man) (Inheritance (var 0) ugly)) 0.0))
+(EXPECTED-RESULT isurp-pipeline (isurp-of ((Inheritance (var 0) man) (Inheritance (var 0) ugly)) 0.0))

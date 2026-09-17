@@ -1,5 +1,5 @@
 ;; TEST-AUX src/common-utils/utils.metta
-;; TEST-AUX src/surp/isurp-modules/input-bootstrap.metta
+;; TEST-AUX src/surp/surp.metta
 ;; TEST-AUX src/surp/isurp-modules/bootstrap-partitions.metta
 ;; TEST-AUX src/surp/isurp-modules/block-support.metta
 ;; TEST-AUX src/surp/isurp-modules/abstractness-sort.metta
@@ -39,4 +39,4 @@
         (Inheritance (Person $x) sodaDrinker))
      5))
 
-(EXPECTED-RESULT isurp-coupled-three-raw (isurp-new-of ((Inheritance (Person (var 0)) man) (Inheritance (Person (var 0)) ugly) (Inheritance (Person (var 0)) sodaDrinker)) 1.9290123456790123e-5))
+(EXPECTED-RESULT isurp-coupled-three-raw (isurp-of ((Inheritance (Person (var 0)) man) (Inheritance (Person (var 0)) ugly) (Inheritance (Person (var 0)) sodaDrinker)) 1.9290123456790123e-5))

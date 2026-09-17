@@ -77,7 +77,7 @@ digits, such as `s010`. The last field names the rule.
 
 | File                            | What it does                                                                             |
 | ------------------------------- | ---------------------------------------------------------------------------------------- |
-| `input-bootstrap.metta`      | Converts raw `INPUT PATTERN` into indexed pattern facts.                                 |
+| `surp.metta`                 | Accepts indexed miner output or converts raw `INPUT PATTERN` into indexed pattern facts. |
 | `bootstrap-partitions.metta` | Generates `partition`, `block`, and `ji-prob-partitions-of` facts.                       |
 | `block-support.metta`        | Converts indexed blocks back to query variables and counts block support.                |
 | `abstractness-sort.metta`    | Scores connected blocks for a joint variable and materializes the most abstract block.   |
@@ -86,7 +86,7 @@ digits, such as `s010`. The last field names the rule.
 | `ji-prob-est.metta`          | Computes `ji-prob-est-of = pro-prob-wout-joint-of * eq-prob-of`.                         |
 | `do-ji-prob.metta`           | Collects `ji-prob-est-of` facts into a probability list for all partitions.              |
 | `emp-prob-pbs.metta`         | Computes empirical probability for the validated deterministic ISurp path.               |
-| `isurp-new.metta`            | Builds the JI interval, distance from interval, normalization, and final `isurp-new-of`. |
+| `isurp-new.metta`            | Builds the JI interval, distance from interval, normalization, and final `isurp-of`.     |
 
 ## MM2 input contract
 
@@ -144,7 +144,7 @@ auxiliary input:
 
 ```bash
 mork run Pattern-miner-mm2/src/common-utils/utils.metta \
-  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/input-bootstrap.metta \
+  --aux-path Pattern-miner-mm2/src/surp/surp.metta \
   --aux-path Pattern-miner-mm2/src/surp/isurp-modules/bootstrap-partitions.metta \
   --aux-path Pattern-miner-mm2/src/surp/isurp-modules/block-support.metta \
   --aux-path Pattern-miner-mm2/src/surp/isurp-modules/abstractness-sort.metta \
@@ -207,7 +207,7 @@ It loads the same `ugly_man_sodaDrinker` corpus facts into MORK, with:
 The MM2 expected result is the same numeric value, materialized as a fact:
 
 ```metta
-(isurp-new-of
+(isurp-of
     (, (Inheritance $a man)
        (Inheritance $a ugly)
        (Inheritance $a sodaDrinker))
@@ -359,7 +359,7 @@ So the expected interval and empirical probability are the same:
 For that small case, the final distance from the interval is zero:
 
 ```metta
-(isurp-new-of
+(isurp-of
     (, (Inheritance $a man) (Inheritance $a ugly))
     0.0)
 ```

@@ -3,7 +3,7 @@
 ;;
 ;; This module is intentionally only about partitioning.
 ;;
-;; Input fact expected from `input-bootstrap.metta`:
+;; Input fact expected from `src/surp/surp.metta`:
 ;;
 ;;   (indexed-pattern ($c1 $c2 ...))
 ;;

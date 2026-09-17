@@ -1,6 +1,6 @@
 ;; TEST-STEPS 1000000
 ;; TEST-AUX src/common-utils/utils.metta
-;; TEST-AUX src/surp/isurp-modules/input-bootstrap.metta
+;; TEST-AUX src/surp/surp.metta
 ;; TEST-AUX src/surp/isurp-modules/bootstrap-partitions.metta
 ;; TEST-AUX src/surp/isurp-modules/block-support.metta
 ;; TEST-AUX src/surp/isurp-modules/abstractness-sort.metta
@@ -53,4 +53,4 @@
 
 (EXPECTED-RESULT ji-interval-n-tuple (ji-prob-est-interval-of ((Relation (var 0) left A tag) (Relation (var 0) right B tag) (Relation (var 0) extra C tag)) ((((Relation (var 0) left A tag) (Relation (var 0) right B tag)) ((Relation (var 0) extra C tag))) (((Relation (var 0) left A tag) (Relation (var 0) extra C tag)) ((Relation (var 0) right B tag))) (((Relation (var 0) left A tag)) ((Relation (var 0) right B tag) (Relation (var 0) extra C tag))) (((Relation (var 0) left A tag)) ((Relation (var 0) right B tag)) ((Relation (var 0) extra C tag)))) 0.00035999999999999997 0.0009))
 
-(EXPECTED-RESULT isurp-n-tuple (isurp-new-of ((Relation (var 0) left A tag) (Relation (var 0) right B tag) (Relation (var 0) extra C tag)) 0.0011))
+(EXPECTED-RESULT isurp-n-tuple (isurp-of ((Relation (var 0) left A tag) (Relation (var 0) right B tag) (Relation (var 0) extra C tag)) 0.0011))

@@ -10,7 +10,7 @@
 ;;
 ;; Public final result:
 ;;
-;;   (isurp-new-of $pattern $value)
+;;   (isurp-of $pattern $value)
 ;;
 ;; This is the active modular ISurp integration path.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -230,7 +230,7 @@
        (isurp-new-normalization-candidate $pattern $dst $candidate))
     (O
         (pure
-            (isurp-new-of $pattern $value)
+            (isurp-of $pattern $value)
             $value
             (min-atom (' ($candidate 1.0))))))
 
@@ -240,6 +240,6 @@
        (isurp-new-dst-of $pattern $dst))
     (O
         (pure
-            (isurp-new-of $pattern $value)
+            (isurp-of $pattern $value)
             $value
             (min-atom (' ($dst 1.0))))))

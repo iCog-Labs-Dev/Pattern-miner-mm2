@@ -52,7 +52,7 @@ Run:
 
 ```bash
 mork run Pattern-miner-mm2/src/common-utils/utils.metta \
-  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/input-bootstrap.metta \
+  --aux-path Pattern-miner-mm2/src/surp/surp.metta \
   --aux-path Pattern-miner-mm2/src/surp/isurp-modules/bootstrap-partitions.metta \
   --aux-path Pattern-miner-mm2/src/surp/isurp-modules/block-support.metta \
   --aux-path Pattern-miner-mm2/src/surp/isurp-modules/abstractness-sort.metta \
@@ -100,7 +100,7 @@ digits, such as `s010`. `<function-name>` describes the rule.
 | `ji-prob-est.metta`            | Multiplies `pro-prob-wout-joint-of` by `eq-prob-of` to produce `ji-prob-est-of`.                                                     |
 | `do-ji-prob.metta`             | Collects `ji-prob-est-of` facts into an ordered probability list for a requested partition list.                                     |
 | `emp-prob-pbs.metta`           | Computes direct empirical probability for the input pattern.                                                                         |
-| `isurp-new.metta`              | Connects the newer helper facts into `ji-prob-est-interval-of`, distance, and final `isurp-new-of`.                                  |
+| `isurp-new.metta`              | Connects the newer helper facts into `ji-prob-est-interval-of`, distance, and final `isurp-of`.                                      |
 
 The legacy monolithic `src/isurp.metta` has been removed. Use the modular
 command above so each shared utility and ISurp stage is loaded explicitly.

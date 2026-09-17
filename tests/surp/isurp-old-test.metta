@@ -12,4 +12,4 @@
 (INPUT SUPPORT-MODE cached)
 (INPUT PATTERN ((,  (Inheritance $x man) (Inheritance $x ugly) (Inheritance $x sodaDrinker)) 5))
 
-(EXPECTED-RESULT isurp-old (surprisingess-of (, (Inheritance $a man) (Inheritance $a ugly) (Inheritance $a sodaDrinker)) 0.999707773232028))
+(EXPECTED-RESULT isurp-old (isurp-old-of (, (Inheritance $a man) (Inheritance $a ugly) (Inheritance $a sodaDrinker)) 0.999707773232028))
