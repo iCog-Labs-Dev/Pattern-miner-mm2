@@ -1,3 +1,4 @@
+(Inheritance Allen human)
 (Inheritance Abe human)
 (Inheritance Cason human)
 (Inheritance Davion human)
