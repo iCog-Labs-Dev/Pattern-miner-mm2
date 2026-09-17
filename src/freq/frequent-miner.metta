@@ -105,13 +105,13 @@
          (, (gap-wait $sel-id $path $parent $arg)
             (gap-value $sel-id $parent $parent-value)
             (gap-arg-index $arg $index)
-            (DEF get-value-at-position-select $select-p $select-t))
+            (DEF get-value-at-position-select $select-rule-p $select-rule-t))
          (O
            (- (gap-wait $sel-id $path $parent $arg))
            (- (gap-value $sel-id $parent $parent-value))
            (pure (gap-value $sel-id $path $value) $value
              (index-atom $index (' $parent-value)))
-           (+ (exec (freq 120 gap-select) $select-p $select-t)))))
+           (+ (exec (freq 120 gap-select) $select-rule-p $select-rule-t)))))
 
     (+ (exec (freq 190 gap-result)
          (, (gap-value $result-id $result-path $result-value)
@@ -135,13 +135,13 @@
            (+ (exec (freq 120 gap-select) $select-p $select-t)))))
 
     (+ (exec (freq 111 gap-descend)
-         (, (gap-task $desc-id $expr ($parent $arg))
-            (DEF get-value-at-position-step $step-p $step-t))
+         (, (gap-task $desc-id $desc-expr ($desc-parent $desc-arg))
+            (DEF get-value-at-position-step $step-rule-p $step-rule-t))
          (O
-           (- (gap-task $desc-id $expr ($parent $arg)))
-           (+ (gap-wait $desc-id ($parent $arg) $parent $arg))
-           (+ (gap-task $desc-id $expr $parent))
-           (+ (exec (freq 100 gap-step) $step-p $step-t)))))
+           (- (gap-task $desc-id $desc-expr ($desc-parent $desc-arg)))
+           (+ (gap-wait $desc-id ($desc-parent $desc-arg) $desc-parent $desc-arg))
+           (+ (gap-task $desc-id $desc-expr $desc-parent))
+           (+ (exec (freq 100 gap-step) $step-rule-p $step-rule-t)))))
   )
 )
 
