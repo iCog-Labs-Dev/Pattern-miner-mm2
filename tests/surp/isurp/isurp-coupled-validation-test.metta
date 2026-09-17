@@ -39,4 +39,4 @@
         (Inheritance (Person $x) sodaDrinker))
      5))
 
-(EXPECTED-RESULT isurp-coupled-three-raw (isurp-new-of (, (Inheritance (Person $a) man) (Inheritance (Person $a) ugly) (Inheritance (Person $a) sodaDrinker)) 1.9290123456790123e-5))
+(EXPECTED-RESULT isurp-coupled-three-raw (isurp-new-of ((Inheritance (Person (var 0)) man) (Inheritance (Person (var 0)) ugly) (Inheritance (Person (var 0)) sodaDrinker)) 1.9290123456790123e-5))

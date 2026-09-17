@@ -20,13 +20,13 @@
   (, (hne-active $id)
      (DEF has-nested-expression-dispatch $dispatch-p $dispatch-t))
   (O
-    (+ (exec (freq 800 hne-empty-parent)
+    (+ (exec (freq f800 hne-empty-parent)
          (, (hne-active $empty-id)
             (hne-check $empty-id () $empty-candidate))
          (O
            (- (hne-check $empty-id () $empty-candidate)))))
 
-    (+ (exec (freq 801 hne-split)
+    (+ (exec (freq f801 hne-split)
          (, (hne-active $split-id)
             (hne-check $split-id $parent $candidate))
          (O
@@ -40,7 +40,7 @@
            (pure (hne-candidate-tail $split-id $parent $candidate $candidate-tail)
              $candidate-tail (cdr-atom (' $candidate)))
            (+ (hne-dispatch $split-id $parent $candidate))
-           (+ (exec (freq 810 hne-dispatch) $dispatch-p $dispatch-t)))))))
+           (+ (exec (freq f810 hne-dispatch) $dispatch-p $dispatch-t)))))))
 
 (DEF has-nested-expression-dispatch
   (, (hne-active $id)
@@ -63,12 +63,12 @@
     (pure (hne-candidate-head-exp $id $parent $candidate $candidate-head $is-candidate-exp)
       $is-candidate-exp (i8_to_string (is_exp (' $candidate-head))))
     (+ (hne-decision $id $parent $candidate $parent-head $candidate-head $parent-tail $candidate-tail))
-    (+ (exec (freq 820 hne-decide) $decide-p $decide-t))))
+    (+ (exec (freq f820 hne-decide) $decide-p $decide-t))))
 
 (DEF has-nested-expression-decide
   (, (DEF has-nested-expression-step $step-p $step-t))
   (O
-    (+ (exec (freq 820 hne-found)
+    (+ (exec (freq f820 hne-found)
          (, (hne-active $found-id)
             (hne-decision $found-id $found-parent $found-candidate $found-parent-head $found-candidate-head $found-parent-tail $found-candidate-tail)
             (hne-parent-head-var $found-id $found-parent $found-candidate $found-parent-head 1)
@@ -82,7 +82,7 @@
            (- (hne-top $found-id $top-parent $top-candidate))
            (+ (has-nested-expression-result $found-id $top-parent $top-candidate true)))))
 
-    (+ (exec (freq 821 hne-var-flat-continue-tail)
+    (+ (exec (freq f821 hne-var-flat-continue-tail)
          (, (hne-active $flat-id)
             (hne-decision $flat-id $flat-parent $flat-candidate $flat-parent-head $flat-candidate-head $flat-parent-tail $flat-candidate-tail)
             (hne-parent-head-var $flat-id $flat-parent $flat-candidate $flat-parent-head 1)
@@ -92,9 +92,9 @@
            (- (hne-parent-head-var $flat-id $flat-parent $flat-candidate $flat-parent-head 1))
            (- (hne-candidate-head-exp $flat-id $flat-parent $flat-candidate $flat-candidate-head 0))
            (+ (hne-check $flat-id $flat-parent-tail $flat-candidate-tail))
-           (+ (exec (freq 800 hne-step) $step-p $step-t)))))
+           (+ (exec (freq f800 hne-step) $step-p $step-t)))))
 
-    (+ (exec (freq 822 hne-expression-recurse-and-tail)
+    (+ (exec (freq f822 hne-expression-recurse-and-tail)
          (, (hne-active $expr-id)
             (hne-decision $expr-id $expr-parent $expr-candidate $expr-parent-head $expr-candidate-head $expr-parent-tail $expr-candidate-tail)
             (hne-parent-head-var $expr-id $expr-parent $expr-candidate $expr-parent-head 0)
@@ -107,9 +107,9 @@
            (- (hne-candidate-head-exp $expr-id $expr-parent $expr-candidate $expr-candidate-head 1))
            (+ (hne-check $expr-id $expr-parent-head $expr-candidate-head))
            (+ (hne-check $expr-id $expr-parent-tail $expr-candidate-tail))
-           (+ (exec (freq 800 hne-step) $step-p $step-t)))))
+           (+ (exec (freq f800 hne-step) $step-p $step-t)))))
 
-    (+ (exec (freq 824 hne-atom-continue-tail)
+    (+ (exec (freq f824 hne-atom-continue-tail)
          (, (hne-active $atom-id)
             (hne-decision $atom-id $atom-parent $atom-candidate $atom-parent-head $atom-candidate-head $atom-parent-tail $atom-candidate-tail)
             (hne-parent-head-var $atom-id $atom-parent $atom-candidate $atom-parent-head 0)
@@ -119,7 +119,7 @@
            (- (hne-parent-head-var $atom-id $atom-parent $atom-candidate $atom-parent-head 0))
            (- (hne-parent-head-exp $atom-id $atom-parent $atom-candidate $atom-parent-head 0))
            (+ (hne-check $atom-id $atom-parent-tail $atom-candidate-tail))
-           (+ (exec (freq 800 hne-step) $step-p $step-t)))))))
+           (+ (exec (freq f800 hne-step) $step-p $step-t)))))))
 
 (DEF has-nested-expression-with-respect-to-fn
   (, (has-nested-expression-with-respect-to $id $parent $candidate)
@@ -129,7 +129,7 @@
     (+ (hne-active $id))
     (+ (hne-top $id $parent $candidate))
     (+ (hne-check $id $parent $candidate))
-    (+ (exec (freq 800 hne-step) $step-p $step-t))))
+    (+ (exec (freq f800 hne-step) $step-p $step-t))))
 
 ; Remove HNE scratch facts after an iterative candidate has been checked.
 ; The positive result is intentionally kept for the iterator continuation stage.
@@ -166,9 +166,9 @@
      (DEF hne-cleanup-target-fn $target-p $target-t)
      (DEF hne-cleanup-target-task-fn $task-p $task-t))
   (O
-    (+ (exec (freq 910 hne-cleanup-blocks) $blocks-p $blocks-t))
-    (+ (exec (freq 911 hne-cleanup-targets) $target-p $target-t))
-    (+ (exec (freq 912 hne-cleanup-target-tasks) $task-p $task-t))))
+    (+ (exec (freq f910 hne-cleanup-blocks) $blocks-p $blocks-t))
+    (+ (exec (freq f911 hne-cleanup-targets) $target-p $target-t))
+    (+ (exec (freq f912 hne-cleanup-target-tasks) $task-p $task-t))))
 
 ; iterative miner
 ;
@@ -197,9 +197,9 @@
     (+ (has-nested-expression-with-respect-to
       (HNE $miner-id $candidate) $indexed-parent $candidate))
     (+ (hne-cleanup (HNE $miner-id $candidate)))
-    (+ (exec (freq 900 iterative-check-depth) $hne-p $hne-t))
-    (+ (exec (freq 950 iterative-continue) $continue-p $continue-t))
-    (+ (exec (freq 960 iterative-hne-cleanup) $cleanup-p $cleanup-t))))
+    (+ (exec (freq f900 iterative-check-depth) $hne-p $hne-t))
+    (+ (exec (freq f950 iterative-continue) $continue-p $continue-t))
+    (+ (exec (freq f960 iterative-hne-cleanup) $cleanup-p $cleanup-t))))
 
 (DEF iterative-miner-continue-fn
   (, (iter-parent $id $parent $indexed-parent $miner-id)
@@ -213,7 +213,7 @@
     (+ (iterative-recursive-candidate $id $parent $candidate $support))
     (pure (run-iterative-miner $id $next-pattern) $next-pattern
       (indices_to_vars (' $candidate)))
-    (+ (exec (freq 000 iterative-run-next) $iter-p $iter-t))))
+    (+ (exec (freq f000 iterative-run-next) $iter-p $iter-t))))
 
 (DEF iterative-parent-cleanup-fn
   (, (iter-parent $id $parent $indexed-parent $miner-id))
@@ -230,9 +230,9 @@
     (+ (iter-parent
       $id $parent $indexed-parent (ITER $id $indexed-parent)))
     (+ (run-frequent-miner (ITER $id $indexed-parent) $parent))
-    (+ (exec (freq 100 iterative-run-generation) $freq-p $freq-t))
-    (+ (exec (freq 850 iterative-check-candidates) $candidate-p $candidate-t))
-    (+ (exec (freq 970 iterative-parent-cleanup)
+    (+ (exec (freq f100 iterative-run-generation) $freq-p $freq-t))
+    (+ (exec (freq f850 iterative-check-candidates) $candidate-p $candidate-t))
+    (+ (exec (freq f970 iterative-parent-cleanup)
       $parent-cleanup-p $parent-cleanup-t))))
 
 ;; Rebuild the display/matching pattern in its own pure step. Keeping raw MORK
@@ -244,7 +244,7 @@
     (- (iter-generation $id $indexed-parent))
     (pure (iter-generation-ready $id $indexed-parent $parent) $parent
       (indices_to_vars (' $indexed-parent)))
-    (+ (exec (freq 095 iterative-start-generation) $start-p $start-t))))
+    (+ (exec (freq f095 iterative-start-generation) $start-p $start-t))))
 
 (DEF iterative-miner-fn
   (, (run-iterative-miner $id $pattern)
@@ -253,5 +253,5 @@
     (- (run-iterative-miner $id $pattern))
     (pure (iter-generation $id $indexed-pattern) $indexed-pattern
       (vars_to_indices (' $pattern)))
-    (+ (exec (freq 090 iterative-restore-generation)
+    (+ (exec (freq f090 iterative-restore-generation)
       $restore-p $restore-t))))

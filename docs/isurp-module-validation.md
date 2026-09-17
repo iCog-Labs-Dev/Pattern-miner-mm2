@@ -71,8 +71,9 @@ Each `exec` priority uses this project convention:
 (exec (surp <priority> <rule-name>) $source $sink)
 ```
 
-`surp` is the module namespace, the number controls execution order, and the
-last field names the rule.
+`surp` is the module namespace, `<priority>` is the middle field for
+surprisingness, and it must start with `s` followed by exactly three decimal
+digits, such as `s010`. The last field names the rule.
 
 | File                            | What it does                                                                             |
 | ------------------------------- | ---------------------------------------------------------------------------------------- |

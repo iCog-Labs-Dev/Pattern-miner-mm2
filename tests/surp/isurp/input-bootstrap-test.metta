@@ -5,7 +5,8 @@
 ;; Input bootstrap component test
 ;;
 ;;   raw INPUT PATTERN
-;;   -> indexed-pattern
+;;   -> isurp-pattern
+;;   -> indexed-pattern-of
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (INPUT DB db)
@@ -17,4 +18,6 @@
         (Inheritance $x sodaDrinker))
      1))
 
-(EXPECTED-RESULT indexed-pattern-3 (indexed-pattern-of (, (Inheritance $a man) (Inheritance $a ugly) (Inheritance $a sodaDrinker)) ((Inheritance (var 0) man) (Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker))))
+(EXPECTED-RESULT isurp-pattern-3 (isurp-pattern ((Inheritance (var 0) man) (Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker)) 1))
+
+(EXPECTED-RESULT indexed-pattern-3 (indexed-pattern-of ((Inheritance (var 0) man) (Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker)) ((Inheritance (var 0) man) (Inheritance (var 0) ugly) (Inheritance (var 0) sodaDrinker))))

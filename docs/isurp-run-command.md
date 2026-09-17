@@ -79,14 +79,15 @@ file under `tests/surp/isurp/`.
 
 ## Module Map
 
-ISurp stages use readable tuple priorities:
+ISurp rules use readable tuple priorities:
 
 ```metta
 (exec (surp <priority> <function-name>) $sources $sinks)
 ```
 
-`surp` is the module namespace, `<priority>` controls execution order, and
-`<function-name>` describes the rule.
+`surp` is the module namespace, `<priority>` is the middle field for
+surprisingness, and it must start with `s` followed by exactly three decimal
+digits, such as `s010`. `<function-name>` describes the rule.
 
 | File                           | Purpose                                                                                                                              |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |

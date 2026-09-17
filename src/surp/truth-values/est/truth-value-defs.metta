@@ -18,7 +18,7 @@
 
 
 ;; count_to_confidence(count) = count / (count + DEFAULT_K)
-(exec (surp 130 count-confidence)
+(exec (surp s130 count-confidence)
     (, (count-confidence-request $count)
        (tv-default-k $default-k))
     (O
@@ -34,7 +34,7 @@
 
 
 ;; confidence_to_count(conf) = DEFAULT_K * min(conf, 0.9999998) / (1 - conf)
-(exec (surp 182 confidence-count)
+(exec (surp s182 confidence-count)
     (, (confidence-count-request $confidence)
        (tv-default-k $default-k)
        (tv-confidence-max $confidence-max))

@@ -27,43 +27,42 @@
 ;;
 ;; MM2 materialized result:
 ;;
-;;   (ji-prob-est-interval-of $partitions $emin $emax)
+;;   (ji-prob-est-interval-of $pattern $partitions $emin $emax)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(exec (surp 120 ji-interval)
-    (, (do-ji-prob-of $partitions $prob-list))
+(exec (surp s120 ji-interval)
+    (, (do-ji-prob-of $pattern $partitions $prob-list))
     (O
         (pure
-            (ji-prob-est-min-of $partitions $emin)
+            (ji-prob-est-min-of $pattern $partitions $emin)
             $emin
             (min-atom (' $prob-list)))
         (pure
-            (ji-prob-est-max-of $partitions $emax)
+            (ji-prob-est-max-of $pattern $partitions $emax)
             $emax
             (max-atom (' $prob-list)))))
 
 
-(exec (surp 121 ji-interval)
-    (, (ji-prob-est-min-of $partitions $emin)
-       (ji-prob-est-max-of $partitions $emax))
-    (, (ji-prob-est-interval-of $partitions $emin $emax)))
+(exec (surp s121 ji-interval)
+    (, (ji-prob-est-min-of $pattern $partitions $emin)
+       (ji-prob-est-max-of $pattern $partitions $emax))
+    (, (ji-prob-est-interval-of $pattern $partitions $emin $emax)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 2. Distance from interval
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(exec (surp 122 isurp-distance-request)
-    (, (INPUT PATTERN ($pattern $support))
-       (indexed-pattern-of $pattern $indexed-pattern)
-       (ji-prob-partitions-of $indexed-pattern $partitions)
-       (ji-prob-est-interval-of $partitions $emin $emax)
+(exec (surp s122 isurp-distance-request)
+    (, (isurp-pattern $pattern $support)
+       (ji-prob-partitions-of $pattern $partitions)
+       (ji-prob-est-interval-of $pattern $partitions $emin $emax)
        (emp-prob-pbs-of $pattern $emp)
        ((dst-from-interval $pattern $emin $emax $emp -> isurp-new-dst-of) $src $sink))
     (O
         (+ (isurp-new-interval-of $pattern $emin $emax))
         (+ (dst-request $pattern $emin $emax $emp isurp-new-dst-of))
-        (+ (exec (surp 122 isurp-distance-request) $src $sink))
+        (+ (exec (surp s122 isurp-distance-request) $src $sink))
         (pure
             (isurp-new-dst-of $pattern $direct-dst)
             $direct-dst
@@ -75,26 +74,12 @@
                     (sub_f64
                         (f64_from_string $emp)
                         (f64_from_string $emax))
-                    (f64_from_string 0.0))))
-        (pure
-            (isurp-new-of $pattern $direct-value)
-            $direct-value
-            (f64_to_string
-                (min_f64
-                    (max_f64
-                        (sub_f64
-                            (f64_from_string $emin)
-                            (f64_from_string $emp))
-                        (sub_f64
-                            (f64_from_string $emp)
-                            (f64_from_string $emax))
-                        (f64_from_string 0.0))
-                    (f64_from_string 1.0))))))
+                    (f64_from_string 0.0))))))
 
 
 ;; Local distance predicates.  These mirror `dst-from-interval`, but keep the
 ;; newer ISurp path independent from the spawned reusable helper.
-(exec (surp 123 isurp-distance-bools)
+(exec (surp s123 isurp-distance-bools)
     (, (isurp-new-interval-of $pattern $emin $emax)
        (emp-prob-pbs-of $pattern $emp))
     (O
@@ -128,7 +113,7 @@
 ;;
 ;; If `emp` is inside the interval, both differences are <= 0, so the distance
 ;; is 0.0.
-(exec (surp 124 isurp-distance-candidates)
+(exec (surp s124 isurp-distance-candidates)
     (, (isurp-new-interval-of $pattern $emin $emax)
        (emp-prob-pbs-of $pattern $emp))
     (O
@@ -146,7 +131,7 @@
                 (sub_f64
                     (f64_from_string $emp)
                     (f64_from_string $emax))))
-        (+ (exec (surp 125 isurp-distance-direct)
+        (+ (exec (surp s125 isurp-distance-direct)
             (, (isurp-new-below-distance-candidate $p $below-value)
                (isurp-new-above-distance-candidate $p $above-value))
             (O
@@ -157,25 +142,10 @@
                         (max_f64
                             (f64_from_string $below-value)
                             (f64_from_string $above-value)
-                            (f64_from_string 0.0)))))))
-        (+ (exec (surp 125 isurp-distance-raw)
-            (, (INPUT NORMALIZATION FALSE)
-               (isurp-new-below-distance-candidate $raw-p $raw-below)
-               (isurp-new-above-distance-candidate $raw-p $raw-above))
-            (O
-                (pure
-                    (isurp-new-of $raw-p $raw-value)
-                    $raw-value
-                    (f64_to_string
-                        (min_f64
-                            (max_f64
-                                (f64_from_string $raw-below)
-                                (f64_from_string $raw-above)
-                                (f64_from_string 0.0))
-                            (f64_from_string 1.0)))))))))
+                            (f64_from_string 0.0)))))))))
 
 
-(exec (surp 125 isurp-distance-direct)
+(exec (surp s125 isurp-distance-direct)
     (, (isurp-new-below-distance-candidate $pattern $below)
        (isurp-new-above-distance-candidate $pattern $above))
     (O
@@ -190,7 +160,7 @@
 
 
 ;; Case 1: empirical probability is above the interval.
-(exec (surp 126 isurp-distance-above)
+(exec (surp s126 isurp-distance-above)
     (, (isurp-new-above? $pattern $emin $emax $emp true))
     (O
         (pure
@@ -204,7 +174,7 @@
 
 
 ;; Case 2: empirical probability is below the interval.
-(exec (surp 126 isurp-distance-below)
+(exec (surp s126 isurp-distance-below)
     (, (isurp-new-below? $pattern $emin $emax $emp true))
     (O
         (pure
@@ -218,7 +188,7 @@
 
 
 ;; Case 3: empirical probability is inside the interval.
-(exec (surp 126 isurp-distance-inside)
+(exec (surp s126 isurp-distance-inside)
     (, (isurp-new-inside? $pattern $emin $emax $emp true))
     (O
         (+ (isurp-new-dst-of $pattern 0.0))
@@ -229,7 +199,7 @@
 ;; 3. Normalize or return raw distance
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(exec (surp 127 isurp-normalization-denom)
+(exec (surp s127 isurp-normalization-denom)
     (, (INPUT NORMALIZATION TRUE)
        (isurp-new-dst-of $pattern $dst)
        (emp-prob-pbs-of $pattern $emp)
@@ -241,7 +211,7 @@
             (max-atom (' ($emax $emp))))))
 
 
-(exec (surp 128 isurp-normalization-candidate)
+(exec (surp s128 isurp-normalization-candidate)
     (, (INPUT NORMALIZATION TRUE)
        (isurp-new-dst-of $pattern $dst)
        (isurp-new-normalization-denom $pattern $dst $denom))
@@ -255,7 +225,7 @@
                     (f64_from_string $denom))))))
 
 
-(exec (surp 129 isurp-normalized-final)
+(exec (surp s129 isurp-normalized-final)
     (, (INPUT NORMALIZATION TRUE)
        (isurp-new-normalization-candidate $pattern $dst $candidate))
     (O
@@ -265,7 +235,7 @@
             (min-atom (' ($candidate 1.0))))))
 
 
-(exec (surp 129 isurp-raw-final)
+(exec (surp s129 isurp-raw-final)
     (, (INPUT NORMALIZATION FALSE)
        (isurp-new-dst-of $pattern $dst))
     (O

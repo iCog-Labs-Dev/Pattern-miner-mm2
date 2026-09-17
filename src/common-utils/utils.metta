@@ -19,8 +19,8 @@
                 (cdr-atom (' $pattern))))))
 
 ;; Count matches for an indexed conjunction. The caller supplies both an
-;; opaque context value and the complete three-field priority for the count
-;; exec, so this template does not own any pipeline scheduling.
+;; opaque context value and the complete priority tuple for the count exec, so
+;; this template does not own any pipeline scheduling.
 ((count-indexed-conjunction-support $context $candidate $priority -> $out)
     (, (count-indexed-conjunction-support-request
            $context $candidate $priority $out))

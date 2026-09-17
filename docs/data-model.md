@@ -13,7 +13,7 @@ Everything is stored as facts in the same space:
 ```metta
 (Inheritance Allen man)
 (INPUT DB db)
-(exec (freq 010 example) $sources $sinks)
+(exec (freq f010 example) $sources $sinks)
 ((count-conjuncts $pattern -> num-of-conjuncts) $src $sink)
 ```
 
@@ -30,7 +30,7 @@ Because of this, every data model should answer three questions:
 All project `exec` priorities must use a fixed three-field tuple:
 
 ```metta
-(exec ($module $stage $label)
+(exec ($module $priority $label)
     $sources
     $sinks)
 ```
@@ -39,42 +39,50 @@ The fields are:
 
 | Field | Purpose | Example |
 | --- | --- | --- |
-| `$module` | One of the two project modules that owns the rule | `surp`, `freq` |
-| `$stage` | Primary ordering key inside the module; exactly three decimal digits | `010`, `020`, `100`, `900` |
-| `$label` | Human-readable stage name | `init`, `index-pattern`, `cleanup` |
+| `$module` | Project module that owns the rule | `freq`, `surp` |
+| `$priority` | Middle field: phase prefix plus exactly three decimal digits | `f010`, `f999`, `s000`, `s900` |
+| `$label` | Human-readable rule name | `init`, `index-pattern`, `cleanup` |
 
 Example:
 
 ```metta
-(exec (freq 010 normalize-seeds) ...)
-(exec (freq 110 count-support) ...)
-(exec (freq 900 cleanup-bases) ...)
-(exec (surp 010 init) ...)
-(exec (surp 020 index-pattern) ...)
-(exec (surp 090 product-2) ...)
-(exec (surp 091 product-3) ...)
-(exec (surp 100 interval) ...)
-(exec (surp 900 cleanup) ...)
+(exec (freq f010 normalize-seeds) ...)
+(exec (freq f110 count-support) ...)
+(exec (freq f900 cleanup-bases) ...)
+(exec (surp s010 init) ...)
+(exec (surp s020 index-pattern) ...)
+(exec (surp s090 product-2) ...)
+(exec (surp s091 product-3) ...)
+(exec (surp s100 interval) ...)
+(exec (surp s900 cleanup) ...)
 ```
 
-The project has exactly two module namespaces:
+The middle field defines the execution phase:
 
-- `freq` owns frequent mining, including connected conjunction expansion.
-- `surp` owns surprisingness scoring.
+- `f000` through `f999` are reserved for frequent mining, including connected
+  conjunction expansion.
+- `s000` through `s999` are reserved for surprisingness scoring.
+
+This keeps the future combined atomspace safe: every frequent-miner priority
+sorts before every surprisingness priority. This was verified with a dummy MM2
+program where `(freq f999 ...)` ran before `(surp s000 ...)`, so
+surprisingness can consume frequent patterns after frequent-miner stages have
+had priority to run.
 
 `src/freq/conjunction-expansion-triplet.metta` is a standalone development
-component, not a third module namespace. It therefore follows the `freq`
+component, not a third execution phase. It therefore follows the `freq fNNN`
 priority convention while keeping its temporary facts under the `ce-` prefix.
 
 `src/freq/frequent-pattern-miner.metta` integrates recursive candidate mining with
-conjunction expansion. Iterative-miner work and cleanup end at priority `970`;
-the integrated entry point reserves priority `999` for the handoff to
+conjunction expansion. Iterative-miner work and cleanup end at priority
+`(freq f970 ...)`; the integrated entry point reserves priority
+`(freq f999 ...)` for the handoff to
 conjunction expansion. Work created by the expansion then re-enters its normal
-lower `freq` stages.
+lower `freq fNNN` stages.
 
 Helpers, cleanup, tracing, and debugging remain stages inside their owning
-module. They do not introduce `shared`, `debug`, `conj-exp`, or similar module
-names.
+module and phase. They do not introduce `shared`, `debug`, `conj-exp`, or
+similar module names or execution phases.
 
 Do not use bare natural priorities in project code:
 
@@ -84,31 +92,44 @@ Do not use bare natural priorities in project code:
 (exec 20 ...)
 ```
 
-The `$stage` field must be exactly `three decimal digits`, from `000` through `999`. Use leading zeros when needed. MORK does not treat this field as an arithmetic integer; it orders priority expressions by their encoded path/symbol order. A fixed width of 3 makes that ordering match the numeric order we intend:
+The numeric part of `$priority` must be exactly three decimal digits, from
+`000` through `999`. Use leading zeros when needed. MORK does not treat this as
+an arithmetic integer; it orders priority expressions by their encoded
+path/symbol order. A fixed width of three digits makes that ordering match the
+numeric order we intend inside a phase:
 
 ```text
-010 < 020 < 090 < 100 < 900
+f010 < f020 < f090 < f100 < f900
+s010 < s020 < s090 < s100 < s900
+```
+
+The phase prefix controls cross-phase order:
+
+```text
+f999 < s000
 ```
 
 Avoid mixed-width stages:
 
 ```metta
 ;; Avoid
-(exec (surp 9 product-2) ...)
-(exec (surp 90 product-2) ...)
-(exec (surp 100 interval) ...)
+(exec (surp s9 product-2) ...)
+(exec (surp s90 product-2) ...)
 ```
 
-The `$label` field is for readability. It can affect ordering only when `$module` and `$stage` are identical, so never rely on the label for important sequencing. If two rules must run in a specific order, give them different stage numbers:
+The `$label` field is for readability. It can affect ordering only when
+`$module` and `$priority` are identical, so never rely on the label for
+important sequencing. If two rules must run in a specific order, give them
+different priority values:
 
 ```metta
 ;; Good
-(exec (surp 090 product-2) ...)
-(exec (surp 091 product-3) ...)
+(exec (surp s090 product-2) ...)
+(exec (surp s091 product-3) ...)
 
 ;; Avoid when ordering matters
-(exec (surp 090 product-2) ...)
-(exec (surp 090 product-3) ...)
+(exec (surp s090 product-2) ...)
+(exec (surp s090 product-3) ...)
 ```
 
 
@@ -173,7 +194,7 @@ Selected DB input:
 Early materialization step:
 
 ```metta
-(exec (freq 010 materialize-db)
+(exec (freq f010 materialize-db)
     (, (INPUT DB $db) (db-fact $db $fact))
     (O
         (+ $fact)))
@@ -279,10 +300,10 @@ and conjunction sizing.
 A caller can specialize it by matching the definition and spawning the returned exec:
 
 ```metta
-(exec (freq 020 call-count-conjuncts)
+(exec (freq f020 call-count-conjuncts)
     (, ((count-conjuncts $pattern -> num-of-conjuncts) $src $sink))
     (O
-        (+ (exec (freq 030 count-conjuncts) $src $sink))))
+        (+ (exec (freq f030 count-conjuncts) $src $sink))))
 ```
 
 ### Internal Reusable Definitions

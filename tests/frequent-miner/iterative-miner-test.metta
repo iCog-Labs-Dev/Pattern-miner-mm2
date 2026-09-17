@@ -20,11 +20,11 @@
 (FACT (Inheritance Jenica (eval gen sodarinker)))
 (FACT (Inheritance Kecia (eval gen sodarinker)))
 
-(exec (freq 001 call-iterative-miner)
+(exec (freq f001 call-iterative-miner)
   (, (run-iterative-miner iter-smoke (Inheritance $a $b))
      (DEF iterative-miner-fn $iter-p $iter-t))
   (O
-    (+ (exec (freq 002 run-iterative-miner) $iter-p $iter-t))))
+    (+ (exec (freq f002 run-iterative-miner) $iter-p $iter-t))))
 
 (EXPECTED-RESULT iterative-miner-nested-all (iterative-candidate-pattern iter-smoke (Inheritance $a (eval $b $c)) (Inheritance (var 0) (eval (var 1) (var 2))) 2))
 (EXPECTED-RESULT iterative-miner-nested-right-const (iterative-candidate-pattern iter-smoke (Inheritance $a (eval $b $c)) (Inheritance (var 0) (eval (var 1) sodarinker)) 2))

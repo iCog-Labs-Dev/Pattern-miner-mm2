@@ -8,10 +8,10 @@
 (valuation val-test (Inheritance $x $y))
 
 
-(exec (freq 000 call-valuation)
+(exec (freq f000 call-valuation)
   (, (valuation val-test $pattern)
      (DEF valuation-fn $val-p $val-t))
-  (O (+ (exec (freq 001 run-valuation-soda) $val-p $val-t))))
+  (O (+ (exec (freq f001 run-valuation-soda) $val-p $val-t))))
 
 
 (EXPECTED-RESULT valuation-test (valuation-binding val-test (root arg/1) (var 0) Abe))

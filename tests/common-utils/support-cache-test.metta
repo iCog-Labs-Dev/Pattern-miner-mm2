@@ -15,19 +15,19 @@
 (support-cache ((Inheritance (var 0) precomputed)) 77)
 (support-probe warm ((Inheritance (var 0) precomputed)))
 
-(exec (freq 000 call-support-gate)
+(exec (freq f000 call-support-gate)
   (, (support-probe $context $candidate)
      ((support-gate
         cached
         (support-probe $context $candidate)
         $context
         $candidate
-        (freq 010 test-cache-hit)
-        (freq 020 test-count-miss)
-        (freq 030 test-deliver)
+        (freq f010 test-cache-hit)
+        (freq f020 test-count-miss)
+        (freq f030 test-deliver)
         -> support-probe-result)
       $gate-p $gate-t))
-  (O (+ (exec (freq 001 run-support-gate) $gate-p $gate-t))))
+  (O (+ (exec (freq f001 run-support-gate) $gate-p $gate-t))))
 
 (EXPECTED-RESULT first-result (support-probe-result first ((Inheritance (var 0) human)) 2))
 (EXPECTED-RESULT second-result (support-probe-result second ((Inheritance (var 0) human)) 2))

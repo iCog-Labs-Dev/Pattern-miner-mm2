@@ -17,27 +17,27 @@
 ;;
 ;; MM2 public result:
 ;;
-;;   (pro-prob-wout-joint-of $partition $prob)
+;;   (pro-prob-wout-joint-of $pattern $partition $prob)
 ;;
 ;; Required input facts:
 ;;
 ;;   (INPUT DB-SIZE $db-size)
-;;   (partition $partition)
-;;   (block-support $partition $block $support)
+;;   (partition $pattern $partition)
+;;   (block-support $pattern $partition $block $support)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(exec (surp 080 pro-block-universe)
+(exec (surp s080 pro-block-universe)
     (, (INPUT DB-SIZE $db-size)
-       (block-support $partition $block $support))
+       (block-support $pattern $partition $block $support))
     (O
         (pure
-            (pro-block-size $partition $block $size)
+            (pro-block-size $pattern $partition $block $size)
             $size
             (size-atom (' $block))
         )
         (pure
-            (pro-block-universe-count $partition $block $universe-count)
+            (pro-block-universe-count $pattern $partition $block $universe-count)
             $universe-count
             (i64_to_string
                 (pow_i64
@@ -46,12 +46,12 @@
                         (size-atom (' $block))))))))
 
 
-(exec (surp 081 pro-block-prob)
-    (, (block-support $partition $block $support)
-       (pro-block-universe-count $partition $block $universe-count))
+(exec (surp s081 pro-block-prob)
+    (, (block-support $pattern $partition $block $support)
+       (pro-block-universe-count $pattern $partition $block $universe-count))
     (O
         (pure
-            (pro-block-prob $partition $block $prob)
+            (pro-block-prob $pattern $partition $block $prob)
             $prob
             (f64_to_string
                 (div_f64
@@ -59,55 +59,55 @@
                     (f64_from_string $universe-count))))))
 
 
-(exec (surp 082 pro-partition-start)
-    (, (partition $partition)
+(exec (surp s082 pro-partition-start)
+    (, (partition $pattern $partition)
        (DEF pro-partition-step $step-p $step-t))
     (O
-        (+ (pro-partition-acc $partition $partition 1.0))
-        (+ (exec (surp 083 pro-partition-step) $step-p $step-t))))
+        (+ (pro-partition-acc $pattern $partition $partition 1.0))
+        (+ (exec (surp s083 pro-partition-step) $step-p $step-t))))
 
 
 (DEF pro-partition-step
-    (, (pro-partition-acc $partition $remaining $acc)
+    (, (pro-partition-acc $pattern $partition $remaining $acc)
        (DEF pro-partition-resolve $resolve-p $resolve-t))
     (O
         (pure
-            (pro-partition-current $partition $remaining $block)
+            (pro-partition-current $pattern $partition $remaining $block)
             $block
             (car-atom (' $remaining)))
         (pure
-            (pro-partition-rest $partition $remaining $rest)
+            (pro-partition-rest $pattern $partition $remaining $rest)
             $rest
             (cdr-atom (' $remaining)))
-        (- (pro-partition-acc $partition $remaining $acc))
-        (+ (pro-partition-pending $partition $remaining $acc))
-        (+ (exec (surp 084 pro-partition-resolve) $resolve-p $resolve-t))))
+        (- (pro-partition-acc $pattern $partition $remaining $acc))
+        (+ (pro-partition-pending $pattern $partition $remaining $acc))
+        (+ (exec (surp s084 pro-partition-resolve) $resolve-p $resolve-t))))
 
 
 (DEF pro-partition-resolve
-    (, (pro-partition-pending $partition $remaining $acc)
-       (pro-partition-current $partition $remaining $block)
-       (pro-partition-rest $partition $remaining $rest)
-       (pro-block-prob $partition $block $block-prob)
+    (, (pro-partition-pending $pattern $partition $remaining $acc)
+       (pro-partition-current $pattern $partition $remaining $block)
+       (pro-partition-rest $pattern $partition $remaining $rest)
+       (pro-block-prob $pattern $partition $block $block-prob)
        (DEF pro-partition-step $step-p $step-t)
        (DEF pro-partition-final $final-p $final-t))
     (O
         (pure
-            (pro-partition-acc $partition $rest $new-acc)
+            (pro-partition-acc $pattern $partition $rest $new-acc)
             $new-acc
             (f64_to_string
                 (product_f64
                     (f64_from_string $acc)
                     (f64_from_string $block-prob))))
-        (- (pro-partition-pending $partition $remaining $acc))
-        (- (pro-partition-current $partition $remaining $block))
-        (- (pro-partition-rest $partition $remaining $rest))
-        (+ (exec (surp 082 pro-partition-final) $final-p $final-t))
-        (+ (exec (surp 083 pro-partition-step) $step-p $step-t))))
+        (- (pro-partition-pending $pattern $partition $remaining $acc))
+        (- (pro-partition-current $pattern $partition $remaining $block))
+        (- (pro-partition-rest $pattern $partition $remaining $rest))
+        (+ (exec (surp s082 pro-partition-final) $final-p $final-t))
+        (+ (exec (surp s083 pro-partition-step) $step-p $step-t))))
 
 
 (DEF pro-partition-final
-    (, (pro-partition-acc $partition () $prob))
+    (, (pro-partition-acc $pattern $partition () $prob))
     (O
-        (- (pro-partition-acc $partition () $prob))
-        (+ (pro-prob-wout-joint-of $partition $prob))))
+        (- (pro-partition-acc $pattern $partition () $prob))
+        (+ (pro-prob-wout-joint-of $pattern $partition $prob))))

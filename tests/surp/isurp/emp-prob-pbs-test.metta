@@ -6,11 +6,10 @@
 
 (INPUT DB-SIZE 4)
 
-(INPUT PATTERN
-    ((, (Inheritance (var 0) man)
-        (Inheritance (var 0) ugly))
-     4))
+(isurp-pattern
+    ((Inheritance (var 0) man) (Inheritance (var 0) ugly))
+    4)
 
-(EXPECTED-RESULT emp-universe (emp-prob-pbs-universe-count (, (Inheritance (var 0) man) (Inheritance (var 0) ugly)) 16))
+(EXPECTED-RESULT emp-universe (emp-prob-pbs-universe-count ((Inheritance (var 0) man) (Inheritance (var 0) ugly)) 16))
 
-(EXPECTED-RESULT emp-prob (emp-prob-pbs-of (, (Inheritance (var 0) man) (Inheritance (var 0) ugly)) 0.25))
+(EXPECTED-RESULT emp-prob (emp-prob-pbs-of ((Inheritance (var 0) man) (Inheritance (var 0) ugly)) 0.25))

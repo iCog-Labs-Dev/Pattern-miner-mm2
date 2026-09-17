@@ -13,23 +13,23 @@
 ;;
 ;; MM2 public result:
 ;;
-;;   (ji-tv-est-of $partition (STV $strength $confidence))
+;;   (ji-tv-est-of $pattern $partition (STV $strength $confidence))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(exec (surp 195 ji-tv-est)
-    (, (pro-tv-wout-joint-of $partition (STV $strength $confidence))
-       (eq-prob-of $partition $eq-prob))
+(exec (surp s195 ji-tv-est)
+    (, (pro-tv-wout-joint-of $pattern $partition (STV $strength $confidence))
+       (eq-prob-of $pattern $partition $eq-prob))
     (O
         (pure
-            (ji-tv-est-strength $partition $out-strength)
+            (ji-tv-est-strength $pattern $partition $out-strength)
             $out-strength
             (f64_to_string
                 (product_f64
                     (f64_from_string $strength)
                     (f64_from_string $eq-prob))))
         (pure
-            (ji-tv-est-confidence $partition $out-confidence)
+            (ji-tv-est-confidence $pattern $partition $out-confidence)
             $out-confidence
             (f64_to_string
                 (product_f64
@@ -37,7 +37,7 @@
                     (f64_from_string 0.1))))))
 
 
-(exec (surp 195 ji-tv-est-assemble)
-    (, (ji-tv-est-strength $partition $strength)
-       (ji-tv-est-confidence $partition $confidence))
-    (, (ji-tv-est-of $partition (STV $strength $confidence))))
+(exec (surp s195 ji-tv-est-assemble)
+    (, (ji-tv-est-strength $pattern $partition $strength)
+       (ji-tv-est-confidence $pattern $partition $confidence))
+    (, (ji-tv-est-of $pattern $partition (STV $strength $confidence))))
