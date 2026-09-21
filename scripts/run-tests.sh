@@ -2,9 +2,21 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-TEST_ROOT="${TEST_ROOT:-$ROOT_DIR/tests}"
 OUT_DIR="${OUT_DIR:-/tmp/hyperon-miner-mm2-tests}"
 DEFAULT_MORK_BIN="$ROOT_DIR/../MORK/target/release/mork"
+
+if [[ -n "${TEST_ROOT:-}" ]]; then
+  TEST_ROOTS=("$TEST_ROOT")
+  RELATIVE_ROOT="$TEST_ROOT"
+else
+  TEST_ROOTS=(
+    "$ROOT_DIR/src/common-utils/tests"
+    "$ROOT_DIR/src/freq/tests"
+    "$ROOT_DIR/src/miner/tests"
+    "$ROOT_DIR/src/surp/tests"
+  )
+  RELATIVE_ROOT="$ROOT_DIR"
+fi
 
 if [[ -z "${MORK_BIN:-}" ]]; then
   if command -v mork >/dev/null 2>&1; then
@@ -138,7 +150,7 @@ run_case() {
     case_file="$ROOT_DIR/$case_file"
   fi
 
-  rel_case="${case_file#$TEST_ROOT/}"
+  rel_case="${case_file#$RELATIVE_ROOT/}"
 
   while IFS= read -r mode || [[ -n "$mode" ]]; do
     [[ -z "$mode" ]] && continue
@@ -207,7 +219,7 @@ if [[ "$#" -gt 0 ]]; then
 else
   while IFS= read -r case_file; do
     run_case "$case_file"
-  done < <(find "$TEST_ROOT" -name "*-test.metta" | sort)
+  done < <(find "${TEST_ROOTS[@]}" -name "*-test.metta" | sort)
 fi
 
 echo

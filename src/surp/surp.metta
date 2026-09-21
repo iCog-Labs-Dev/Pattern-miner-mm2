@@ -18,7 +18,7 @@
 ;; support-count queries.
 ;;
 ;; The canonical indexed pattern is the owner id for all intermediate values
-;; produced by the modular ISurp pipeline. Integrated callers should provide
+;; produced by the modular surprisingness pipelines. Integrated callers provide
 ;; the selected mode together with:
 ;;
 ;;   (INPUT INDEXED-PATTERN ($indexed-pattern $support))
@@ -37,22 +37,15 @@
        (DEF do-surp-result-fn $mode $result-p $result-t))
     (O
         (- (do-surp))
-        (+ (do-surp-active $mode))
         (+ (exec (surp s001 materialize-surp-inputs) $input-p $input-t))
         (+ (exec (surp s930 collect-surp-result) $result-p $result-t))))
 
 
-;; Score every frequent pattern, regardless of tuple size.
+;; The frequent miner publishes only final-size expanded conjuncts.
 (DEF do-surp-input-fn
-    (, (do-surp-active $mode)
-       (expanded-conjunct $size $indexed-pattern $support))
+    (, (expanded-conjunct $size $indexed-pattern $support))
     (O
-        (+ (INPUT INDEXED-PATTERN ($indexed-pattern $support)))
-        (pure
-            (pattern-miner-pattern $indexed-pattern $pattern $support)
-            $pattern
-            (indices_to_vars
-                (cons , (' $indexed-pattern))))))
+        (+ (INPUT INDEXED-PATTERN ($indexed-pattern $support)))))
 
 
 ;; Mode-specific outputs are normalized into one dispatcher result shape.
@@ -60,38 +53,33 @@
     isurp-old
     (, (isurp-old-of $pattern-id $pattern $score))
     (O
-        (+ (surprisingess-of isurp-old $pattern-id $score))))
+        (+ (surprisingness-of isurp-old $pattern-id $score))))
 
 (DEF do-surp-result-fn
     isurp
     (, (isurp-of $pattern-id $score))
     (O
-        (+ (surprisingess-of isurp $pattern-id $score))))
+        (+ (surprisingness-of isurp $pattern-id $score))))
 
 (DEF do-surp-result-fn
     jsd
     (, (jsd-surp-of $pattern-id $score))
     (O
-        (+ (surprisingess-of jsd $pattern-id $score))))
+        (+ (surprisingness-of jsd $pattern-id $score))))
 
 
 
-;; Normalize the raw comma pattern with the shared `vars_to_indices` helper.
-;;
-;; `vars_to_indices` preserves variable identity, but it returns the full comma
-;; expression:
-;;
-;;   (, (Inheritance (var 0) man) ...)
-;;
-;; Partitioning expects only the clause list, so `cdr-atom` removes the leading
-;; comma marker.
+;; Normalize a standalone raw comma pattern with the shared `vars_to_indices`
+;; helper. Partitioning expects only the clause list, so `cdr-atom` removes the
+;; leading comma marker from the indexed result.
 (exec (surp s020 index-pattern)
     (, (INPUT PATTERN ($raw-pattern $support)))
     (O
         (pure
-            (indexed-comma-pattern $indexed-comma-pattern $support)
-            $indexed-comma-pattern
-            (vars_to_indices (' $raw-pattern)))))
+            (isurp-pattern $indexed-pattern $support)
+            $indexed-pattern
+            (cdr-atom
+                (vars_to_indices (' $raw-pattern))))))
 
 ;; The frequent miner already emits canonical indexed conjunction lists. This
 ;; path exposes that list directly to ISurp and bypasses `vars_to_indices`.
@@ -105,15 +93,6 @@
        (INPUT INDEXED-PATTERN ($indexed-pattern $support)))
     (, (isurp-pattern $indexed-pattern $support)))
 
-(exec (surp s021 index-pattern-list)
-    (, (indexed-comma-pattern $indexed-comma-pattern $support))
-    (O
-        (pure
-            (isurp-pattern $indexed-pattern $support)
-            $indexed-pattern
-            (cdr-atom (' $indexed-comma-pattern)))))
-
 (exec (surp s022 expose-indexed-pattern)
     (, (isurp-pattern $pattern $support))
-    (, (indexed-pattern $pattern)
-       (indexed-pattern-of $pattern $pattern)))
+    (, (indexed-pattern $pattern)))

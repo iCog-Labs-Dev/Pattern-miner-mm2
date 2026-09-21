@@ -1,10 +1,10 @@
 ;; Integrated frequent-pattern mining entry point.
 ;;
 ;; Required sibling modules in the same atomspace:
-;;   src/freq/frequent-miner.metta
-;;   src/freq/iterative-miner.metta
+;;   src/freq/components/candidate-patterns.metta
+;;   src/freq/components/iterative-miner.metta
 ;;   src/common-utils/utils.metta
-;;   src/freq/conjunction-expansion-triplet.metta
+;;   src/freq/components/conjunction-expansion-triplet.metta
 ;;
 ;; Public request:
 ;;   (run-frequent-pattern-miner $run-id $root-pattern)
@@ -12,7 +12,7 @@
 ;; Public results:
 ;;   (iterative-candidate-pattern
 ;;     $run-id $parent-pattern $indexed-candidate $support)
-;;   (expanded-conjunct $size $indexed-conjunction $support)
+;;   (expanded-conjunct $size $indexed-conjunction $support), at MAX-SIZE
 ;;
 ;; The priority-999 handoff is a barrier between the iterative miner, whose
 ;; work ends at priority 970, and conjunction expansion. Recursive miner work

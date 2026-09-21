@@ -1,7 +1,7 @@
 # Conjunction Expansion
 
-`src/freq/conjunction-expansion-triplet.metta` expands connected triplet patterns
-without modifying or loading `src/freq/frequent-miner.metta`. Its caller also loads
+`src/freq/components/conjunction-expansion-triplet.metta` expands connected triplet patterns
+without modifying or loading `src/freq/components/candidate-patterns.metta`. Its caller also loads
 `src/common-utils/utils.metta`.
 
 ## Contract
@@ -24,13 +24,16 @@ Database triplets are active facts in the same atomspace:
 Output:
 
 ```metta
-(expanded-conjunct 2
+(expanded-conjunct 3
   ((Parent (var 0) (var 1))
-   (Parent (var 1) (var 2)))
+   (Parent (var 1) (var 2))
+   (Parent (var 2) (var 3)))
   4)
 ```
 
 The output stores a canonical indexed conjunction, its size, and its support.
+Only candidates at `MAX-SIZE` are published; smaller frequent candidates remain
+internal so they can be expanded.
 All `ce-*` facts are temporary and are consumed before execution finishes.
 
 ## Pipeline
@@ -157,15 +160,15 @@ The expansion also specializes these common callables:
 
 ## Test
 
-`tests/frequent-miner/conjunction-expansion-test.metta` loads the existing
+`src/freq/tests/components/conjunction-expansion-test.metta` loads the existing
 `data/ugly-sodaDrinker.metta` fixture, common utilities, and the standalone
 source.
 
 ```sh
-scripts/run-tests.sh tests/frequent-miner/conjunction-expansion-test.metta
+scripts/run-tests.sh src/freq/tests/components/conjunction-expansion-test.metta
 ```
 
-`tests/frequent-miner/frequent-pattern-miner-test.metta` covers the real
+`src/freq/tests/frequent-pattern-miner-test.metta` covers the real
 iterative-miner-to-expansion handoff.
 
 The current component accepts triplet atoms. `MAX-SIZE` limits conjunct count,

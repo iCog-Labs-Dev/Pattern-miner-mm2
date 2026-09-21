@@ -69,7 +69,7 @@ program where `(freq f999 ...)` ran before `(surp s000 ...)`, so
 surprisingness can consume frequent patterns after frequent-miner stages have
 had priority to run.
 
-`src/freq/conjunction-expansion-triplet.metta` is a standalone development
+`src/freq/components/conjunction-expansion-triplet.metta` is a standalone development
 component, not a third execution phase. It therefore follows the `freq fNNN`
 priority convention while keeping its temporary facts under the `ce-` prefix.
 
@@ -143,7 +143,7 @@ Use explicit predicates to make each fact type clear.
 | Database facts | Facts being mined | `(Inheritance Allen man)` |
 | Function definitions | Reusable pipeline definitions | `((count-conjuncts ... -> ...) $src $sink)` |
 | Intermediate facts | Temporary pipeline state | `(block-support $partition $block $support)` |
-| Final results | Intended output | `(frequent-pattern $pattern $support)`, `(iterative-candidate-pattern $run-id $parent $candidate $support)`, `(expanded-conjunct $size $candidate $support)`, `(surprisingness-of $pattern $score)` |
+| Final results | Intended output | `(frequent-pattern $pattern $support)`, `(iterative-candidate-pattern $run-id $parent $candidate $support)`, `(expanded-conjunct $size $candidate $support)`, `(surprisingness-of $mode $pattern-id $score)` |
 | Debug facts | Temporary inspection facts | `(DEBUG stage value)` |
 | Dummy facts | Development-only facts | `(DUMMY ...)` |
 

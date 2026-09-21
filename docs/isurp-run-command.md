@@ -15,26 +15,26 @@ main file and load the ISurp implementation modules with `--aux-path`.
 The ISurp tests are regular project runner tests. Run all modular ISurp tests:
 
 ```bash
-scripts/run-tests.sh tests/surp/isurp/abstractness-sort-test.metta \
-  tests/surp/isurp/eq-prob-test.metta \
-  tests/surp/isurp/pro-prob-wout-joint-test.metta \
-  tests/surp/isurp/ji-prob-est-test.metta \
-  tests/surp/isurp/do-ji-prob-test.metta \
-  tests/surp/isurp/emp-prob-pbs-test.metta \
-  tests/surp/truth-values/emp/emp-tv-test.metta \
-  tests/surp/truth-values/emp/block-tv-test.metta \
-  tests/surp/truth-values/est/truth-value-defs-test.metta \
-  tests/surp/truth-values/est/est-tv-pipeline-test.metta \
-  tests/surp/isurp/isurp-validation-test.metta \
-  tests/surp/isurp/isurp-coupled-validation-test.metta \
-  tests/surp/isurp/isurp-true-nested-validation-test.metta \
-  tests/surp/isurp/isurp-pipeline-test.metta
+scripts/run-tests.sh src/surp/tests/isurp/components/abstractness-sort-test.metta \
+  src/surp/tests/isurp/components/eq-prob-test.metta \
+  src/surp/tests/isurp/components/pro-prob-wout-joint-test.metta \
+  src/surp/tests/isurp/components/ji-prob-est-test.metta \
+  src/surp/tests/isurp/components/do-ji-prob-test.metta \
+  src/surp/tests/isurp/components/emp-prob-pbs-test.metta \
+  src/surp/tests/truth-values/emp/emp-tv-test.metta \
+  src/surp/tests/truth-values/emp/block-tv-test.metta \
+  src/surp/tests/truth-values/est/truth-value-defs-test.metta \
+  src/surp/tests/truth-values/est/est-tv-pipeline-test.metta \
+  src/surp/tests/isurp/isurp-validation-test.metta \
+  src/surp/tests/isurp/isurp-coupled-validation-test.metta \
+  src/surp/tests/isurp/isurp-true-nested-validation-test.metta \
+  src/surp/tests/isurp/isurp-pipeline-test.metta
 ```
 
 Or run one component test:
 
 ```bash
-scripts/run-tests.sh tests/surp/isurp/eq-prob-test.metta
+scripts/run-tests.sh src/surp/tests/isurp/components/eq-prob-test.metta
 ```
 
 ## Full ISurp Pipeline
@@ -53,15 +53,15 @@ Run:
 ```bash
 mork run Pattern-miner-mm2/src/common-utils/utils.metta \
   --aux-path Pattern-miner-mm2/src/surp/surp.metta \
-  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/bootstrap-partitions.metta \
-  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/block-support.metta \
-  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/abstractness-sort.metta \
-  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/eq-prob.metta \
-  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/pro-prob-wout-joint.metta \
-  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/ji-prob-est.metta \
-  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/do-ji-prob.metta \
-  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/emp-prob-pbs.metta \
-  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/isurp-new.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp/components/bootstrap-partitions.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp/components/block-support.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp/components/abstractness-sort.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp/components/eq-prob.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp/components/pro-prob-wout-joint.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp/components/ji-prob-est.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp/components/do-ji-prob.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp/components/emp-prob-pbs.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp/isurp.metta \
   --aux-path Pattern-miner-mm2/src/surp/truth-values/est/truth-value-defs.metta \
   --aux-path Pattern-miner-mm2/src/surp/truth-values/est/beta-distribution.metta \
   --aux-path Pattern-miner-mm2/src/surp/truth-values/est/average-tv.metta \
@@ -75,7 +75,8 @@ mork run Pattern-miner-mm2/src/common-utils/utils.metta \
 ```
 
 Each component test keeps its fixture data and expected facts in one runnable
-file under `tests/surp/isurp/`.
+file under `src/surp/tests/isurp/components/`. Full-pipeline and validation tests
+remain directly under `src/surp/tests/isurp/`.
 
 ## Module Map
 
@@ -100,7 +101,7 @@ digits, such as `s010`. `<function-name>` describes the rule.
 | `ji-prob-est.metta`            | Multiplies `pro-prob-wout-joint-of` by `eq-prob-of` to produce `ji-prob-est-of`.                                                     |
 | `do-ji-prob.metta`             | Collects `ji-prob-est-of` facts into an ordered probability list for a requested partition list.                                     |
 | `emp-prob-pbs.metta`           | Computes direct empirical probability for the input pattern.                                                                         |
-| `isurp-new.metta`              | Connects the newer helper facts into `ji-prob-est-interval-of`, distance, and final `isurp-of`.                                      |
+| `isurp.metta`                | Connects the newer helper facts into `ji-prob-est-interval-of`, distance, and final `isurp-of`.                                      |
 
 The legacy monolithic `src/isurp.metta` has been removed. Use the modular
 command above so each shared utility and ISurp stage is loaded explicitly.

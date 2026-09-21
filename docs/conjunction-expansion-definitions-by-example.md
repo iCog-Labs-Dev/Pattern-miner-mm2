@@ -1,7 +1,7 @@
 # Conjunction Expansion Definition Map
 
 This is a compact map of the facts transformed by
-`src/freq/conjunction-expansion-triplet.metta`. Generic operations come from
+`src/freq/components/conjunction-expansion-triplet.metta`. Generic operations come from
 `src/common-utils/utils.metta`.
 
 ## Iterative Candidate Intake
@@ -21,14 +21,15 @@ miner. Constructed conjunctions enter the normal support-counting route below.
 ce-pending
   -> ce-support
   -> ce-support-pass
-  -> expanded-conjunct + ce-expand-check
+  -> ce-expand-check + final-size publication
 ```
 
 - `ce-support-fn` starts one candidate cycle.
 - `support-gate` obtains support in the configured cached or uncached mode
   gate and counts only a cache miss.
 - `support-at-least` applies `MIN-SUPPORT`.
-- `ce-save-pass-fn` emits the public result and requests expansion.
+- `ce-save-pass-fn` requests expansion and publishes the public result only
+  when the candidate size matches `MAX-SIZE`.
 
 ## Expansion Decision
 
