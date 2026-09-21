@@ -17,9 +17,10 @@ KERNEL_CARGO="$MORK_DIR/kernel/Cargo.toml"
 WORKSPACE_CARGO="$MORK_DIR/Cargo.toml"
 MACROS_RS="$MORK_DIR/expr/src/macros.rs"
 HELPER_EXT_SRC="$HELPER_DIR/helper_ext.rs"
+FAST_COUNT_INSTALLER="$HELPER_DIR/install_fast_count_sink.sh"
 HELPER_EXT_DST="$MORK_DIR/kernel/src/helper_ext.rs"
 
-for file in "$LIB_RS" "$SINKS_RS" "$SPACE_RS" "$KERNEL_CARGO" "$WORKSPACE_CARGO" "$MACROS_RS" "$HELPER_EXT_SRC"; do
+for file in "$LIB_RS" "$SINKS_RS" "$SPACE_RS" "$KERNEL_CARGO" "$WORKSPACE_CARGO" "$MACROS_RS" "$HELPER_EXT_SRC" "$FAST_COUNT_INSTALLER"; do
   if [[ ! -f "$file" ]]; then
     echo "ERROR: expected file missing: $file" >&2
     exit 1
@@ -140,6 +141,8 @@ elif new not in text:
     raise SystemExit(f"ERROR: could not patch destruct macro semicolon in {path}")
 path.write_text(text)
 PY
+
+bash "$FAST_COUNT_INSTALLER" "$MORK_DIR"
 
 echo "MORK MM2 dependencies are wired:"
 echo "  helper: $HELPER_EXT_SRC"
