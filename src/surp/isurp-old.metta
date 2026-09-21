@@ -132,10 +132,9 @@
             (exec (surp s090 count-block-support)
                 $query
                 (O
-                    (count
+                    (count-fast
                         (block-support $ctx $partition $indexed-block $support)
-                        $support
-                        $query)))
+                        $support)))
             $query
             (indices_to_vars
                 (cons , (' $indexed-block))))))
@@ -436,7 +435,6 @@
     (O
         (- (cleanup $ctx $fact))
         ))
-
 
 
 
