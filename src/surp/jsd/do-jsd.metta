@@ -17,26 +17,26 @@
 (jsd-default-bins 10)
 
 
-(exec (surp 298 do-jsd-default-request)
+(exec (surp s298 do-jsd-default-request)
     (, (do-jsd-request $left-tv $right-tv)
        (jsd-default-bins $bins))
     (, (do-jsd-request $left-tv $right-tv $bins)))
 
 
-(exec (surp 299 do-jsd-cdf-requests)
+(exec (surp s299 do-jsd-cdf-requests)
     (, (do-jsd-request $left-tv $right-tv $bins))
     (, (jsd-cdf-request $left-tv $bins)
        (jsd-cdf-request $right-tv $bins)))
 
 
-(exec (surp 306 do-jsd-average-cdf-request)
+(exec (surp s306 do-jsd-average-cdf-request)
     (, (do-jsd-request $left-tv $right-tv $bins)
        (jsd-cdf-of $left-tv $bins $left-cdf)
        (jsd-cdf-of $right-tv $bins $right-cdf))
     (, (jsd-average-cdf-request $left-cdf $right-cdf)))
 
 
-(exec (surp 313 do-jsd-kld-requests)
+(exec (surp s313 do-jsd-kld-requests)
     (, (do-jsd-request $left-tv $right-tv $bins)
        (jsd-cdf-of $left-tv $bins $left-cdf)
        (jsd-cdf-of $right-tv $bins $right-cdf)
@@ -45,7 +45,7 @@
        (jsd-kld-request $right-cdf $middle-cdf)))
 
 
-(exec (surp 325 do-jsd-final)
+(exec (surp s325 do-jsd-final)
     (, (do-jsd-request $left-tv $right-tv $bins)
        (jsd-cdf-of $left-tv $bins $left-cdf)
        (jsd-cdf-of $right-tv $bins $right-cdf)

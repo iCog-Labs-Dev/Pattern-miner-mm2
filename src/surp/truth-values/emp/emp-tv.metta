@@ -16,7 +16,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(exec (surp 150 emp-tv-pattern-size)
+(exec (surp s150 emp-tv-pattern-size)
     (, (INPUT PATTERN ($pattern $support)))
     (O
         (pure
@@ -26,7 +26,7 @@
                 (cdr-atom (' $pattern))))))
 
 
-(exec (surp 151 emp-tv-universe)
+(exec (surp s151 emp-tv-universe)
     (, (INPUT DB-SIZE $db-size)
        (emp-tv-pattern-size-of $pattern $size))
     (O
@@ -39,7 +39,7 @@
                     (i64_from_string $size))))))
 
 
-(exec (surp 152 emp-tv-strength)
+(exec (surp s152 emp-tv-strength)
     (, (INPUT PATTERN ($pattern $support))
        (emp-prob-pbs-universe-count $pattern $universe-count))
     (O
@@ -52,7 +52,7 @@
                     (f64_from_string $universe-count))))))
 
 
-(exec (surp 153 emp-tv-final)
+(exec (surp s153 emp-tv-final)
     (, (emp-prob-pbs-of $pattern $strength)
        (emp-prob-pbs-universe-count $pattern $universe-count))
     (O

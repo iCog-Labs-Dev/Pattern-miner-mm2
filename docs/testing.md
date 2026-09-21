@@ -20,12 +20,25 @@ Use this structure for each test:
 The runner reads `TEST-AUX` comments, runs MORK, then checks that every
 `expected-fact` appears as a standalone fact in the final output.
 
-## Adding A New Module Test
+## Test Locations
 
-1. Create a test file under `tests/<module>/`.
+Tests owned by a main component live beside that component:
 
 ```text
-tests/frequent-miner/conjunction-expansion-test.metta
+src/common-utils/tests/     Shared utility tests
+src/freq/tests/             Frequent-miner tests
+src/miner/tests/            Cross-component integration tests
+src/surp/tests/             Surprisingness tests
+```
+
+The runner discovers all of these locations automatically.
+
+## Adding A New Module Test
+
+1. Create the test under its owning component's `tests/` directory.
+
+```text
+src/freq/tests/components/conjunction-expansion-test.metta
 ```
 
 2. Add the required data and source files as aux paths.
@@ -33,7 +46,7 @@ tests/frequent-miner/conjunction-expansion-test.metta
 ```metta
 ;; TEST-AUX data/ugly-sodaDrinker.metta
 ;; TEST-AUX src/common-utils/utils.metta
-;; TEST-AUX src/freq/conjunction-expansion-triplet.metta
+;; TEST-AUX src/freq/components/conjunction-expansion-triplet.metta
 ```
 
 List shared utilities before the implementation that calls them. The current
@@ -50,8 +63,7 @@ it does not maintain a separate copy of the database.
 4. Add one or more expected results.
 
 ```metta
-(EXPECTED-RESULT conjunction-expansion-singleton
-  (expanded-conjunct 1 ((Inheritance (var 0) human)) 10))
+(EXPECTED-RESULT conjunction-expansion-final (expanded-conjunct 3 ((Inheritance (var 0) ugly) (Inheritance (var 0) human) (Inheritance (var 0) sodaDrinker)) 4))
 ```
 
 The first argument after `EXPECTED-RESULT` is the test identifier. The second
@@ -61,8 +73,7 @@ The integrated frequent-miner coverage is intentionally kept in two files:
 
 - `frequent-pattern-miner-test.metta` runs the real iterative miner and
   conjunction expansion through `frequent-pattern-miner-fn`. It checks flat
-  candidates, calculated support, singleton-support reuse, and expanded
-  conjunctions.
+  candidates, calculated support, and final-size expanded conjunctions.
 - `iterative-miner-nested-test.metta` covers the distinct recursive path by
   verifying that a nested candidate starts another mining generation.
 
@@ -78,13 +89,13 @@ scripts/run-tests.sh
 6. Or run only the new test.
 
 ```sh
-scripts/run-tests.sh tests/frequent-miner/conjunction-expansion-test.metta
+scripts/run-tests.sh src/freq/tests/components/conjunction-expansion-test.metta
 ```
 
 Run the real end-to-end pipeline with:
 
 ```sh
-scripts/run-tests.sh tests/frequent-miner/frequent-pattern-miner-test.metta
+scripts/run-tests.sh src/freq/tests/frequent-pattern-miner-test.metta
 ```
 
 ## Optional Step Limit

@@ -1,0 +1,115 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; 1. Partition
+;;
+;; This module is intentionally only about partitioning.
+;;
+;; Input fact expected from `src/surp/surp.metta`:
+;;
+;;   (indexed-pattern ($c1 $c2 ...))
+;;
+;; Output facts produced here:
+;;
+;;   (ji-prob-partitions-of $pattern $partitions)
+;;   (do-ji-prob-request $pattern $partitions)
+;;   (partition $pattern $partition)
+;;   (block $pattern $partition $block)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; 3. Generate partitions
+;;
+;; Source MeTTa equivalent:
+;;
+;;   (partitions-wout-pattern (cdr-atom $pattern))
+;;
+;; Current helper:
+;;
+;;   (partitions indexed-conjunct-list)
+;;
+;; The helper returns a list of partitions.  Each partition is a list of blocks,
+;; and each block is a list of conjuncts.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(exec (surp s031 generate-partitions)
+    (, (indexed-pattern $pattern))
+    (O
+        (pure
+            (partitions-of $pattern $indexed-partition)
+            $indexed-partition
+            (partitions (' $pattern)))
+        (pure
+            (ji-prob-partitions-of $pattern $indexed-partition)
+            $indexed-partition
+            (partitions (' $pattern)))
+        (pure
+            (do-ji-prob-request $pattern $indexed-partition)
+            $indexed-partition
+            (partitions (' $pattern)))))
+
+
+;; Iterate through the partition list.
+;;
+;; This loop repeatedly:
+;;
+;;   1. takes the first partition with `car-atom`
+;;   2. writes `(partition $car)`
+;;   3. replaces the remaining list with `cdr-atom`
+;;   4. writes itself back
+;;
+;; It halts naturally when the remaining list no longer has a first element.
+(exec (surp s032 partition-iterator)
+    (, (partitions-of $pattern $indexed-partition)
+       (exec (surp s032 partition-iterator) $src $sink))
+    (O
+        (pure
+            (partition $pattern $car)
+            $car
+            (car-atom (' $indexed-partition)))
+        (pure
+            (partitions-of $pattern $cdr)
+            $cdr
+            (cdr-atom (' $indexed-partition)))
+        (- (partitions-of $pattern $indexed-partition))
+        (+ (exec (surp s032 partition-iterator) $src $sink))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; 4. Expand partitions into blocks
+;;
+;; Source MeTTa equivalent:
+;;
+;;   isurp-old_ loops through partitions
+;;   iprob loops through blocks inside one partition
+;;
+;; MM2 materializes:
+;;
+;;   (partition $pattern $partition)
+;;   (block $pattern $partition $block)
+;;
+;; Keeping `$partition` on every `block` fact is important because later stages
+;; must know which block probabilities should be multiplied together.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Copy the partition so the block iterator can consume the copy without losing
+;; the original partition shape.
+(exec (surp s033 copy-partition)
+    (, (partition $pattern $partition))
+    (, (copy-of-partition $pattern $partition $partition)))
+
+
+;; Iterate through the copied partition and write one `(block partition block)`
+;; fact per block.
+(exec (surp s034 block-iterator)
+    (, (copy-of-partition $pattern $partition $partition-copy)
+       (exec (surp s034 block-iterator) $src $sink))
+    (O
+        (pure
+            (block $pattern $partition $block)
+            $block
+            (car-atom (' $partition-copy)))
+        (pure
+            (copy-of-partition $pattern $partition $cdr)
+            $cdr
+            (cdr-atom (' $partition-copy)))
+        (- (copy-of-partition $pattern $partition $partition-copy))
+        (+ (exec (surp s034 block-iterator) $src $sink))))
