@@ -14,9 +14,7 @@
 ;;     $run-id $parent-pattern $indexed-candidate $support)
 ;;   (expanded-conjunct $size $indexed-conjunction $support), at MAX-SIZE
 ;;
-;; The priority-999 handoff is a barrier between the iterative miner, whose
-;; work ends at priority 970, and conjunction expansion. Recursive miner work
-;; schedules lower-priority tasks and therefore completes before the handoff.
+
 (DEF frequent-pattern-miner-fn
   (, (run-frequent-pattern-miner $run-id $root-pattern)
      (DEF iterative-miner-fn $iter-p $iter-t)
