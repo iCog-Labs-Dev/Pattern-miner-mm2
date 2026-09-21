@@ -124,20 +124,32 @@
         (- (copy-of-partition $ctx $partition $partition-copy))
         (+ (exec (surp s080 emit-block) $src $sink))))
 
-;; Convert each indexed block back to a real variable pattern and count its support.
-(exec (surp s090 count-block-support)
+;; Convert each indexed block back to a real variable pattern and count its
+;; support.  The actual database count goes through the shared support cache so
+;; the same block reused by several partitions is counted once.
+(exec (surp s090 block-support-request)
     (, (block $ctx $partition $indexed-block))
+    (, (isurp-old-block-support-request $ctx $partition $indexed-block)))
+
+(exec (surp s091 block-support-gate)
+    (, (isurp-old-block-support-request $ctx $partition $indexed-block)
+       (INPUT SUPPORT-MODE $support-mode)
+       ((support-gate
+          $support-mode
+          (isurp-old-block-support-request $ctx $partition $indexed-block)
+          ($ctx $partition)
+          $indexed-block
+          (surp s092 isurp-old-block-support-cache-hit)
+          (surp s093 count-isurp-old-block-support)
+          (surp s094 deliver-isurp-old-block-support)
+          -> isurp-old-block-support-result)
+        $gate-p $gate-t))
     (O
-        (pure
-            (exec (surp s090 count-block-support)
-                $query
-                (O
-                    (count-fast
-                        (block-support $ctx $partition $indexed-block $support)
-                        $support)))
-            $query
-            (indices_to_vars
-                (cons , (' $indexed-block))))))
+        (+ (exec (surp s091 run-isurp-old-block-support-gate) $gate-p $gate-t))))
+
+(exec (surp s095 block-support-result)
+    (, (isurp-old-block-support-result ($ctx $partition) $indexed-block $support))
+    (, (block-support $ctx $partition $indexed-block $support)))
 
 ;; Convert block support into block probability using the full pattern total count.
 (exec (surp s100 block-prob)
@@ -435,7 +447,6 @@
     (O
         (- (cleanup $ctx $fact))
         ))
-
 
 
 
