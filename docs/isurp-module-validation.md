@@ -59,10 +59,23 @@ isurp                    = distance(empirical probability, expected interval)
 
 ## MM2 module flow
 
-The MM2 implementation is split across small staged files under:
+The MM2 implementation is split into a pipeline entry and small staged
+components:
 
 ```text
-src/surp/isurp-modules/
+src/surp/
+  surp.metta
+  isurp/
+    isurp.metta
+    components/
+      bootstrap-partitions.metta
+      block-support.metta
+      abstractness-sort.metta
+      eq-prob.metta
+      pro-prob-wout-joint.metta
+      ji-prob-est.metta
+      do-ji-prob.metta
+      emp-prob-pbs.metta
 ```
 
 Each `exec` priority uses this project convention:
@@ -71,12 +84,13 @@ Each `exec` priority uses this project convention:
 (exec (surp <priority> <rule-name>) $source $sink)
 ```
 
-`surp` is the module namespace, the number controls execution order, and the
-last field names the rule.
+`surp` is the module namespace, `<priority>` is the middle field for
+surprisingness, and it must start with `s` followed by exactly three decimal
+digits, such as `s010`. The last field names the rule.
 
 | File                            | What it does                                                                             |
 | ------------------------------- | ---------------------------------------------------------------------------------------- |
-| `input-bootstrap.metta`      | Converts raw `INPUT PATTERN` into indexed pattern facts.                                 |
+| `surp.metta`                 | Accepts indexed miner output or converts raw `INPUT PATTERN` into indexed pattern facts. |
 | `bootstrap-partitions.metta` | Generates `partition`, `block`, and `ji-prob-partitions-of` facts.                       |
 | `block-support.metta`        | Converts indexed blocks back to query variables and counts block support.                |
 | `abstractness-sort.metta`    | Scores connected blocks for a joint variable and materializes the most abstract block.   |
@@ -85,7 +99,7 @@ last field names the rule.
 | `ji-prob-est.metta`          | Computes `ji-prob-est-of = pro-prob-wout-joint-of * eq-prob-of`.                         |
 | `do-ji-prob.metta`           | Collects `ji-prob-est-of` facts into a probability list for all partitions.              |
 | `emp-prob-pbs.metta`         | Computes empirical probability for the validated deterministic ISurp path.               |
-| `isurp-new.metta`            | Builds the JI interval, distance from interval, normalization, and final `isurp-new-of`. |
+| `isurp.metta`            | Builds the JI interval, distance from interval, normalization, and final `isurp-of`.     |
 
 ## MM2 input contract
 
@@ -98,7 +112,7 @@ The full pipeline expects raw DB facts and these input facts:
 (INPUT PATTERN (<comma-pattern> <support>))
 ```
 
-Example from `tests/surp/isurp/isurp-pipeline-test.metta`:
+Example from `src/surp/tests/isurp/isurp-pipeline-test.metta`:
 
 ```metta
 (INPUT DB db)
@@ -123,19 +137,22 @@ The pattern support is `1` because only `Allen` satisfies both clauses.
 Run the tested pipeline through the project test runner:
 
 ```bash
-scripts/run-tests.sh tests/surp/isurp/isurp-pipeline-test.metta
+scripts/run-tests.sh src/surp/tests/isurp/isurp-pipeline-test.metta
 ```
 
 Run all ISurp module tests:
 
 ```bash
-scripts/run-tests.sh tests/surp/isurp/*.metta
+scripts/run-tests.sh src/surp/tests/isurp/*.metta \
+  src/surp/tests/isurp/components/*.metta
 ```
 
 If `mork` is not on `PATH`, pass the binary explicitly:
 
 ```bash
-MORK_BIN=/path/to/mork scripts/run-tests.sh tests/surp/isurp/*.metta
+MORK_BIN=/path/to/mork scripts/run-tests.sh \
+  src/surp/tests/isurp/*.metta \
+  src/surp/tests/isurp/components/*.metta
 ```
 
 To run manually, load `src/common-utils/utils.metta` and each ISurp module as an
@@ -143,16 +160,16 @@ auxiliary input:
 
 ```bash
 mork run Pattern-miner-mm2/src/common-utils/utils.metta \
-  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/input-bootstrap.metta \
-  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/bootstrap-partitions.metta \
-  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/block-support.metta \
-  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/abstractness-sort.metta \
-  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/eq-prob.metta \
-  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/pro-prob-wout-joint.metta \
-  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/ji-prob-est.metta \
-  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/do-ji-prob.metta \
-  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/emp-prob-pbs.metta \
-  --aux-path Pattern-miner-mm2/src/surp/isurp-modules/isurp-new.metta \
+  --aux-path Pattern-miner-mm2/src/surp/surp.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp/components/bootstrap-partitions.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp/components/block-support.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp/components/abstractness-sort.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp/components/eq-prob.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp/components/pro-prob-wout-joint.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp/components/ji-prob-est.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp/components/do-ji-prob.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp/components/emp-prob-pbs.metta \
+  --aux-path Pattern-miner-mm2/src/surp/isurp/isurp.metta \
   --aux-path path/to/input-db.metta
 ```
 
@@ -186,7 +203,7 @@ with expected output:
 The matching MM2 test is:
 
 ```text
-tests/surp/isurp/isurp-validation-test.metta
+src/surp/tests/isurp/isurp-validation-test.metta
 ```
 
 It loads the same `ugly_man_sodaDrinker` corpus facts into MORK, with:
@@ -206,7 +223,7 @@ It loads the same `ugly_man_sodaDrinker` corpus facts into MORK, with:
 The MM2 expected result is the same numeric value, materialized as a fact:
 
 ```metta
-(isurp-new-of
+(isurp-of
     (, (Inheritance $a man)
        (Inheritance $a ugly)
        (Inheritance $a sodaDrinker))
@@ -240,17 +257,17 @@ because MORK test files load facts into one unscoped Space, while the PeTTa
 tests use separate database spaces (`&db`, `&dbc`, `&dbn`):
 
 ```text
-tests/surp/isurp/isurp-coupled-validation-test.metta
-tests/surp/isurp/isurp-true-nested-validation-test.metta
+src/surp/tests/isurp/isurp-coupled-validation-test.metta
+src/surp/tests/isurp/isurp-true-nested-validation-test.metta
 ```
 
 Run it with:
 
 ```bash
 scripts/run-tests.sh \
-  tests/surp/isurp/isurp-validation-test.metta \
-  tests/surp/isurp/isurp-coupled-validation-test.metta \
-  tests/surp/isurp/isurp-true-nested-validation-test.metta
+  src/surp/tests/isurp/isurp-validation-test.metta \
+  src/surp/tests/isurp/isurp-coupled-validation-test.metta \
+  src/surp/tests/isurp/isurp-true-nested-validation-test.metta
 ```
 
 Expected result:
@@ -269,7 +286,7 @@ Failed: 0
 
 ## Small Pipeline Sanity Case
 
-`tests/surp/isurp/isurp-pipeline-test.metta` is a smaller controlled test for the
+`src/surp/tests/isurp/isurp-pipeline-test.metta` is a smaller controlled test for the
 same pipeline stages. It uses a two-clause pattern:
 
 ```metta
@@ -289,9 +306,9 @@ with four DB facts:
 The MM2 pipeline materializes:
 
 ```metta
-(indexed-pattern-of
-    (, (Inheritance $a man) (Inheritance $a ugly))
-    ((Inheritance (var 0) man) (Inheritance (var 0) ugly)))
+(indexed-pattern
+    ((Inheritance (var 0) man)
+     (Inheritance (var 0) ugly)))
 ```
 
 It generates the PeTTa-style partition without the original full pattern:
@@ -358,7 +375,7 @@ So the expected interval and empirical probability are the same:
 For that small case, the final distance from the interval is zero:
 
 ```metta
-(isurp-new-of
+(isurp-of
     (, (Inheritance $a man) (Inheritance $a ugly))
     0.0)
 ```

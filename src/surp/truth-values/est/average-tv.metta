@@ -39,14 +39,14 @@
             (size-atom (' $tv-list)))
         (+ (avrg-tv-beta-walk $tv-list $tv-list))
         (+ (avrg-tv-mean-acc $tv-list $tv-list 0.0))
-        (+ (exec (surp 175 avrg-tv-beta-step) $beta-p $beta-t))
-        (+ (exec (surp 185 avrg-tv-mean-step) $mean-p $mean-t))))
+        (+ (exec (surp s175 avrg-tv-beta-step) $beta-p $beta-t))
+        (+ (exec (surp s185 avrg-tv-mean-step) $mean-p $mean-t))))
 
 
-(exec (surp 174 avrg-tv-start)
+(exec (surp s174 avrg-tv-start)
     (, (DEF avrg-tv-start $start-p $start-t))
     (O
-        (+ (exec (surp 174 avrg-tv-start-run) $start-p $start-t))))
+        (+ (exec (surp s174 avrg-tv-start-run) $start-p $start-t))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -66,10 +66,10 @@
             $rest
             (cdr-atom (' $remaining)))
         (- (avrg-tv-beta-walk $tv-list $remaining))
-        (+ (exec (surp 175 avrg-tv-beta-step) $step-p $step-t))))
+        (+ (exec (surp s175 avrg-tv-beta-step) $step-p $step-t))))
 
 
-(exec (surp 176 avrg-tv-beta-request)
+(exec (surp s176 avrg-tv-beta-request)
     (, (avrg-tv-beta-current $tv-list $tv))
     (O
         (+ (tv-beta-request $tv))
@@ -94,7 +94,7 @@
             (cdr-atom (' $remaining)))
         (- (avrg-tv-mean-acc $tv-list $remaining $sum))
         (+ (avrg-tv-mean-pending $tv-list $remaining $sum))
-        (+ (exec (surp 186 avrg-tv-mean-resolve) $resolve-p $resolve-t))))
+        (+ (exec (surp s186 avrg-tv-mean-resolve) $resolve-p $resolve-t))))
 
 
 (DEF avrg-tv-mean-resolve
@@ -114,7 +114,7 @@
         (- (avrg-tv-mean-pending $tv-list $remaining $sum))
         (- (avrg-tv-mean-current $tv-list $remaining $tv))
         (- (avrg-tv-mean-rest $tv-list $remaining $rest))
-        (+ (exec (surp 187 avrg-tv-mean-continue) $continue-p $continue-t))))
+        (+ (exec (surp s187 avrg-tv-mean-continue) $continue-p $continue-t))))
 
 
 (DEF avrg-tv-mean-continue
@@ -124,8 +124,8 @@
     (O
         (- (avrg-tv-mean-next-sum $tv-list $rest $next-sum))
         (+ (avrg-tv-mean-acc $tv-list $rest $next-sum))
-        (+ (exec (surp 185 avrg-tv-mean-final) $final-p $final-t))
-        (+ (exec (surp 186 avrg-tv-mean-step) $step-p $step-t))))
+        (+ (exec (surp s185 avrg-tv-mean-final) $final-p $final-t))
+        (+ (exec (surp s186 avrg-tv-mean-step) $step-p $step-t))))
 
 
 (DEF avrg-tv-mean-final
@@ -141,7 +141,7 @@
                     (f64_from_string $sum)
                     (f64_from_string $count))))
         (- (avrg-tv-mean-acc $tv-list () $sum))
-        (+ (exec (surp 186 avrg-tv-variance-start) $variance-start-p $variance-start-t))))
+        (+ (exec (surp s186 avrg-tv-variance-start) $variance-start-p $variance-start-t))))
 
 
 (DEF avrg-tv-variance-start
@@ -149,7 +149,7 @@
        (DEF avrg-tv-variance-step $variance-p $variance-t))
     (O
         (+ (avrg-tv-variance-acc $tv-list $tv-list $mean 0.0))
-        (+ (exec (surp 186 avrg-tv-variance-step) $variance-p $variance-t))))
+        (+ (exec (surp s186 avrg-tv-variance-step) $variance-p $variance-t))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -170,7 +170,7 @@
             (cdr-atom (' $remaining)))
         (- (avrg-tv-variance-acc $tv-list $remaining $mean $sum))
         (+ (avrg-tv-variance-pending $tv-list $remaining $mean $sum))
-        (+ (exec (surp 187 avrg-tv-variance-resolve) $resolve-p $resolve-t))))
+        (+ (exec (surp s187 avrg-tv-variance-resolve) $resolve-p $resolve-t))))
 
 
 (DEF avrg-tv-variance-resolve
@@ -198,7 +198,7 @@
         (- (avrg-tv-variance-pending $tv-list $remaining $mean $sum))
         (- (avrg-tv-variance-current $tv-list $remaining $tv))
         (- (avrg-tv-variance-rest $tv-list $remaining $rest))
-        (+ (exec (surp 188 avrg-tv-variance-continue) $continue-p $continue-t))))
+        (+ (exec (surp s188 avrg-tv-variance-continue) $continue-p $continue-t))))
 
 
 (DEF avrg-tv-variance-continue
@@ -208,8 +208,8 @@
     (O
         (- (avrg-tv-variance-next-sum $tv-list $rest $mean $next-sum))
         (+ (avrg-tv-variance-acc $tv-list $rest $mean $next-sum))
-        (+ (exec (surp 186 avrg-tv-variance-final) $final-p $final-t))
-        (+ (exec (surp 187 avrg-tv-variance-step) $step-p $step-t))))
+        (+ (exec (surp s186 avrg-tv-variance-final) $final-p $final-t))
+        (+ (exec (surp s187 avrg-tv-variance-step) $step-p $step-t))))
 
 
 (DEF avrg-tv-variance-final
@@ -225,7 +225,7 @@
                     (f64_from_string $sum)
                     (f64_from_string $count))))
         (- (avrg-tv-variance-acc $tv-list () $mean $sum))
-        (+ (exec (surp 188 avrg-tv-stv-alpha-beta) $stv-p $stv-t))))
+        (+ (exec (surp s188 avrg-tv-stv-alpha-beta) $stv-p $stv-t))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -268,7 +268,7 @@
                                     (f64_from_string $mean)))
                             (f64_from_string $variance))
                         (f64_from_string 1.0)))))
-        (+ (exec (surp 189 avrg-tv-stv-confidence) $confidence-p $confidence-t))))
+        (+ (exec (surp s189 avrg-tv-stv-confidence) $confidence-p $confidence-t))))
 
 
 (DEF avrg-tv-stv-confidence
@@ -297,7 +297,7 @@
                                 (f64_from_string 2.0))
                             (f64_from_string 0.1))
                         (f64_from_string 800.0)))))
-        (+ (exec (surp 190 avrg-tv-stv-mode) $mode-p $mode-t))))
+        (+ (exec (surp s190 avrg-tv-stv-mode) $mode-p $mode-t))))
 
 
 (DEF avrg-tv-stv-mode
@@ -333,10 +333,10 @@
                             (f64_from_string $alpha)
                             (f64_from_string $beta))
                         (f64_from_string 2.0)))))
-        (+ (exec (surp 191 avrg-tv-final-normal) $normal-p $normal-t))
-        (+ (exec (surp 191 avrg-tv-final-edge-alpha) $edge-alpha-p $edge-alpha-t))
-        (+ (exec (surp 191 avrg-tv-final-edge-beta) $edge-beta-p $edge-beta-t))
-        (+ (exec (surp 191 avrg-tv-final-edge-both) $edge-both-p $edge-both-t))))
+        (+ (exec (surp s191 avrg-tv-final-normal) $normal-p $normal-t))
+        (+ (exec (surp s191 avrg-tv-final-edge-alpha) $edge-alpha-p $edge-alpha-t))
+        (+ (exec (surp s191 avrg-tv-final-edge-beta) $edge-beta-p $edge-beta-t))
+        (+ (exec (surp s191 avrg-tv-final-edge-both) $edge-both-p $edge-both-t))))
 
 
 (DEF avrg-tv-final-normal
@@ -377,7 +377,7 @@
 ;; arithmetic at later priorities, then emits the same public `avrg-tv-of`.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(exec (surp 200 avrg-tv-late-start)
+(exec (surp s200 avrg-tv-late-start)
     (, (avrg-tv-request $tv-list)
        (DEF avrg-tv-late-beta-step $beta-p $beta-t)
        (DEF avrg-tv-late-mean-step $mean-p $mean-t))
@@ -388,8 +388,8 @@
             (size-atom (' $tv-list)))
         (+ (avrg-tv-late-beta-walk $tv-list $tv-list))
         (+ (avrg-tv-late-mean-acc $tv-list $tv-list 0.0))
-        (+ (exec (surp 201 avrg-tv-late-beta-step) $beta-p $beta-t))
-        (+ (exec (surp 207 avrg-tv-late-mean-step) $mean-p $mean-t))))
+        (+ (exec (surp s201 avrg-tv-late-beta-step) $beta-p $beta-t))
+        (+ (exec (surp s207 avrg-tv-late-mean-step) $mean-p $mean-t))))
 
 
 (DEF avrg-tv-late-beta-step
@@ -405,10 +405,10 @@
             $rest
             (cdr-atom (' $remaining)))
         (- (avrg-tv-late-beta-walk $tv-list $remaining))
-        (+ (exec (surp 201 avrg-tv-late-beta-step) $step-p $step-t))))
+        (+ (exec (surp s201 avrg-tv-late-beta-step) $step-p $step-t))))
 
 
-(exec (surp 202 avrg-tv-late-beta-request)
+(exec (surp s202 avrg-tv-late-beta-request)
     (, (avrg-tv-late-beta-current $tv-list $tv))
     (O
         (+ (tv-beta-request $tv))
@@ -429,7 +429,7 @@
             (cdr-atom (' $remaining)))
         (- (avrg-tv-late-mean-acc $tv-list $remaining $sum))
         (+ (avrg-tv-late-mean-pending $tv-list $remaining $sum))
-        (+ (exec (surp 208 avrg-tv-late-mean-resolve) $resolve-p $resolve-t))))
+        (+ (exec (surp s208 avrg-tv-late-mean-resolve) $resolve-p $resolve-t))))
 
 
 (DEF avrg-tv-late-mean-resolve
@@ -449,7 +449,7 @@
         (- (avrg-tv-late-mean-pending $tv-list $remaining $sum))
         (- (avrg-tv-late-mean-current $tv-list $remaining $tv))
         (- (avrg-tv-late-mean-rest $tv-list $remaining $rest))
-        (+ (exec (surp 209 avrg-tv-late-mean-continue) $continue-p $continue-t))))
+        (+ (exec (surp s209 avrg-tv-late-mean-continue) $continue-p $continue-t))))
 
 
 (DEF avrg-tv-late-mean-continue
@@ -459,8 +459,8 @@
     (O
         (- (avrg-tv-late-mean-next-sum $tv-list $rest $next-sum))
         (+ (avrg-tv-late-mean-acc $tv-list $rest $next-sum))
-        (+ (exec (surp 207 avrg-tv-late-mean-final) $final-p $final-t))
-        (+ (exec (surp 208 avrg-tv-late-mean-step) $step-p $step-t))))
+        (+ (exec (surp s207 avrg-tv-late-mean-final) $final-p $final-t))
+        (+ (exec (surp s208 avrg-tv-late-mean-step) $step-p $step-t))))
 
 
 (DEF avrg-tv-late-mean-final
@@ -476,7 +476,7 @@
                     (f64_from_string $sum)
                     (f64_from_string $count))))
         (- (avrg-tv-late-mean-acc $tv-list () $sum))
-        (+ (exec (surp 210 avrg-tv-late-variance-start) $variance-start-p $variance-start-t))))
+        (+ (exec (surp s210 avrg-tv-late-variance-start) $variance-start-p $variance-start-t))))
 
 
 (DEF avrg-tv-late-variance-start
@@ -484,7 +484,7 @@
        (DEF avrg-tv-late-variance-step $variance-p $variance-t))
     (O
         (+ (avrg-tv-late-variance-acc $tv-list $tv-list $mean 0.0))
-        (+ (exec (surp 211 avrg-tv-late-variance-step) $variance-p $variance-t))))
+        (+ (exec (surp s211 avrg-tv-late-variance-step) $variance-p $variance-t))))
 
 
 (DEF avrg-tv-late-variance-step
@@ -501,7 +501,7 @@
             (cdr-atom (' $remaining)))
         (- (avrg-tv-late-variance-acc $tv-list $remaining $mean $sum))
         (+ (avrg-tv-late-variance-pending $tv-list $remaining $mean $sum))
-        (+ (exec (surp 212 avrg-tv-late-variance-resolve) $resolve-p $resolve-t))))
+        (+ (exec (surp s212 avrg-tv-late-variance-resolve) $resolve-p $resolve-t))))
 
 
 (DEF avrg-tv-late-variance-resolve
@@ -529,7 +529,7 @@
         (- (avrg-tv-late-variance-pending $tv-list $remaining $mean $sum))
         (- (avrg-tv-late-variance-current $tv-list $remaining $tv))
         (- (avrg-tv-late-variance-rest $tv-list $remaining $rest))
-        (+ (exec (surp 213 avrg-tv-late-variance-continue) $continue-p $continue-t))))
+        (+ (exec (surp s213 avrg-tv-late-variance-continue) $continue-p $continue-t))))
 
 
 (DEF avrg-tv-late-variance-continue
@@ -539,8 +539,8 @@
     (O
         (- (avrg-tv-late-variance-next-sum $tv-list $rest $mean $next-sum))
         (+ (avrg-tv-late-variance-acc $tv-list $rest $mean $next-sum))
-        (+ (exec (surp 211 avrg-tv-late-variance-final) $final-p $final-t))
-        (+ (exec (surp 212 avrg-tv-late-variance-step) $step-p $step-t))))
+        (+ (exec (surp s211 avrg-tv-late-variance-final) $final-p $final-t))
+        (+ (exec (surp s212 avrg-tv-late-variance-step) $step-p $step-t))))
 
 
 (DEF avrg-tv-late-variance-final
@@ -556,7 +556,7 @@
                     (f64_from_string $sum)
                     (f64_from_string $count))))
         (- (avrg-tv-late-variance-acc $tv-list () $mean $sum))
-        (+ (exec (surp 214 avrg-tv-late-stv-alpha-beta) $stv-p $stv-t))))
+        (+ (exec (surp s214 avrg-tv-late-stv-alpha-beta) $stv-p $stv-t))))
 
 
 (DEF avrg-tv-late-stv-alpha-beta
@@ -595,7 +595,7 @@
                                     (f64_from_string $mean)))
                             (f64_from_string $variance))
                         (f64_from_string 1.0)))))
-        (+ (exec (surp 215 avrg-tv-late-stv-confidence) $confidence-p $confidence-t))))
+        (+ (exec (surp s215 avrg-tv-late-stv-confidence) $confidence-p $confidence-t))))
 
 
 (DEF avrg-tv-late-stv-confidence
@@ -624,7 +624,7 @@
                                 (f64_from_string 2.0))
                             (f64_from_string 0.1))
                         (f64_from_string 800.0)))))
-        (+ (exec (surp 216 avrg-tv-late-stv-mode) $mode-p $mode-t))))
+        (+ (exec (surp s216 avrg-tv-late-stv-mode) $mode-p $mode-t))))
 
 
 (DEF avrg-tv-late-stv-mode
@@ -660,10 +660,10 @@
                             (f64_from_string $alpha)
                             (f64_from_string $beta))
                         (f64_from_string 2.0)))))
-        (+ (exec (surp 217 avrg-tv-late-final-normal) $normal-p $normal-t))
-        (+ (exec (surp 217 avrg-tv-late-final-edge-alpha) $edge-alpha-p $edge-alpha-t))
-        (+ (exec (surp 217 avrg-tv-late-final-edge-beta) $edge-beta-p $edge-beta-t))
-        (+ (exec (surp 217 avrg-tv-late-final-edge-both) $edge-both-p $edge-both-t))))
+        (+ (exec (surp s217 avrg-tv-late-final-normal) $normal-p $normal-t))
+        (+ (exec (surp s217 avrg-tv-late-final-edge-alpha) $edge-alpha-p $edge-alpha-t))
+        (+ (exec (surp s217 avrg-tv-late-final-edge-beta) $edge-beta-p $edge-beta-t))
+        (+ (exec (surp s217 avrg-tv-late-final-edge-both) $edge-both-p $edge-both-t))))
 
 
 (DEF avrg-tv-late-final-normal

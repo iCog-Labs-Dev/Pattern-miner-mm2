@@ -1,0 +1,113 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; pro-prob-wout-joint
+;;
+;; Source PeTTa function:
+;;
+;;   (pro-prob-wout-joint $partition $db $db_ratio 1)
+;;
+;; Source meaning:
+;;
+;;   For each block in a partition:
+;;
+;;     empirical probability(block) = support(block) / universe-count(block)
+;;
+;;   Then multiply the block probabilities together while ignoring joint
+;;   variable dependencies. Joint-variable correction is handled separately by
+;;   `eq-prob`.
+;;
+;; MM2 public result:
+;;
+;;   (pro-prob-wout-joint-of $pattern $partition $prob)
+;;
+;; Required input facts:
+;;
+;;   (INPUT DB-SIZE $db-size)
+;;   (partition $pattern $partition)
+;;   (block-support $pattern $partition $block $support)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(exec (surp s080 pro-block-universe)
+    (, (INPUT DB-SIZE $db-size)
+       (block-support $pattern $partition $block $support))
+    (O
+        (pure
+            (pro-block-size $pattern $partition $block $size)
+            $size
+            (size-atom (' $block))
+        )
+        (pure
+            (pro-block-universe-count $pattern $partition $block $universe-count)
+            $universe-count
+            (i64_to_string
+                (pow_i64
+                    (i64_from_string $db-size)
+                    (i64_from_string
+                        (size-atom (' $block))))))))
+
+
+(exec (surp s081 pro-block-prob)
+    (, (block-support $pattern $partition $block $support)
+       (pro-block-universe-count $pattern $partition $block $universe-count))
+    (O
+        (pure
+            (pro-block-prob $pattern $partition $block $prob)
+            $prob
+            (f64_to_string
+                (div_f64
+                    (f64_from_string $support)
+                    (f64_from_string $universe-count))))))
+
+
+(exec (surp s082 pro-partition-start)
+    (, (partition $pattern $partition)
+       (DEF pro-partition-step $step-p $step-t))
+    (O
+        (+ (pro-partition-acc $pattern $partition $partition 1.0))
+        (+ (exec (surp s083 pro-partition-step) $step-p $step-t))))
+
+
+(DEF pro-partition-step
+    (, (pro-partition-acc $pattern $partition $remaining $acc)
+       (DEF pro-partition-resolve $resolve-p $resolve-t))
+    (O
+        (pure
+            (pro-partition-current $pattern $partition $remaining $block)
+            $block
+            (car-atom (' $remaining)))
+        (pure
+            (pro-partition-rest $pattern $partition $remaining $rest)
+            $rest
+            (cdr-atom (' $remaining)))
+        (- (pro-partition-acc $pattern $partition $remaining $acc))
+        (+ (pro-partition-pending $pattern $partition $remaining $acc))
+        (+ (exec (surp s084 pro-partition-resolve) $resolve-p $resolve-t))))
+
+
+(DEF pro-partition-resolve
+    (, (pro-partition-pending $pattern $partition $remaining $acc)
+       (pro-partition-current $pattern $partition $remaining $block)
+       (pro-partition-rest $pattern $partition $remaining $rest)
+       (pro-block-prob $pattern $partition $block $block-prob)
+       (DEF pro-partition-step $step-p $step-t)
+       (DEF pro-partition-final $final-p $final-t))
+    (O
+        (pure
+            (pro-partition-acc $pattern $partition $rest $new-acc)
+            $new-acc
+            (f64_to_string
+                (product_f64
+                    (f64_from_string $acc)
+                    (f64_from_string $block-prob))))
+        (- (pro-partition-pending $pattern $partition $remaining $acc))
+        (- (pro-partition-current $pattern $partition $remaining $block))
+        (- (pro-partition-rest $pattern $partition $remaining $rest))
+        (+ (exec (surp s082 pro-partition-final) $final-p $final-t))
+        (+ (exec (surp s083 pro-partition-step) $step-p $step-t))))
+
+
+(DEF pro-partition-final
+    (, (pro-partition-acc $pattern $partition () $prob))
+    (O
+        (- (pro-partition-acc $pattern $partition () $prob))
+        (+ (pro-prob-wout-joint-of $pattern $partition $prob))))
