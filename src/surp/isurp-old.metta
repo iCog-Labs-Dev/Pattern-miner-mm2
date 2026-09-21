@@ -154,52 +154,133 @@
                     (f64_from_string $support)
                     (f64_from_string $total-count))))))
 
-;; Current partition shapes have either two or three blocks.
-(exec (surp s110 product-2)
-    (, (partition $ctx ($b1 $b2))
-       (block-prob $ctx ($b1 $b2) $b1 $p1)
-       (block-prob $ctx ($b1 $b2) $b2 $p2))
+;; Walk every block in a partition and multiply its block probabilities.  This
+;; keeps the legacy path independent from a fixed number of blocks.
+(exec (surp s110 product-start)
+    (, (partition $ctx $partition)
+       (DEF isurp-old-product-step $step-p $step-t))
+    (O
+        (+ (partition-product-acc $ctx $partition $partition 1.0))
+        (+ (exec (surp s111 isurp-old-product-step) $step-p $step-t))))
+
+(DEF isurp-old-product-step
+    (, (partition-product-acc $ctx $partition $remaining $acc)
+       (DEF isurp-old-product-resolve $resolve-p $resolve-t))
     (O
         (pure
-            (partition-product $ctx ($b1 $b2) $product)
-            $product
-            (f64_to_string
-                (product_f64
-                    (f64_from_string $p1)
-                    (f64_from_string $p2))))))
+            (partition-product-current $ctx $partition $remaining $block)
+            $block
+            (car-atom (' $remaining)))
+        (pure
+            (partition-product-rest $ctx $partition $remaining $rest)
+            $rest
+            (cdr-atom (' $remaining)))
+        (- (partition-product-acc $ctx $partition $remaining $acc))
+        (+ (partition-product-pending $ctx $partition $remaining $acc))
+        (+ (exec (surp s112 isurp-old-product-resolve) $resolve-p $resolve-t))))
 
-(exec (surp s111 product-3)
-    (, (partition $ctx ($b1 $b2 $b3))
-       (block-prob $ctx ($b1 $b2 $b3) $b1 $p1)
-       (block-prob $ctx ($b1 $b2 $b3) $b2 $p2)
-       (block-prob $ctx ($b1 $b2 $b3) $b3 $p3))
+(DEF isurp-old-product-resolve
+    (, (partition-product-pending $ctx $partition $remaining $acc)
+       (partition-product-current $ctx $partition $remaining $block)
+       (partition-product-rest $ctx $partition $remaining $rest)
+       (block-prob $ctx $partition $block $block-prob)
+       (DEF isurp-old-product-final $final-p $final-t)
+       (DEF isurp-old-product-step $step-p $step-t))
     (O
         (pure
-            (partition-product $ctx ($b1 $b2 $b3) $product)
-            $product
+            (partition-product-acc $ctx $partition $rest $new-acc)
+            $new-acc
             (f64_to_string
                 (product_f64
-                    (product_f64
-                        (f64_from_string $p1)
-                        (f64_from_string $p2))
-                    (f64_from_string $p3))))))
+                    (f64_from_string $acc)
+                    (f64_from_string $block-prob))))
+        (- (partition-product-pending $ctx $partition $remaining $acc))
+        (- (partition-product-current $ctx $partition $remaining $block))
+        (- (partition-product-rest $ctx $partition $remaining $rest))
+        (+ (exec (surp s110 isurp-old-product-final) $final-p $final-t))
+        (+ (exec (surp s111 isurp-old-product-step) $step-p $step-t))))
 
-;; Take [min, max] over the current three-conjunct partition products.
-(exec (surp s120 interval-bounds)
-    (, (indexed-pattern $ctx ($c1 $c2 $c3))
-       (partition-product $ctx (($c1) ($c2 $c3)) $p1)
-       (partition-product $ctx (($c1 $c3) ($c2)) $p2)
-       (partition-product $ctx (($c1 $c2) ($c3)) $p3)
-       (partition-product $ctx (($c1) ($c2) ($c3)) $p4))
+(DEF isurp-old-product-final
+    (, (partition-product-acc $ctx $partition () $product))
+    (O
+        (- (partition-product-acc $ctx $partition () $product))
+        (+ (partition-product $ctx $partition $product))))
+
+;; Collect all partition products and derive interval bounds.  The partition
+;; list is rebuilt from the indexed pattern so this works for any partition
+;; count produced by the helper.
+(exec (surp s120 interval-list-start)
+    (, (indexed-pattern $ctx $indexed-pattern)
+       (DEF isurp-old-interval-step $step-p $step-t))
+    (O
+        (pure
+            (partition-product-list-source $ctx $partitions)
+            $partitions
+            (partitions (' $indexed-pattern)))
+        (+ (exec (surp s121 isurp-old-interval-step) $step-p $step-t))))
+
+(DEF isurp-old-interval-step
+    (, (partition-product-list-source $ctx $remaining)
+       (DEF isurp-old-interval-resolve $resolve-p $resolve-t))
+    (O
+        (pure
+            (partition-product-list-current $ctx $remaining $partition)
+            $partition
+            (car-atom (' $remaining)))
+        (pure
+            (partition-product-list-rest $ctx $remaining $rest)
+            $rest
+            (cdr-atom (' $remaining)))
+        (- (partition-product-list-source $ctx $remaining))
+        (+ (partition-product-list-pending $ctx $remaining ()))
+        (+ (exec (surp s122 isurp-old-interval-resolve) $resolve-p $resolve-t))))
+
+(DEF isurp-old-interval-resolve
+    (, (partition-product-list-pending $ctx $remaining $products)
+       (partition-product-list-current $ctx $remaining $partition)
+       (partition-product-list-rest $ctx $remaining $rest)
+       (partition-product $ctx $partition $product)
+       (DEF isurp-old-interval-continue $continue-p $continue-t)
+       (DEF isurp-old-interval-final $final-p $final-t))
+    (O
+        (pure
+            (partition-product-list-source-with-products $ctx $rest $new-products)
+            $new-products
+            (append (' ($products ($product)))))
+        (- (partition-product-list-pending $ctx $remaining $products))
+        (- (partition-product-list-current $ctx $remaining $partition))
+        (- (partition-product-list-rest $ctx $remaining $rest))
+        (+ (exec (surp s120 isurp-old-interval-final) $final-p $final-t))
+        (+ (exec (surp s121 isurp-old-interval-continue) $continue-p $continue-t))))
+
+(DEF isurp-old-interval-continue
+    (, (partition-product-list-source-with-products $ctx $remaining $products)
+       (DEF isurp-old-interval-resolve $resolve-p $resolve-t))
+    (O
+        (pure
+            (partition-product-list-current $ctx $remaining $partition)
+            $partition
+            (car-atom (' $remaining)))
+        (pure
+            (partition-product-list-rest $ctx $remaining $rest)
+            $rest
+            (cdr-atom (' $remaining)))
+        (- (partition-product-list-source-with-products $ctx $remaining $products))
+        (+ (partition-product-list-pending $ctx $remaining $products))
+        (+ (exec (surp s122 isurp-old-interval-resolve) $resolve-p $resolve-t))))
+
+(DEF isurp-old-interval-final
+    (, (partition-product-list-source-with-products $ctx () $products))
     (O
         (pure
             (min-partition-product $ctx $min)
             $min
-            (min-atom (' ($p1 $p2 $p3 $p4))))
+            (min-atom (' $products)))
         (pure
             (max-partition-product $ctx $max)
             $max
-            (max-atom (' ($p1 $p2 $p3 $p4))))))
+            (max-atom (' $products)))
+        (- (partition-product-list-source-with-products $ctx () $products))))
 
 (exec (surp s130 interval-range)
     (, (min-partition-product $ctx $min)
@@ -322,6 +403,15 @@
         (cleanup $ctx (block-support $ctx $partition $block $support))
         (cleanup $ctx (block-prob $ctx $partition $block $prob))
         (cleanup $ctx (partition-product $ctx $partition $product))
+        (cleanup $ctx (partition-product-acc $ctx $partition $remaining $acc))
+        (cleanup $ctx (partition-product-current $ctx $partition $remaining $block))
+        (cleanup $ctx (partition-product-rest $ctx $partition $remaining $rest))
+        (cleanup $ctx (partition-product-pending $ctx $partition $remaining $acc))
+        (cleanup $ctx (partition-product-list-source $ctx $remaining))
+        (cleanup $ctx (partition-product-list-source-with-products $ctx $remaining $products))
+        (cleanup $ctx (partition-product-list-current $ctx $remaining $partition))
+        (cleanup $ctx (partition-product-list-rest $ctx $remaining $rest))
+        (cleanup $ctx (partition-product-list-pending $ctx $remaining $products))
         (cleanup $ctx (min-partition-product $ctx $min))
         (cleanup $ctx (max-partition-product $ctx $max))
         (cleanup $ctx (partition-product-range $ctx $min $max))
@@ -346,8 +436,6 @@
     (O
         (- (cleanup $ctx $fact))
         ))
-
-
 
 
 
