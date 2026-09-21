@@ -40,6 +40,13 @@
         (+ (exec (surp s001 materialize-surp-inputs) $input-p $input-t))
         (+ (exec (surp s930 collect-surp-result) $result-p $result-t))))
 
+;; Frequency-only runs do not prepare scoring inputs or run a result adapter.
+(DEF do-surp-fn
+    (, (do-surp)
+       (INPUT SURP-MODE none))
+    (O
+        (- (do-surp))))
+
 
 ;; The frequent miner publishes only final-size expanded conjuncts.
 (DEF do-surp-input-fn

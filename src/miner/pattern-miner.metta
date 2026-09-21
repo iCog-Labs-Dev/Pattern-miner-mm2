@@ -14,14 +14,16 @@
 ;;
 ;; Surprisingness configuration is owned by `src/surp/surp.metta`.
 ;;
-;; Public surprisingness result:
+;; Public frequency-only result (INPUT SURP-MODE none):
+;;   (frequent-pattern $pattern $support)
+;; Public scored result:
 ;;   (frequent-with-surprisingness $pattern-id $pattern $support $score)
 
 (DEF pattern-miner-fn
   (, (run-pattern-miner $root-pattern)
      (DEF frequent-pattern-miner-fn $freq-p $freq-t)
      (DEF do-surp-fn $surp-p $surp-t)
-     (DEF collect-surp $collect-p $collect-t))
+     (DEF collect-pattern-miner-result $collect-p $collect-t))
   (O
     (- (run-pattern-miner $root-pattern))
     (+ (run-frequent-pattern-miner pattern-miner $root-pattern))
@@ -31,14 +33,24 @@
         (O (+ (FACT $root-pattern)))))
     (+ (exec (freq f010 run-frequent-pattern-miner) $freq-p $freq-t))
     (+ (exec (surp s000 dispatch-surprisingness) $surp-p $surp-t))
-    (+ (exec (surp s940 collect-surp-results) $collect-p $collect-t))))
+    (+ (exec (surp s940 collect-pattern-miner-results) $collect-p $collect-t))))
 
-(DEF collect-surp
+(DEF collect-pattern-miner-result
   (, (expanded-conjunct $size $pattern-id $support)
      (surprisingness-of $mode $pattern-id $score))
   (O
     (pure
       (frequent-with-surprisingness $pattern-id $pattern $support $score)
+      $pattern
+      (indices_to_vars
+        (cons , (' $pattern-id))))))
+
+(DEF collect-pattern-miner-result
+  (, (INPUT SURP-MODE none)
+     (expanded-conjunct $size $pattern-id $support))
+  (O
+    (pure
+      (frequent-pattern $pattern $support)
       $pattern
       (indices_to_vars
         (cons , (' $pattern-id))))))
