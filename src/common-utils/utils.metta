@@ -29,10 +29,9 @@
             (exec $priority
                 $query
                 (O
-                    (count
+                    (count-fast
                         ($out $context $candidate $support)
-                        $support
-                        $query)))
+                        $support)))
             $query
             (indices_to_vars
                 (cons , (' $candidate))))
@@ -78,10 +77,9 @@
             (exec $priority
                 $query
                 (O
-                    (count
+                    (count-fast
                         (support-cache $candidate $support)
-                        $support
-                        $query)
+                        $support)
                     (- (support-cache $candidate 0))))
             $query
             (indices_to_vars
@@ -142,10 +140,9 @@
             (exec $count-priority
                 $query
                 (O
-                    (count
+                    (count-fast
                         ($out $context $candidate $support)
-                        $support
-                        $query)
+                        $support)
                     (- ($out $context $candidate 0))))
             $query
             (indices_to_vars
