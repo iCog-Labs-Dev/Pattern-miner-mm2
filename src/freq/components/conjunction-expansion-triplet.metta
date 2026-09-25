@@ -424,6 +424,7 @@
         (ce-candidate $old-size $candidate)
         $old-size $candidate -> ce-candidate-size)
       $size-p $size-t)
+     (DEF ce-schedule-abstract-check-fn $abstract-p $abstract-t)
      (DEF ce-candidate-pass-fn $pass-p $pass-t)
      (DEF ce-queue-candidate-fn $queue-p $queue-t)
      ((drop-matched (ce-candidate-pass $candidate $size false) -> removed)
@@ -431,9 +432,125 @@
   (O
     (+ (exec (freq f501 canonicalize-candidate) $canonical-p $canonical-t))
     (+ (exec (freq f510 candidate-size) $size-p $size-t))
+    (+ (exec (freq f511 schedule-abstract-check) $abstract-p $abstract-t))
     (+ (exec (freq f520 check-candidate) $pass-p $pass-t))
     (+ (exec (freq f530 queue-candidate) $queue-p $queue-t))
     (+ (exec (freq f531 drop-candidate) $drop-p $drop-t))))
+
+;; A variable-only clause is redundant when its left variable is covered by
+;; another clause with the same predicate and left variable, and its right
+;; variable is covered by a third clause with the same predicate and right
+;; variable. The other slots may be variables or constants: fixing either
+;; shared variable makes the candidate clause at least as abstract as its
+;; witness. This is the flat-triplet case of the old miner's per-variable
+;; abstract-clause check. Each of the six rules covers one ordering of the
+;; three clauses in the canonical list.
+;;
+;; Reject the entire candidate before support counting. Removing the clause
+;; and continuing would publish a smaller pattern at the requested size.
+(DEF ce-drop-abstract-0-lr-fn
+  (, (ce-candidate-size $old-size
+       (($predicate (var $x) (var $y))
+        ($predicate (var $x) $left-other)
+        ($predicate $right-other (var $y))) 3))
+  (O (pure
+       (ce-abstract-check $old-size
+         (($predicate (var $x) (var $y))
+          ($predicate (var $x) $left-other)
+          ($predicate $right-other (var $y))) $distinct)
+       $distinct
+       (ne_i32 (i32_from_string $x) (i32_from_string $y)))))
+
+(DEF ce-drop-abstract-0-rl-fn
+  (, (ce-candidate-size $old-size
+       (($predicate (var $x) (var $y))
+        ($predicate $right-other (var $y))
+        ($predicate (var $x) $left-other)) 3))
+  (O (pure
+       (ce-abstract-check $old-size
+         (($predicate (var $x) (var $y))
+          ($predicate $right-other (var $y))
+          ($predicate (var $x) $left-other)) $distinct)
+       $distinct
+       (ne_i32 (i32_from_string $x) (i32_from_string $y)))))
+
+(DEF ce-drop-abstract-1-lr-fn
+  (, (ce-candidate-size $old-size
+       (($predicate (var $x) $left-other)
+        ($predicate (var $x) (var $y))
+        ($predicate $right-other (var $y))) 3))
+  (O (pure
+       (ce-abstract-check $old-size
+         (($predicate (var $x) $left-other)
+          ($predicate (var $x) (var $y))
+          ($predicate $right-other (var $y))) $distinct)
+       $distinct
+       (ne_i32 (i32_from_string $x) (i32_from_string $y)))))
+
+(DEF ce-drop-abstract-1-rl-fn
+  (, (ce-candidate-size $old-size
+       (($predicate $right-other (var $y))
+        ($predicate (var $x) (var $y))
+        ($predicate (var $x) $left-other)) 3))
+  (O (pure
+       (ce-abstract-check $old-size
+         (($predicate $right-other (var $y))
+          ($predicate (var $x) (var $y))
+          ($predicate (var $x) $left-other)) $distinct)
+       $distinct
+       (ne_i32 (i32_from_string $x) (i32_from_string $y)))))
+
+(DEF ce-drop-abstract-2-lr-fn
+  (, (ce-candidate-size $old-size
+       (($predicate (var $x) $left-other)
+        ($predicate $right-other (var $y))
+        ($predicate (var $x) (var $y))) 3))
+  (O (pure
+       (ce-abstract-check $old-size
+         (($predicate (var $x) $left-other)
+          ($predicate $right-other (var $y))
+          ($predicate (var $x) (var $y))) $distinct)
+       $distinct
+       (ne_i32 (i32_from_string $x) (i32_from_string $y)))))
+
+(DEF ce-drop-abstract-2-rl-fn
+  (, (ce-candidate-size $old-size
+       (($predicate $right-other (var $y))
+        ($predicate (var $x) $left-other)
+        ($predicate (var $x) (var $y))) 3))
+  (O (pure
+       (ce-abstract-check $old-size
+         (($predicate $right-other (var $y))
+          ($predicate (var $x) $left-other)
+          ($predicate (var $x) (var $y))) $distinct)
+       $distinct
+       (ne_i32 (i32_from_string $x) (i32_from_string $y)))))
+
+(DEF ce-drop-abstract-checked-fn
+  (, (ce-abstract-check $old-size $candidate true)
+     (ce-candidate-size $old-size $candidate 3))
+  (O (- (ce-candidate-size $old-size $candidate 3))))
+
+(DEF ce-schedule-abstract-check-fn
+  (, (ce-candidate-size $old-size $candidate $size)
+     (DEF ce-drop-abstract-0-lr-fn $a-p $a-t)
+     (DEF ce-drop-abstract-0-rl-fn $b-p $b-t)
+     (DEF ce-drop-abstract-1-lr-fn $c-p $c-t)
+     (DEF ce-drop-abstract-1-rl-fn $d-p $d-t)
+     (DEF ce-drop-abstract-2-lr-fn $e-p $e-t)
+     (DEF ce-drop-abstract-2-rl-fn $f-p $f-t)
+     (DEF ce-drop-abstract-checked-fn $drop-p $drop-t)
+     ((drop-matched (ce-abstract-check $old-size $candidate $distinct)
+       -> removed) $clean-p $clean-t))
+  (O
+    (+ (exec (freq f515 drop-abstract-0-lr) $a-p $a-t))
+    (+ (exec (freq f515 drop-abstract-0-rl) $b-p $b-t))
+    (+ (exec (freq f515 drop-abstract-1-lr) $c-p $c-t))
+    (+ (exec (freq f515 drop-abstract-1-rl) $d-p $d-t))
+    (+ (exec (freq f515 drop-abstract-2-lr) $e-p $e-t))
+    (+ (exec (freq f515 drop-abstract-2-rl) $f-p $f-t))
+    (+ (exec (freq f516 reject-abstract-candidate) $drop-p $drop-t))
+    (+ (exec (freq f517 cleanup-abstract-check) $clean-p $clean-t))))
 
 (DEF ce-candidate-pass-fn
   (, (ce-candidate-size $old-size $candidate $size)

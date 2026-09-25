@@ -63,6 +63,11 @@ expected_results() {
   sed -n 's/^[[:space:]]*(EXPECTED-RESULT[[:space:]]\{1,\}\([^[:space:])][^[:space:])]*\)[[:space:]]\{1,\}\(.*\))[[:space:]]*$/\1 \2/p' "$case_file"
 }
 
+absent_results() {
+  local case_file="$1"
+  sed -n 's/^;; TEST-ABSENT[[:space:]]\{1,\}//p' "$case_file"
+}
+
 test_modes() {
   local case_file="$1"
   sed -n 's/^;; TEST-MODE[[:space:]]\{1,\}//p' "$case_file"
@@ -122,6 +127,16 @@ run_case_mode() {
       return
     fi
   done < <(mode_expected_results "$case_file" "$mode")
+
+  while IFS= read -r absent || [[ -n "$absent" ]]; do
+    if grep -Fx -- "$absent" "$out_file" >/dev/null; then
+      echo "FAIL ${rel_case}[${mode}]"
+      echo "  unexpected fact: $absent"
+      echo "  output: $out_file"
+      failures=$((failures + 1))
+      return
+    fi
+  done < <(absent_results "$case_file")
 
   if [[ "$expected_count" -eq 0 ]]; then
     echo "FAIL ${rel_case}[${mode}]"
@@ -201,6 +216,16 @@ run_case() {
       return
     fi
   done < <(expected_results "$case_file")
+
+  while IFS= read -r absent || [[ -n "$absent" ]]; do
+    if grep -Fx -- "$absent" "$out_file" >/dev/null; then
+      echo "FAIL $rel_case"
+      echo "  unexpected fact: $absent"
+      echo "  output: $out_file"
+      failures=$((failures + 1))
+      return
+    fi
+  done < <(absent_results "$case_file")
 
   if [[ "$expected_count" -eq 0 ]]; then
     echo "FAIL $rel_case"
