@@ -121,6 +121,13 @@ new size > old size
 
 The growth check rejects a union when the selected base was already present.
 
+Before a three-clause candidate is queued, the miner checks for an abstract
+variable-only clause. If its two distinct variables are each covered by a
+different clause with the same predicate and variable in the same slot, the
+whole candidate is rejected. For example, in `(Inheritance $x $y)`,
+`(Inheritance $x man)`, `(Inheritance $z $y)`, the first clause is covered by
+the other two. This check runs before support counting and publication.
+
 ## Connected Variants
 
 For a current conjunction containing `(var 0)` and `(var 1)`, the next fresh
