@@ -1,3 +1,6 @@
+Failed to create stream fd: Operation not permitted
+Failed to create stream fd: Operation not permitted
+Failed to create stream fd: Operation not permitted
 ;; One-generation frequent candidate miner.
 ;;
 ;; Inputs:
@@ -1184,15 +1187,31 @@
            (+ (hne-check $atom-id $atom-parent-tail $atom-candidate-tail))
            (+ (exec (freq f800 hne-step) $step-p $step-t)))))))
 
+(DEF has-nested-expression-start
+  (, (hne-start-parent-var $id $parent $candidate $is-parent-var)
+     (DEF has-nested-expression-step $step-p $step-t))
+  (O
+    (+ (exec (freq f799 hne-start-var-parent)
+         (, (hne-start-parent-var $var-id $parent $candidate 1))
+         (O (- (hne-start-parent-var $var-id $parent $candidate 1))
+            (+ (hne-check $var-id ($parent) ($candidate)))
+            (+ (exec (freq f800 hne-step) $step-p $step-t)))))
+    (+ (exec (freq f799 hne-start-expression-parent)
+         (, (hne-start-parent-var $expr-id $parent $candidate 0))
+         (O (- (hne-start-parent-var $expr-id $parent $candidate 0))
+            (+ (hne-check $expr-id $parent $candidate))
+            (+ (exec (freq f800 hne-step) $step-p $step-t)))))))
+
 (DEF has-nested-expression-with-respect-to-fn
   (, (has-nested-expression-with-respect-to $id $parent $candidate)
-     (DEF has-nested-expression-step $step-p $step-t))
+     (DEF has-nested-expression-start $start-p $start-t))
   (O
     (- (has-nested-expression-with-respect-to $id $parent $candidate))
     (+ (hne-active $id))
     (+ (hne-top $id $parent $candidate))
-    (+ (hne-check $id $parent $candidate))
-    (+ (exec (freq f800 hne-step) $step-p $step-t))))
+    (pure (hne-start-parent-var $id $parent $candidate $is-parent-var)
+      $is-parent-var (i8_to_string (is_var (' $parent))))
+    (+ (exec (freq f799 hne-start) $start-p $start-t))))
 
 ; Remove HNE scratch facts after an iterative candidate has been checked.
 ; The positive result is intentionally kept for the iterator continuation stage.
@@ -1211,7 +1230,8 @@
     (+ (hne-cleanup-target (hne-candidate-tail $id $parent $candidate $candidate-tail)))
     (+ (hne-cleanup-target (hne-parent-head-var $id $parent $candidate $parent-head $is-parent-var)))
     (+ (hne-cleanup-target (hne-parent-head-exp $id $parent $candidate $parent-head $is-parent-exp)))
-    (+ (hne-cleanup-target (hne-candidate-head-exp $id $parent $candidate $candidate-head $is-candidate-exp)))))
+    (+ (hne-cleanup-target (hne-candidate-head-exp $id $parent $candidate $candidate-head $is-candidate-exp)))
+    (+ (hne-cleanup-target (hne-start-parent-var $id $parent $candidate $is-parent-var)))))
 
 (DEF hne-cleanup-target-fn
   (, (hne-cleanup-target $fact) $fact)
@@ -1252,7 +1272,8 @@
   (, (iter-parent $id $parent $indexed-parent $miner-id)
      (candidate-pattern $miner-id $candidate $support)
      (DEF has-nested-expression-with-respect-to-fn $hne-p $hne-t)
-     (DEF iterative-miner-continue-fn $continue-p $continue-t)
+     (DEF iterative-depth-collect-fn $collect-p $collect-t)
+     (DEF iterative-subsumes-check-fn $subsumes-p $subsumes-t)
      (DEF hne-cleanup-fn $cleanup-p $cleanup-t))
   (O
     (- (candidate-pattern $miner-id $candidate $support))
@@ -1261,18 +1282,47 @@
       (HNE $miner-id $candidate) $indexed-parent $candidate))
     (+ (hne-cleanup (HNE $miner-id $candidate)))
     (+ (exec (freq f900 iterative-check-depth) $hne-p $hne-t))
-    (+ (exec (freq f950 iterative-continue) $continue-p $continue-t))
+    (+ (exec (freq f940 iterative-collect-depth) $collect-p $collect-t))
+    (+ (exec (freq f950 iterative-subsumes-check) $subsumes-p $subsumes-t))
     (+ (exec (freq f960 iterative-hne-cleanup) $cleanup-p $cleanup-t))))
+
+(DEF iterative-depth-collect-fn
+  (, (iter-parent $id $parent $indexed-parent $miner-id)
+     (iterative-candidate-pattern $id $parent $candidate $support)
+     (has-nested-expression-result
+       (HNE $miner-id $candidate) $indexed-parent $candidate true))
+  (O
+    (- (has-nested-expression-result
+      (HNE $miner-id $candidate) $indexed-parent $candidate true))
+    (+ (iterative-depth-candidate $id $parent $indexed-parent $miner-id $candidate $support))))
+
+(DEF iterative-subsumes-check-fn
+  (, (iterative-depth-candidate $id $parent $indexed-parent $miner-id $general $support)
+     (iterative-depth-candidate $id $parent $indexed-parent $miner-id $specific $specific-support)
+     (DEF iterative-subsumes-prune-fn $prune-p $prune-t))
+  (O
+    (pure (iterative-subsumes-result $id $parent $indexed-parent $miner-id $general $support $out) $out
+      (i8_to_string (not_subsumed (' ($general $specific)))))
+    (+ (exec (freq f951 iterative-subsumes-prune) $prune-p $prune-t))))
+
+(DEF iterative-subsumes-prune-fn
+  (, (DEF iterative-miner-continue-fn $continue-p $continue-t))
+  (O
+    (+ (exec (freq f952 iterative-prune-mixed)
+         (, (iterative-subsumes-result $id $parent $indexed-parent $miner-id $candidate $support 1)
+            (iterative-subsumes-result $id $parent $indexed-parent $miner-id $candidate $support 0))
+         (O
+           (- (iterative-subsumes-result $id $parent $indexed-parent $miner-id $candidate $support 1))
+           (- (iterative-subsumes-result $id $parent $indexed-parent $miner-id $candidate $support 0)))))
+    (+ (exec (freq f953 iterative-continue) $continue-p $continue-t))))
 
 (DEF iterative-miner-continue-fn
   (, (iter-parent $id $parent $indexed-parent $miner-id)
      (iterative-candidate-pattern $id $parent $candidate $support)
-     (has-nested-expression-result
-       (HNE $miner-id $candidate) $indexed-parent $candidate true)
+     (iterative-subsumes-result $id $parent $indexed-parent $miner-id $candidate $support 1)
      (DEF iterative-miner-fn $iter-p $iter-t))
   (O
-    (- (has-nested-expression-result
-      (HNE $miner-id $candidate) $indexed-parent $candidate true))
+    (- (iterative-subsumes-result $id $parent $indexed-parent $miner-id $candidate $support 1))
     (+ (iterative-recursive-candidate $id $parent $candidate $support))
     (pure (run-iterative-miner $id $next-pattern) $next-pattern
       (indices_to_vars (' $candidate)))
