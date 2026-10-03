@@ -6,12 +6,12 @@
 
 (run-specialization spec-test (Inheritance $x $y))
 
-(shallow-abstraction-binding spec-test (root (arg 1)) (var 0) Allen)
-(shallow-abstraction-binding spec-test (root (arg 1)) (var 0) Lily)
-(shallow-abstraction-binding spec-test (root (arg 1)) (var 0) (var 0))
-(shallow-abstraction-binding spec-test (root (arg 2)) (var 1) human)
-(shallow-abstraction-binding spec-test (root (arg 2)) (var 1) sodaDrinker)
-(shallow-abstraction-binding spec-test (root (arg 2)) (var 1) (var 1))
+(shallow-abstraction-binding spec-test (root arg/1) (var 0) Allen)
+(shallow-abstraction-binding spec-test (root arg/1) (var 0) Lily)
+(shallow-abstraction-binding spec-test (root arg/1) (var 0) (var 0))
+(shallow-abstraction-binding spec-test (root arg/2) (var 1) human)
+(shallow-abstraction-binding spec-test (root arg/2) (var 1) sodaDrinker)
+(shallow-abstraction-binding spec-test (root arg/2) (var 1) (var 1))
 
 (exec (freq f000 call-specialization-combinations)
   (, (run-specialization spec-test (Inheritance $x $y))

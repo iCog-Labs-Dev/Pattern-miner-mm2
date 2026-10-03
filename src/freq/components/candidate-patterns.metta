@@ -1,3 +1,6 @@
+Failed to create stream fd: Operation not permitted
+Failed to create stream fd: Operation not permitted
+Failed to create stream fd: Operation not permitted
 ;; One-generation frequent candidate miner.
 ;;
 ;; Inputs:
@@ -30,8 +33,8 @@
             (DEF gv-expand $expand-p $expand-t))
          (O
            (- (gv-var-check $split-id $split-path ($a $b) 0))
-           (+ (gv-visit $split-id ($split-path (arg 0)) $a))
-           (+ (gv-visit $split-id ($split-path (arg 1)) $b))
+           (+ (gv-visit $split-id ($split-path arg/0) $a))
+           (+ (gv-visit $split-id ($split-path arg/1) $b))
            (+ (exec (freq f020 gv-expand) $expand-p $expand-t)))))
 
     (+ (exec (freq f032 gv-split-triplet)
@@ -39,9 +42,9 @@
             (DEF gv-expand $expand-p $expand-t))
          (O
            (- (gv-var-check $split-id $split-path ($a $b $c) 0))
-           (+ (gv-visit $split-id ($split-path (arg 0)) $a))
-           (+ (gv-visit $split-id ($split-path (arg 1)) $b))
-           (+ (gv-visit $split-id ($split-path (arg 2)) $c))
+           (+ (gv-visit $split-id ($split-path arg/0) $a))
+           (+ (gv-visit $split-id ($split-path arg/1) $b))
+           (+ (gv-visit $split-id ($split-path arg/2) $c))
            (+ (exec (freq f020 gv-expand) $expand-p $expand-t)))))
 
     (+ (exec (freq f039 gv-discard-non-var)
@@ -79,9 +82,9 @@
 ;
 ; Recursive positional lookup. It walks only the requested path:
 ;   root                      -> the whole expression
-;   ($parent (arg 0))         -> first child of value at $parent
-;   ($parent (arg 1))         -> second child of value at $parent
-;   ($parent (arg 2))         -> third child of value at $parent
+;   ($parent arg/0)           -> first child of value at $parent
+;   ($parent arg/1)           -> second child of value at $parent
+;   ($parent arg/2)           -> third child of value at $parent
 ;
 ; Request:
 ;   (get-value-at-position $id $expr $path)
@@ -94,17 +97,27 @@
 ;   (gap-wait $id $path $parent $arg)
 ;   (gap-value $id $path $value)
 
+(gap-arg-index arg/0 0)
+(gap-arg-index arg/1 1)
+(gap-arg-index arg/2 2)
+; Accept the short-lived optimized encoding too, so external callers can
+; migrate independently while the miner continues to publish its legacy paths.
+(gap-arg-index (arg 0) 0)
+(gap-arg-index (arg 1) 1)
+(gap-arg-index (arg 2) 2)
+
 (DEF get-value-at-position-select
   (, (gap-value $id $parent $parent-value))
   (O
     ; Keep variables in generated nested rules distinct from the outer rule.
     ; Otherwise substitution can capture them and multiply the join work.
     (+ (exec (freq f130 gap-select-by-index)
-         (, (gap-wait $sel-id $path $sel-parent (arg $index))
+         (, (gap-wait $sel-id $path $sel-parent $arg)
             (gap-value $sel-id $sel-parent $sel-parent-value)
+            (gap-arg-index $arg $index)
             (DEF get-value-at-position-select $select-p $select-t))
          (O
-           (- (gap-wait $sel-id $path $sel-parent (arg $index)))
+           (- (gap-wait $sel-id $path $sel-parent $arg))
            (- (gap-value $sel-id $sel-parent $sel-parent-value))
            (pure (gap-value $sel-id $path $value) $value
              (index-atom $index (' $sel-parent-value)))
@@ -132,11 +145,11 @@
            (+ (exec (freq f120 gap-select) $select-p $select-t)))))
 
     (+ (exec (freq f111 gap-descend)
-         (, (gap-task $desc-id $desc-expr ($parent (arg $index)))
+         (, (gap-task $desc-id $desc-expr ($parent $arg))
             (DEF get-value-at-position-step $step-p $step-t))
          (O
-           (- (gap-task $desc-id $desc-expr ($parent (arg $index))))
-           (+ (gap-wait $desc-id ($parent (arg $index)) $parent (arg $index)))
+           (- (gap-task $desc-id $desc-expr ($parent $arg)))
+           (+ (gap-wait $desc-id ($parent $arg) $parent $arg))
            (+ (gap-task $desc-id $desc-expr $parent))
            (+ (exec (freq f100 gap-step) $step-p $step-t)))))
   )
@@ -210,27 +223,26 @@
      (get-vars-for-tree-result (VAL-VARS $id) $path $var)
      (DEF get-value-at-position-fn $gap-p $gap-t))
   (O
-    (+ (gap-valuation-binding (VAL-VALUE $id $candidate-expr $path)
-         $id
-         $path
-         $var))
-    (+ (get-value-at-position (VAL-VALUE $id $candidate-expr $path)
-         $candidate-expr
-         $path))
     (- (get-vars-for-tree-result (VAL-VARS $id) $path $var))
     (- (valuation-satisfying-set $id $candidate-expr))
-    (+ (exec (freq f231 valuation-get-value) $gap-p $gap-t)))
-)
+    (+ (valuation-position-wait $id $candidate-expr $path $var))
+    (+ (get-value-at-position ($id $candidate-expr $path) $candidate-expr $path))
+    (+ (exec (freq f230 valuation-get-value) $gap-p $gap-t))))
+
+(DEF valuation-position-finish
+  (, (valuation-position-wait $id $candidate-expr $path $var)
+     (get-value-at-position-result ($id $candidate-expr $path) $path $value))
+  (O
+    (- (valuation-position-wait $id $candidate-expr $path $var))
+    (- (get-value-at-position-result ($id $candidate-expr $path) $path $value))
+    (+ (valuation-position-value $id $candidate-expr $path $var $value))))
 
 (DEF valuation-binding-finish
-  (, (gap-valuation-binding (VAL-VALUE $id $candidate-expr $path) $id $path $var)
-     (get-value-at-position-result (VAL-VALUE $id $candidate-expr $path) $path $value))
+  (, (valuation-position-value $id $candidate-expr $path $var $value))
   (O
-    (- (gap-valuation-binding (VAL-VALUE $id $candidate-expr $path) $id $path $var))
-    (- (get-value-at-position-result (VAL-VALUE $id $candidate-expr $path) $path $value))
+    (- (valuation-position-value $id $candidate-expr $path $var $value))
     (+ (valuation-binding $id $path $var $value))
-    (+ (valuation-binding $id $path $var $var)))
-)
+    (+ (valuation-binding $id $path $var $var))))
 
 ; Reusable valuation function.
 ;
@@ -245,13 +257,16 @@
      (DEF valuation-start $start-p $start-t)
      (DEF valuation-match $match-p $match-t)
      (DEF valuation-bind $bind-p $bind-t)
+     (DEF valuation-position-finish $position-p $position-t)
      (DEF valuation-binding-finish $finish-p $finish-t)
-     (DEF get-vars-for-tree-fn $gv-p $gv-t))
+     (DEF get-vars-for-tree-fn $gv-p $gv-t)
+     (DEF get-value-at-position-fn $gap-p $gap-t))
   (O
     (+ (exec (freq f200 valuation-start) $start-p $start-t))
     (+ (exec (freq f210 valuation-get-vars) $gv-p $gv-t))
     (+ (exec (freq f220 valuation-match) $match-p $match-t))
     (+ (exec (freq f230 valuation-bind) $bind-p $bind-t))
+    (+ (exec (freq f235 valuation-position-finish) $position-p $position-t))
     (+ (exec (freq f240 valuation-finish) $finish-p $finish-t)))
 )
 
@@ -458,21 +473,23 @@
      (DEF specialization-start-choice $choice-p $choice-t))
   (O
     (- (specialization-indexed-pattern $id $indexed-pattern))
+    (+ (specialization-template $id $indexed-pattern))
     (pure (specialization-root-is-var $id $indexed-pattern $is-var) $is-var
       (i8_to_string (is_var (' $indexed-pattern))))
     (+ (exec (freq f502 specialization-start-choice) $choice-p $choice-t))))
 
 (DEF specialization-start-choice
   (, (DEF specialization-extend $extend-p $extend-t)
-     (DEF specialization-finish $finish-p $finish-t))
+     (DEF specialization-finish $finish-p $finish-t)
+     (DEF specialization-proposal-fn $gate-p $gate-t))
   (O
     (+ (exec (freq f502 specialization-start-var)
          (, (specialization-root-is-var $id $indexed-pattern 1)
             (shallow-abstraction-binding $id $path $indexed-pattern $value))
          (O
            (- (specialization-root-is-var $id $indexed-pattern 1))
-           (+ (specialization-partial $id () ($value)))
-           (+ (exec (freq f509 specialization-finish-empty) $finish-p $finish-t)))))
+           (+ (specialization-proposal $id () () ($value)))
+           (+ (exec (freq f515 specialization-gate) $gate-p $gate-t)))))
     (+ (exec (freq f503 specialization-start-non-var)
          (, (specialization-root-is-var $id $indexed-pattern 0))
          (O
@@ -508,7 +525,8 @@
 
 (DEF specialization-choose
   (, (DEF specialization-extend $extend-p $extend-t)
-     (DEF specialization-prepend-exp-args $prep-p $prep-t))
+     (DEF specialization-prepend-exp-args $prep-p $prep-t)
+     (DEF specialization-proposal-fn $gate-p $gate-t))
   (O
     (+ (exec (freq f511 specialization-append-var)
          (, (specialization-is-var $id $todo $partial $var 1)
@@ -521,9 +539,9 @@
            (- (specialization-is-exp $id $todo $partial $var 0))
            (- (specialization-rest $id $todo $partial $rest))
            (- (specialization-head $id $todo $partial $var))
-           (pure (specialization-partial $id $rest $next-partial) $next-partial
+           (pure (specialization-proposal $id $rest $partial $next-partial) $next-partial
              (append (' ($partial ($value)))))
-           (+ (exec (freq f510 specialization-extend) $extend-p $extend-t)))))
+           (+ (exec (freq f515 specialization-gate) $gate-p $gate-t)))))
     (+ (exec (freq f512 specialization-expand-exp)
          (, (specialization-is-var $id $todo $partial $expr 0)
             (specialization-is-exp $id $todo $partial $expr 1)
@@ -568,11 +586,315 @@
     (pure (specialization-result $id $specialized-pattern) $specialized-pattern
       (substitute (' ($pattern $partial))))))
 
+; Standalone combination enumeration remains exhaustive. The integrated miner
+; uses pruned-specialization-combinations-fn instead.
 (DEF specialization-combinations-fn
   (, (run-specialization $id $pattern)
      (DEF specialization-start $start-p $start-t))
   (O
+    (+ (specialization-mode $id exhaustive))
     (+ (exec (freq f500 specialization-start) $start-p $start-t))))
+
+; Prefix pruning retains the actual fact as its identity. Unfinished occurrences
+; are fresh independent variables in the query, so each completed substitution
+; is an instance of every prefix even for repeated variables in the input.
+; Match sets are scoped by generation and prefix and reused by child branches.
+(DEF specialization-seed-matches-fn
+  (, (specialization-mode $id pruned) (FACT $fact))
+  (O (+ (specialization-matches $id () $fact))))
+
+(DEF pruned-specialization-combinations-fn
+  (, (run-specialization $id $pattern)
+     (DEF specialization-seed-matches-fn $seed-p $seed-t)
+     (DEF specialization-start $start-p $start-t))
+  (O
+    (+ (specialization-mode $id pruned))
+    (+ (exec (freq f499 specialization-seed-matches) $seed-p $seed-t))
+    (+ (exec (freq f500 specialization-start) $start-p $start-t))))
+
+(DEF specialization-exhaustive-proposal-fn
+  (, (specialization-mode $id exhaustive)
+     (specialization-proposal $id $rest $before $after)
+     (DEF specialization-extend $extend-p $extend-t))
+  (O
+    (- (specialization-proposal $id $rest $before $after))
+    (+ (specialization-partial $id $rest $after))
+    (+ (exec (freq f510 specialization-extend) $extend-p $extend-t))))
+
+(DEF specialization-prefix-prepare-fn
+  (, (specialization-mode $id pruned)
+     (specialization-proposal $id $rest $before $after)
+     (specialization-template $id $template)
+     (DEF specialization-prefix-mm2-fn $prefix-p $prefix-t))
+  (O
+    (- (specialization-proposal $id $rest $before $after))
+    (+ (specialization-wait $id $rest $after))
+    (+ (specialization-prefix-request ($id $before $after) $template $after))
+    (+ (exec (freq f516 p00) $prefix-p $prefix-t))
+    (+ (exec (freq f516 p90)
+      (, (specialization-prefix-result ($result-id $result-before $result-after) $query))
+      (O (- (specialization-prefix-result ($result-id $result-before $result-after) $query))
+         (+ (specialization-prefix-indexed $result-id $result-before $result-after $query)))))))
+
+;; MM2 rule implementation of occurrence-wise prefix specialization. Input
+;; templates and values use indexed variables.
+;; (specialization-prefix-request key template values)
+;; -> (specialization-prefix-result key indexed-prefix)
+;; Schedule specialization-prefix-mm2-fn at (freq f516 p00).
+;; All internal work finishes before the miner's f517 restore stage.
+
+(DEF specialization-prefix-mm2-fn
+  (, (specialization-prefix-request $key $template $values)
+     (DEF sp-count-fn $cp $ct)
+     (DEF sp-fill-start-fn $fp $ft))
+  (O
+    (- (specialization-prefix-request $key $template $values))
+    (+ (sp-input $key $template $values))
+    (+ (sp-count-request $template))
+    (pure (sp-used $key $used) $used (indexed_vars_in_expr (' $values)))
+    (pure (sp-length $key $length) $length (size-atom (' $values)))
+    (+ (exec (freq f516 p01) $cp $ct))
+    ; Completed substitutions need neither fresh markers nor the fill loop.
+    (+ (exec (freq f516 p29)
+      (, (sp-input $full-key $full-template $full-values)
+         (sp-total $full-template $full-n)
+         (sp-length $full-key $full-n)
+         (sp-used $full-key $full-used))
+      (O (- (sp-input $full-key $full-template $full-values))
+         (- (sp-length $full-key $full-n))
+         (- (sp-used $full-key $full-used))
+         (pure (specialization-prefix-result $full-key $full-result) $full-result
+           (substitute (' ($full-template $full-values)))))))
+    (+ (exec (freq f516 p30) $fp $ft))))
+
+;; Count occurrences once per template, including variable expression heads.
+;; The traversal treats (var label) as a leaf, including compound labels.
+;; A linked stack of child lists avoids flattening wide trees into an oversized
+;; tuple. sp-total is an intentional cache; all per-request state is consumed.
+(DEF sp-count-fn
+  (, (DEF sp-walk-fn $wp $wt))
+  (O
+    (+ (exec (freq f516 p02)
+      (, (sp-count-request $cached-template) (sp-total $cached-template $cached-n))
+      (O (- (sp-count-request $cached-template)))))
+    (+ (exec (freq f516 p03)
+      (, (sp-count-request $new-template))
+      (O (- (sp-count-request $new-template))
+         (+ (sp-walk $new-template (($new-template) ()) 0))
+         (+ (exec (freq f516 p08) $wp $wt)))))))
+
+(DEF sp-walk-fn
+  (, (DEF sp-classify-fn $cp $ct)
+     (DEF sp-walk-fn $wp $wt))
+  (O
+    (+ (exec (freq f516 p09)
+      (, (sp-walk $done-template () $done-n))
+      (O (- (sp-walk $done-template () $done-n))
+         (+ (sp-total $done-template $done-n)))))
+    (+ (exec (freq f516 p10)
+      (, (sp-walk $pop-template (() $stack-rest) $pop-n))
+      (O (- (sp-walk $pop-template (() $stack-rest) $pop-n))
+         (+ (sp-walk $pop-template $stack-rest $pop-n))
+         (+ (exec (freq f516 p08) $wp $wt)))))
+    (+ (exec (freq f516 p11)
+      (, (sp-walk $walk-template ($todo $stack) $n))
+      (O (- (sp-walk $walk-template ($todo $stack) $n))
+         (pure (sp-head $walk-template ($todo $stack) $n $head) $head (car-atom (' $todo)))
+         (pure (sp-tail $walk-template ($todo $stack) $n ($tail $stack)) $tail (cdr-atom (' $todo)))
+         (+ (exec (freq f516 p12) $cp $ct)))))))
+
+(DEF sp-classify-fn
+  (, (sp-head $template $todo $n $head)
+     (sp-tail $template $todo $n $tail)
+     (DEF sp-walk-branch-fn $bp $bt))
+  (O
+    (- (sp-head $template $todo $n $head))
+    (- (sp-tail $template $todo $n $tail))
+    (pure (sp-var $template $n $tail $head $flag) $flag (i8_to_string (is_var (' $head))))
+    (pure (sp-exp $template $n $tail $head $flag) $flag (i8_to_string (is_exp (' $head))))
+    (+ (exec (freq f516 p13) $bp $bt))))
+
+(DEF sp-walk-branch-fn
+  (, (DEF sp-walk-fn $wp $wt))
+  (O
+    (+ (exec (freq f516 p14)
+      (, (sp-var $vt $vn $vr $vh 1) (sp-exp $vt $vn $vr $vh 0))
+      (O (- (sp-var $vt $vn $vr $vh 1)) (- (sp-exp $vt $vn $vr $vh 0))
+         (pure (sp-walk $vt $vr $next-n) $next-n
+           (i32_to_string (sum_i32 (i32_from_string $vn) (i32_one))))
+         (+ (exec (freq f516 p08) $wp $wt)))))
+    (+ (exec (freq f516 p15)
+      (, (sp-var $et $en $er $eh 0) (sp-exp $et $en $er $eh 1))
+      (O (- (sp-var $et $en $er $eh 0)) (- (sp-exp $et $en $er $eh 1))
+         (+ (sp-walk $et ($eh $er) $en))
+         (+ (exec (freq f516 p08) $wp $wt)))))
+    (+ (exec (freq f516 p16)
+      (, (sp-var $at $an $ar $ah 0) (sp-exp $at $an $ar $ah 0))
+      (O (- (sp-var $at $an $ar $ah 0)) (- (sp-exp $at $an $ar $ah 0))
+         (+ (sp-walk $at $ar $an))
+         (+ (exec (freq f516 p08) $wp $wt)))))))
+
+;; MORK tuples have at most 63 items. substitute takes a flat value tuple, so
+;; reject larger occurrence counts explicitly before padding. Stage size-atom
+;; separately because quotes in non-final arguments do not advance this
+;; evaluator's input cursor correctly.
+(DEF sp-fill-start-fn
+  (, (sp-input $key $template $values) (sp-total $template $total)
+     (sp-used $key $used) (sp-length $key $length)
+     (DEF sp-fill-validate-fn $vp $vt))
+  (O
+    (- (sp-input $key $template $values)) (- (sp-used $key $used))
+    (- (sp-length $key $length))
+    (pure (sp-valid $key $template $values $total $used $valid) $valid
+      (le_f64 (f64_from_string $length) (f64_from_string $total)))
+    (pure (sp-limit $key $supported) $supported
+      (le_f64 (f64_from_string $total) (f64_from_string 63)))
+    (+ (exec (freq f516 p31) $vp $vt))))
+
+(DEF sp-fill-validate-fn
+  (, (DEF sp-fill-fn $fp $ft))
+  (O
+    (+ (exec (freq f516 p32)
+      (, (sp-valid $ok-key $ok-template $ok-values $ok-total $ok-used true)
+         (sp-limit $ok-key true))
+      (O (- (sp-valid $ok-key $ok-template $ok-values $ok-total $ok-used true))
+         (- (sp-limit $ok-key true))
+         (+ (sp-template $ok-key $ok-template))
+         (+ (sp-fill $ok-key $ok-values $ok-total $ok-used 0))
+         (+ (exec (freq f516 p40) $fp $ft)))))
+    (+ (exec (freq f516 p33)
+      (, (sp-valid $bad-key $bad-template $bad-values $bad-total $bad-used false)
+         (sp-limit $bad-key true))
+      (O (- (sp-valid $bad-key $bad-template $bad-values $bad-total $bad-used false))
+         (- (sp-limit $bad-key true))
+         (+ (specialization-prefix-error $bad-key too-many-values)))))
+    (+ (exec (freq f516 p34)
+      (, (sp-valid $wide-key $wide-template $wide-values $wide-total $wide-used $valid)
+         (sp-limit $wide-key false))
+      (O (- (sp-valid $wide-key $wide-template $wide-values $wide-total $wide-used $valid))
+         (- (sp-limit $wide-key false))
+         (+ (specialization-prefix-error $wide-key too-many-occurrences)))))))
+
+(DEF sp-fill-fn
+  (, (sp-fill $key $values $total $used $cursor)
+     (DEF sp-fill-branch-fn $bp $bt))
+  (O
+    (- (sp-fill $key $values $total $used $cursor))
+    (pure (sp-done $key $values $total $used $cursor $done) $done
+      (le_f64 (f64_from_string $total) (f64_from_string (size-atom (' $values)))))
+    (+ (exec (freq f516 p41) $bp $bt))))
+
+(DEF sp-fill-branch-fn
+  (, (DEF sp-fresh-fn $fp $ft))
+  (O
+    (+ (exec (freq f516 p42)
+      (, (sp-done $done-key $done-values $done-total $done-used $done-cursor true)
+         (sp-template $done-key $done-template))
+      (O (- (sp-done $done-key $done-values $done-total $done-used $done-cursor true))
+         (- (sp-template $done-key $done-template))
+         (pure (specialization-prefix-result $done-key $result) $result
+           (substitute (' ($done-template $done-values)))))))
+    (+ (exec (freq f516 p43)
+      (, (sp-done $more-key $more-values $more-total $more-used $more-cursor false))
+      (O (- (sp-done $more-key $more-values $more-total $more-used $more-cursor false))
+         (pure (sp-member $more-key $more-values $more-total $more-used $more-cursor $member) $member
+           (size-atom (intersection-atom (' (((var $more-cursor)) $more-used)))))
+         (pure (sp-next $more-key $more-cursor $next) $next
+           (i32_to_string (sum_i32 (i32_from_string $more-cursor) (i32_one))))
+         (+ (exec (freq f516 p44) $fp $ft)))))))
+
+;; The cursor advances even when a marker collides. Generated markers can never
+;; collide with one another, so membership only needs the original chosen values.
+(DEF sp-fresh-fn
+  (, (DEF sp-fill-fn $fp $ft))
+  (O
+    (+ (exec (freq f516 p45)
+      (, (sp-member $hit-key $hit-values $hit-total $hit-used $hit-cursor 1)
+         (sp-next $hit-key $hit-cursor $hit-next))
+      (O (- (sp-member $hit-key $hit-values $hit-total $hit-used $hit-cursor 1))
+         (- (sp-next $hit-key $hit-cursor $hit-next))
+         (+ (sp-fill $hit-key $hit-values $hit-total $hit-used $hit-next))
+         (+ (exec (freq f516 p40) $fp $ft)))))
+    (+ (exec (freq f516 p46)
+      (, (sp-member $new-key $new-values $new-total $new-used $new-cursor 0)
+         (sp-next $new-key $new-cursor $new-next))
+      (O (- (sp-member $new-key $new-values $new-total $new-used $new-cursor 0))
+         (- (sp-next $new-key $new-cursor $new-next))
+         (pure (sp-fill $new-key $next-values $new-total $new-used $new-next) $next-values
+           (append (' ($new-values ((var $new-cursor))))))
+         (+ (exec (freq f516 p40) $fp $ft)))))))
+
+
+(DEF specialization-prefix-restore-fn
+  (, (specialization-prefix-indexed $id $before $after $indexed))
+  (O
+    (- (specialization-prefix-indexed $id $before $after $indexed))
+    (pure (specialization-prefix-query $id $before $after $query) $query
+      (indices_to_vars (' $indexed)))))
+
+(DEF specialization-prefix-match-fn
+  (, (specialization-prefix-query $id $before $after $pattern)
+     (specialization-matches $id $before $pattern))
+  (O (+ (specialization-matches $id $after $pattern))))
+
+(DEF specialization-prefix-count-fn
+  (, (specialization-wait $id $rest $prefix)
+     (specialization-matches $id $prefix $fact))
+  (O (count (specialization-prefix-support $id $rest $prefix $support)
+       $support $fact)))
+
+(DEF specialization-prefix-check-fn
+  (, (specialization-prefix-support $id $rest $prefix $support)
+     (INPUT MIN-SUPPORT $min))
+  (O
+    (- (specialization-prefix-support $id $rest $prefix $support))
+    (pure (specialization-prefix-decision $id $rest $prefix $passes) $passes
+      (le_f64 (f64_from_string $min) (f64_from_string $support)))))
+
+(DEF specialization-prefix-accept-fn
+  (, (specialization-prefix-decision $id $rest $prefix true)
+     (DEF specialization-extend $extend-p $extend-t))
+  (O
+    (- (specialization-prefix-decision $id $rest $prefix true))
+    (- (specialization-wait $id $rest $prefix))
+    (+ (specialization-partial $id $rest $prefix))
+    (+ (exec (freq f510 specialization-extend) $extend-p $extend-t))))
+
+; Scheduled after accept. Zero-match prefixes have no count result and are
+; dropped here too. The public support counter likewise publishes only matches.
+(DEF specialization-prefix-drop-fn
+  (, (specialization-wait $id $rest $prefix))
+  (O (- (specialization-wait $id $rest $prefix))))
+
+(DEF specialization-proposal-fn
+  (, (DEF specialization-exhaustive-proposal-fn $all-p $all-t)
+     (DEF specialization-prefix-prepare-fn $prep-p $prep-t)
+     (DEF specialization-prefix-restore-fn $restore-p $restore-t)
+     (DEF specialization-prefix-match-fn $match-p $match-t)
+     (DEF specialization-prefix-count-fn $count-p $count-t)
+     (DEF specialization-prefix-check-fn $check-p $check-t)
+     (DEF specialization-prefix-accept-fn $accept-p $accept-t)
+     (DEF specialization-prefix-drop-fn $drop-p $drop-t))
+  (O
+    (+ (exec (freq f516 specialization-exhaustive-proposal) $all-p $all-t))
+    (+ (exec (freq f516 specialization-prefix-prepare) $prep-p $prep-t))
+    (+ (exec (freq f517 specialization-prefix-restore) $restore-p $restore-t))
+    (+ (exec (freq f518 specialization-prefix-match) $match-p $match-t))
+    (+ (exec (freq f519 specialization-prefix-count) $count-p $count-t))
+    (+ (exec (freq f520 specialization-prefix-check) $check-p $check-t))
+    (+ (exec (freq f521 specialization-prefix-accept) $accept-p $accept-t))
+    (+ (exec (freq f522 specialization-prefix-drop) $drop-p $drop-t))))
+
+(DEF specialization-pruning-cleanup-fn
+  (, (run-frequent-miner $id $pattern))
+  (O
+    (+ (cleanup (specialization-mode $id $mode)))
+    (+ (cleanup (specialization-template $id $template)))
+    (+ (cleanup (specialization-matches $id $prefix $fact)))
+    (+ (cleanup (specialization-prefix-query $id $before $prefix $query)))
+    (+ (cleanup (specialization-prefix-support $id $rest $prefix $support)))
+    (+ (cleanup (specialization-prefix-decision $id $rest $prefix $passes)))
+    (+ (cleanup (specialization-wait $id $rest $prefix)))))
 
 ; specialization cross-product smoke
 ; (run-specialization spec-test (Inheritance $x $y))
@@ -624,32 +946,47 @@
 
 (DEF candidate-pattern-check-fn
   (, (support-count-result $id $pattern $support)
-     (INPUT MIN-SUPPORT $min-support))
+     (INPUT MIN-SUPPORT $min-support)
+     (DEF minimum-support-reject-fn $reject-p $reject-t))
   (O
     (pure (minimum-support-check-result $id $pattern $support $min-support $passes) $passes
       (le_f64 (f64_from_string $min-support) (f64_from_string $support)))
     (+ (exec (freq f630 minimum-support-pass)
-         (, (minimum-support-check-result $pass-id $pass-pattern $pass-support $pass-min true)
-            (minimum-support-check-result $pass-id-rm $pass-pattern-rm $pass-support-rm $pass-min-rm $check-rm))
-         (O (- (minimum-support-check-result $pass-id-rm $pass-pattern-rm $pass-support-rm $pass-min-rm $check-rm))
-            (pure (candidate-pattern-var $pass-id $pass-pattern-var $pass-support) $pass-pattern-var (indices_to_vars (' $pass-pattern))))))))
+         (, (minimum-support-check-result $pass-id $pass-pattern $pass-support $pass-min true))
+         (O (- (minimum-support-check-result $pass-id $pass-pattern $pass-support $pass-min true))
+            (+ (candidate-pattern-raw $pass-id $pass-pattern $pass-support)))))
+    (+ (exec (freq f640 minimum-support-reject) $reject-p $reject-t))))
 
-(DEF candidate-pattern-finish-fn
-  (, (candidate-pattern-var $id $pattern $support))
-  (O 
-    (- (candidate-pattern-var $id $pattern $support))
-    (pure (candidate-pattern $id $pattern-index $support) $pattern-index (vars_to_indices (' $pattern)))))
+(DEF minimum-support-reject-fn
+  (, (minimum-support-check-result $id $pattern $support $min false))
+  (O (- (minimum-support-check-result $id $pattern $support $min false))))
+
+;; Prefix specialization preserves source occurrence paths in indexed variable
+;; labels. Canonicalize those labels before candidates reach iterative mining
+;; and conjunction expansion, so optimization does not change public results.
+(DEF candidate-pattern-normalize-fn
+  (, (candidate-pattern-raw $id $pattern $support))
+  (O
+    (- (candidate-pattern-raw $id $pattern $support))
+    (pure (candidate-pattern-display $id $support $display) $display
+      (indices_to_vars (' $pattern)))
+    (+ (exec (freq f691 candidate-pattern-normalize-display)
+      (, (candidate-pattern-display $id $support $display))
+      (O
+        (- (candidate-pattern-display $id $support $display))
+        (pure (candidate-pattern $id $normalized $support) $normalized
+          (vars_to_indices (' $display))))))))
 
 (DEF candidate-pattern-fn
   (, (DEF var-conversion-fn $conv-p $conv-t)
      (DEF support-count-fn $support-p $support-t)
      (DEF candidate-pattern-check-fn $min-p $min-t)
-     (DEF candidate-pattern-finish-fn $finish-p $finish-t))
+     (DEF candidate-pattern-normalize-fn $normalize-p $normalize-t))
   (O
     (+ (exec (freq f610 run-var-conversion) $conv-p $conv-t))
     (+ (exec (freq f620 run-support-count) $support-p $support-t))
     (+ (exec (freq f621 run-candidate-pattern-check) $min-p $min-t))
-    (+ (exec (freq f690 run-candidate-pattern-finish) $finish-p $finish-t))))
+    (+ (exec (freq f690 run-candidate-pattern-normalize) $normalize-p $normalize-t))))
 
 
 ; (exec (freq f600 call-candidate-pattern)
@@ -671,7 +1008,7 @@
 ; (INPUT MIN-SUPPORT 3)
 
 (DEF frequent-miner-cleanup-blocks
-  (, (candidate-pattern $id $pattern $support))
+  (, (run-frequent-miner $id $pattern))
   (O
     (+ (cleanup (support-count-result $id $support-pattern $support-count)))
     (+ (cleanup (candidate-specialization $id $display-pattern $match-pattern)))
@@ -702,10 +1039,12 @@
 
 ;; Remove the generic cleanup tasks after they are no longer useful.
 (DEF frequent-miner-cleanup-all-fn
-    (, (DEF frequent-miner-cleanup-blocks $blocks-p $blocks-t)
+    (, (DEF specialization-pruning-cleanup-fn $prune-p $prune-t)
+       (DEF frequent-miner-cleanup-blocks $blocks-p $blocks-t)
        (DEF frequent-miner-cleanup-all-at-once-fn $all-p $all-t)
        (DEF frequent-miner-cleanup-target-task-fn $target-p $target-t))
     (O
+        (+ (exec (freq f700 specialization-pruning-cleanup) $prune-p $prune-t))
         (+ (exec (freq f701 frequent-miner-cleanup-blocks) $blocks-p $blocks-t))
         (+ (exec (freq f702 frequent-miner-cleanup-all-at-once) $all-p $all-t))
         (+ (exec (freq f703 frequent-miner-cleanup-target-task) $target-p $target-t))))
@@ -722,7 +1061,7 @@
   (, (run-frequent-miner $id $pattern)
      (DEF valuation-fn $valuation-p $valuation-t)
      (DEF shallow-abstraction-fn $shallow-p $shallow-t)
-     (DEF specialization-combinations-fn $specialization-p $specialization-t)
+     (DEF pruned-specialization-combinations-fn $specialization-p $specialization-t)
      (DEF candidate-pattern-fn $candidate-p $candidate-t)
      (DEF frequent-miner-cleanup-all-fn $cleanup-p $cleanup-t))
   (O
@@ -741,9 +1080,14 @@
 ;   (O
 ;     (+ (exec (freq f001 run-frequent-miner) $freq-p $freq-t))))
 
+; Compatibility export: preserve the historical public component boundary.
+; The iterative implementation remains identical to the optimized module.
+;; Recursive frequent-candidate generation.
+;;
+;; This module consumes `frequent-miner-fn` from candidate-patterns.metta. It keeps
+;; generation state private and exposes candidates under the caller's run id.
 
-
-; nested-depth checker
+; nested-expression depth checker
 ;
 ; Positive-only continuation check for the iterative miner.
 ;
@@ -756,7 +1100,6 @@
 ; Stop behavior:
 ;   Every step requires (hne-active $id). The first true removes hne-active,
 ;   so remaining queued checks for the same id cannot continue.
-
 (DEF has-nested-expression-step
   (, (hne-active $id)
      (DEF has-nested-expression-dispatch $dispatch-p $dispatch-t))
@@ -793,6 +1136,10 @@
      (DEF has-nested-expression-decide $decide-p $decide-t))
   (O
     (- (hne-dispatch $id $parent $candidate))
+    (- (hne-parent-head $id $parent $candidate $parent-head))
+    (- (hne-candidate-head $id $parent $candidate $candidate-head))
+    (- (hne-parent-tail $id $parent $candidate $parent-tail))
+    (- (hne-candidate-tail $id $parent $candidate $candidate-tail))
     (pure (hne-parent-head-var $id $parent $candidate $parent-head $is-parent-var)
       $is-parent-var (i8_to_string (is_var (' $parent-head))))
     (pure (hne-parent-head-exp $id $parent $candidate $parent-head $is-parent-exp)
@@ -864,16 +1211,14 @@
   (O
     (+ (exec (freq f799 hne-start-var-parent)
          (, (hne-start-parent-var $var-id $parent $candidate 1))
-         (O
-           (- (hne-start-parent-var $var-id $parent $candidate 1))
-           (+ (hne-check $var-id ($parent) ($candidate)))
-           (+ (exec (freq f800 hne-step) $step-p $step-t)))))
+         (O (- (hne-start-parent-var $var-id $parent $candidate 1))
+            (+ (hne-check $var-id ($parent) ($candidate)))
+            (+ (exec (freq f800 hne-step) $step-p $step-t)))))
     (+ (exec (freq f799 hne-start-expression-parent)
          (, (hne-start-parent-var $expr-id $parent $candidate 0))
-         (O
-           (- (hne-start-parent-var $expr-id $parent $candidate 0))
-           (+ (hne-check $expr-id $parent $candidate))
-           (+ (exec (freq f800 hne-step) $step-p $step-t)))))))
+         (O (- (hne-start-parent-var $expr-id $parent $candidate 0))
+            (+ (hne-check $expr-id $parent $candidate))
+            (+ (exec (freq f800 hne-step) $step-p $step-t)))))))
 
 (DEF has-nested-expression-with-respect-to-fn
   (, (has-nested-expression-with-respect-to $id $parent $candidate)
@@ -926,104 +1271,118 @@
     (+ (exec (freq f911 hne-cleanup-targets) $target-p $target-t))
     (+ (exec (freq f912 hne-cleanup-target-tasks) $task-p $task-t))))
 
-; Example smoke, kept inactive:
-; (has-nested-expression-with-respect-to hne-smoke
-;   (Inheritance (var 0) (var 1))
-;   (Inheritance (var 0) (Evaluation Allen sodaDrinker)))
-; (exec (freq f000 call-hne-smoke)
-;   (, (has-nested-expression-with-respect-to hne-smoke
-;        (Inheritance (var 0) (var 1))
-;        (Inheritance (var 0) (Evaluation Allen sodaDrinker)))
-;      (DEF has-nested-expression-with-respect-to-fn $hne-p $hne-t))
-;   (O (+ (exec (freq f001 run-hne-smoke) $hne-p $hne-t))))
-
-
 ; iterative miner
 ;
-; Runs one frequent-miner generation for a parent pattern, keeps every emitted
-; candidate, then recursively mines only candidates that both introduce nested
-; depth and survive the subsumes pruning pass.
+; Runs one frequent-miner generation, checks each candidate against its parent,
+; then recursively mines candidates that introduce nested depth.
 ;
-; Request:
+; Public request:
 ;   (run-iterative-miner $id $pattern)
 ;
-; Results:
+; Public results:
 ;   (iterative-candidate-pattern $id $parent $candidate $support)
 ;   (iterative-recursive-candidate $id $parent $candidate $support)
 ;
-; Each one-generation miner run uses a derived id scoped by parent:
-;   (ITER $id $pattern)
-;
-; Flow:
-;   run-frequent-miner -> iterative-candidate-pattern
-;   has-nested-expression-with-respect-to -> iterative-subsumes-result
-;   iterative-subsumes-prune-fn removes mixed 1/0 subsumes results
-;   iterative-miner-continue-fn recurses on surviving 1 results
+; Each generation uses an indexed parent in its internal id. This keeps
+; candidate facts from different recursive parents isolated while preserving
+; the caller-owned run id in public results.
 (DEF iterative-miner-candidate-step
-  (, (iter-parent $id $parent $miner-id)
+  (, (iter-parent $id $parent $indexed-parent $miner-id)
      (candidate-pattern $miner-id $candidate $support)
      (DEF has-nested-expression-with-respect-to-fn $hne-p $hne-t)
-     (DEF hne-cleanup-fn $hne-cleanup-p $hne-cleanup-t)
-     (DEF iterative-subsumes-check-fn $subsumes-p $subsumes-t))
+     (DEF iterative-depth-collect-fn $collect-p $collect-t)
+     (DEF iterative-subsumes-check-fn $subsumes-p $subsumes-t)
+     (DEF hne-cleanup-fn $cleanup-p $cleanup-t))
   (O
     (- (candidate-pattern $miner-id $candidate $support))
     (+ (iterative-candidate-pattern $id $parent $candidate $support))
-    (+ (has-nested-expression-with-respect-to (HNE $id $parent $candidate) $parent $candidate))
-    (+ (hne-cleanup (HNE $id $parent $candidate)))
+    (+ (has-nested-expression-with-respect-to
+      (HNE $miner-id $candidate) $indexed-parent $candidate))
+    (+ (hne-cleanup (HNE $miner-id $candidate)))
     (+ (exec (freq f900 iterative-check-depth) $hne-p $hne-t))
-    (+ (exec (freq f910 iterative-hne-cleanup) $hne-cleanup-p $hne-cleanup-t))
-    (+ (exec (freq f920 iterative-subsumes-check) $subsumes-p $subsumes-t))))
+    (+ (exec (freq f940 iterative-collect-depth) $collect-p $collect-t))
+    (+ (exec (freq f950 iterative-subsumes-check) $subsumes-p $subsumes-t))
+    (+ (exec (freq f960 iterative-hne-cleanup) $cleanup-p $cleanup-t))))
+
+(DEF iterative-depth-collect-fn
+  (, (iter-parent $id $parent $indexed-parent $miner-id)
+     (iterative-candidate-pattern $id $parent $candidate $support)
+     (has-nested-expression-result
+       (HNE $miner-id $candidate) $indexed-parent $candidate true))
+  (O
+    (- (has-nested-expression-result
+      (HNE $miner-id $candidate) $indexed-parent $candidate true))
+    (+ (iterative-depth-candidate $id $parent $indexed-parent $miner-id $candidate $support))))
 
 (DEF iterative-subsumes-check-fn
-  (, (iter-parent $id $parent $miner-id)
-     (iterative-candidate-pattern $id $parent $general $general-support)
-     (has-nested-expression-result (HNE $id $parent $general) $parent $general true)
-     (has-nested-expression-result (HNE $id $parent $specific) $parent $specific true)
+  (, (iterative-depth-candidate $id $parent $indexed-parent $miner-id $general $support)
+     (iterative-depth-candidate $id $parent $indexed-parent $miner-id $specific $specific-support)
      (DEF iterative-subsumes-prune-fn $prune-p $prune-t))
   (O
-    (pure (iterative-subsumes-result $id $parent $general $general-support $out) $out
+    (pure (iterative-subsumes-result $id $parent $indexed-parent $miner-id $general $support $out) $out
       (i8_to_string (not_subsumed (' ($general $specific)))))
-    (- (has-nested-expression-result (HNE $id $parent $general) $parent $general true))
-    (+ (exec (freq f930 iterative-subsumes-prune) $prune-p $prune-t))))
+    (+ (exec (freq f951 iterative-subsumes-prune) $prune-p $prune-t))))
 
 (DEF iterative-subsumes-prune-fn
   (, (DEF iterative-miner-continue-fn $continue-p $continue-t))
   (O
-    (+ (exec (freq f931 iterative-prune-mixed)
-         (, (iterative-subsumes-result $id $parent $candidate $support 1)
-            (iterative-subsumes-result $id $parent $candidate $support 0))
+    (+ (exec (freq f952 iterative-prune-mixed)
+         (, (iterative-subsumes-result $id $parent $indexed-parent $miner-id $candidate $support 1)
+            (iterative-subsumes-result $id $parent $indexed-parent $miner-id $candidate $support 0))
          (O
-           (- (iterative-subsumes-result $id $parent $candidate $support 1))
-           (- (iterative-subsumes-result $id $parent $candidate $support 0)))))
-    (+ (exec (freq f950 iterative-continue) $continue-p $continue-t))))
+           (- (iterative-subsumes-result $id $parent $indexed-parent $miner-id $candidate $support 1))
+           (- (iterative-subsumes-result $id $parent $indexed-parent $miner-id $candidate $support 0)))))
+    (+ (exec (freq f953 iterative-continue) $continue-p $continue-t))))
 
 (DEF iterative-miner-continue-fn
-  (, (iter-parent $id $parent $miner-id)
+  (, (iter-parent $id $parent $indexed-parent $miner-id)
      (iterative-candidate-pattern $id $parent $candidate $support)
-     (iterative-subsumes-result $id $parent $candidate $support 1)
+     (iterative-subsumes-result $id $parent $indexed-parent $miner-id $candidate $support 1)
      (DEF iterative-miner-fn $iter-p $iter-t))
   (O
-    (- (iterative-subsumes-result $id $parent $candidate $support 1))
-    (- (iter-parent $id $parent $miner-id))
+    (- (iterative-subsumes-result $id $parent $indexed-parent $miner-id $candidate $support 1))
     (+ (iterative-recursive-candidate $id $parent $candidate $support))
-    (+ (run-iterative-miner $id $candidate))
+    (pure (run-iterative-miner $id $next-pattern) $next-pattern
+      (indices_to_vars (' $candidate)))
     (+ (exec (freq f000 iterative-run-next) $iter-p $iter-t))))
+
+(DEF iterative-parent-cleanup-fn
+  (, (iter-parent $id $parent $indexed-parent $miner-id))
+  (O
+    (- (iter-parent $id $parent $indexed-parent $miner-id))))
+
+(DEF iterative-miner-generation-start-fn
+  (, (iter-generation-ready $id $indexed-parent $parent)
+     (DEF frequent-miner-fn $freq-p $freq-t)
+     (DEF iterative-miner-candidate-step $candidate-p $candidate-t)
+     (DEF iterative-parent-cleanup-fn $parent-cleanup-p $parent-cleanup-t))
+  (O
+    (- (iter-generation-ready $id $indexed-parent $parent))
+    (+ (iter-parent
+      $id $parent $indexed-parent (ITER $id $indexed-parent)))
+    (+ (run-frequent-miner (ITER $id $indexed-parent) $parent))
+    (+ (exec (freq f100 iterative-run-generation) $freq-p $freq-t))
+    (+ (exec (freq f850 iterative-check-candidates) $candidate-p $candidate-t))
+    (+ (exec (freq f970 iterative-parent-cleanup)
+      $parent-cleanup-p $parent-cleanup-t))))
+
+;; Rebuild the display/matching pattern in its own pure step. Keeping raw MORK
+;; variables out of iter-generation makes the generation key stable and ground.
+(DEF iterative-miner-generation-restore-fn
+  (, (iter-generation $id $indexed-parent)
+     (DEF iterative-miner-generation-start-fn $start-p $start-t))
+  (O
+    (- (iter-generation $id $indexed-parent))
+    (pure (iter-generation-ready $id $indexed-parent $parent) $parent
+      (indices_to_vars (' $indexed-parent)))
+    (+ (exec (freq f095 iterative-start-generation) $start-p $start-t))))
 
 (DEF iterative-miner-fn
   (, (run-iterative-miner $id $pattern)
-     (DEF frequent-miner-fn $freq-p $freq-t)
-     (DEF iterative-miner-candidate-step $candidate-p $candidate-t))
+     (DEF iterative-miner-generation-restore-fn $restore-p $restore-t))
   (O
     (- (run-iterative-miner $id $pattern))
-    (+ (iter-parent $id $pattern (ITER $id $pattern)))
-    (pure (run-frequent-miner (ITER $id $pattern) $var-pattern) $var-pattern (indices_to_vars (' $pattern)))
-    (+ (exec (freq f100 iterative-run-generation) $freq-p $freq-t))
-    (+ (exec (freq f850 iterative-check-candidates) $candidate-p $candidate-t))))
-
-
-; Example smoke, kept inactive:
-; (run-iterative-miner iter-smoke (var 0))
-; (exec (freq f000 call-iterative-miner)
-;   (, (run-iterative-miner iter-smoke (var 0))
-;      (DEF iterative-miner-fn $iter-p $iter-t))
-;   (O (+ (exec (freq f001 run-iterative-miner) $iter-p $iter-t))))
+    (pure (iter-generation $id $indexed-pattern) $indexed-pattern
+      (vars_to_indices (' $pattern)))
+    (+ (exec (freq f090 iterative-restore-generation)
+      $restore-p $restore-t))))
