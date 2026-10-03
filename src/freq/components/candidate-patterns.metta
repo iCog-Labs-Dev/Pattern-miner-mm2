@@ -954,21 +954,39 @@ Failed to create stream fd: Operation not permitted
     (+ (exec (freq f630 minimum-support-pass)
          (, (minimum-support-check-result $pass-id $pass-pattern $pass-support $pass-min true))
          (O (- (minimum-support-check-result $pass-id $pass-pattern $pass-support $pass-min true))
-            (+ (candidate-pattern $pass-id $pass-pattern $pass-support)))))
+            (+ (candidate-pattern-raw $pass-id $pass-pattern $pass-support)))))
     (+ (exec (freq f640 minimum-support-reject) $reject-p $reject-t))))
 
 (DEF minimum-support-reject-fn
   (, (minimum-support-check-result $id $pattern $support $min false))
   (O (- (minimum-support-check-result $id $pattern $support $min false))))
 
+;; Prefix specialization preserves source occurrence paths in indexed variable
+;; labels. Canonicalize those labels before candidates reach iterative mining
+;; and conjunction expansion, so optimization does not change public results.
+(DEF candidate-pattern-normalize-fn
+  (, (candidate-pattern-raw $id $pattern $support))
+  (O
+    (- (candidate-pattern-raw $id $pattern $support))
+    (pure (candidate-pattern-display $id $support $display) $display
+      (indices_to_vars (' $pattern)))
+    (+ (exec (freq f691 candidate-pattern-normalize-display)
+      (, (candidate-pattern-display $id $support $display))
+      (O
+        (- (candidate-pattern-display $id $support $display))
+        (pure (candidate-pattern $id $normalized $support) $normalized
+          (vars_to_indices (' $display))))))))
+
 (DEF candidate-pattern-fn
   (, (DEF var-conversion-fn $conv-p $conv-t)
      (DEF support-count-fn $support-p $support-t)
-     (DEF candidate-pattern-check-fn $min-p $min-t))
+     (DEF candidate-pattern-check-fn $min-p $min-t)
+     (DEF candidate-pattern-normalize-fn $normalize-p $normalize-t))
   (O
     (+ (exec (freq f610 run-var-conversion) $conv-p $conv-t))
     (+ (exec (freq f620 run-support-count) $support-p $support-t))
-    (+ (exec (freq f621 run-candidate-pattern-check) $min-p $min-t))))
+    (+ (exec (freq f621 run-candidate-pattern-check) $min-p $min-t))
+    (+ (exec (freq f690 run-candidate-pattern-normalize) $normalize-p $normalize-t))))
 
 
 ; (exec (freq f600 call-candidate-pattern)

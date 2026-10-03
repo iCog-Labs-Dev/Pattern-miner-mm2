@@ -14,4 +14,4 @@
      (DEF iterative-miner-fn $iter-p $iter-t))
   (O (+ (exec (freq f002 run-nested-iterative-miner) $iter-p $iter-t))))
 
-(EXPECTED-RESULT nested-candidate-recursed (iterative-recursive-candidate nested-iterative-test (Inheritance $a $b) (Inheritance (var 0) (Evaluation (var (1 1)) (var (1 2)))) 3))
+(EXPECTED-RESULT nested-candidate-recursed (iterative-recursive-candidate nested-iterative-test (Inheritance $a $b) (Inheritance (var 0) (Evaluation (var 1) (var 2))) 3))
