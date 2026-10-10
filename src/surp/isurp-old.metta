@@ -16,26 +16,38 @@
 ;; Pipeline
 ;;===============================================================
 
-;; Legacy public input. The pattern itself is used as the internal context so
-;; existing one-pattern callers keep the same final `(surprisingess-of ...)`
-;; result while the intermediate facts still have an owner.
-(exec (surp s010 normalize-legacy-input)
+;; Legacy public input. Index the raw pattern once and use that canonical value
+;; as the owner of every intermediate fact.
+(exec (surp s010 raw-input)
     (, (INPUT PATTERN ($pattern $support)))
     (O
         (pure
-            (isurp-pattern (isurp-legacy $indexed-copy) $indexed-copy $pattern $support)
+            (isurp-old-pattern $indexed-copy $pattern $support)
             $indexed-copy
             (vars_to_indices
                 (cdr-atom (' $pattern))))))
 
-;; Scoped input for pattern-miner integration. A run handles one mining job, so
-;; `$pattern-id` separates each frequent pattern inside that job.
+;; Compatibility input for callers that already provide both the indexed id and
+;; the raw pattern.
 (exec (surp s010 normalize-scoped-input)
     (, (INPUT SCOPED-PATTERN ($pattern-id $pattern $support)))
-    (, (isurp-pattern (isurp-pattern $pattern-id) $pattern-id $pattern $support)))
+    (, (isurp-old-pattern $pattern-id $pattern $support)))
+
+;; Integrated input from the frequent miner. `$indexed-pattern` is already the
+;; canonical pattern id, so only convert it to real MM2 variables for database
+;; matching; do not index it again.
+(exec (surp s010 indexed-input)
+    (, (INPUT SURP-MODE isurp-old)
+       (INPUT INDEXED-PATTERN ($indexed-pattern $support)))
+    (O
+        (pure
+            (isurp-old-pattern $indexed-pattern $pattern $support)
+            $pattern
+            (indices_to_vars
+                (cons , (' $indexed-pattern))))))
 
 (exec (surp s020 init)
-    (, (isurp-pattern $ctx $pattern-id $pattern $support))
+    (, (isurp-old-pattern $ctx $pattern $support))
     (O
         (pure
             (isurp-num-of-conjuncts $ctx $pattern $count)
@@ -43,14 +55,10 @@
             (size-atom
                 (cdr-atom (' $pattern))))))
 
-(exec (surp s021 index-pattern)
-    (, (isurp-pattern $ctx $pattern-id $pattern $support))
-    (O
-        (pure
-            (indexed-pattern $ctx $indexed-copy)
-            $indexed-copy
-            (vars_to_indices
-                (cdr-atom (' $pattern))))))
+;; Expose the canonical owner as the indexed pattern consumed by partitioning.
+(exec (surp s021 expose-indexed-pattern)
+    (, (isurp-old-pattern $ctx $pattern $support))
+    (, (indexed-pattern $ctx $ctx)))
 
 (exec (surp s030 total-count)
     (, (INPUT DB-SIZE $n)
@@ -68,7 +76,7 @@
                         (i64_from_string $k)))))))
 
 (exec (surp s040 empirical-prob)
-    (, (isurp-pattern $ctx $pattern-id $pattern $support)
+    (, (isurp-old-pattern $ctx $pattern $support)
        (isurp-total-count-of $ctx $pattern $count))
     (O
         (pure
@@ -142,7 +150,7 @@
 
 ;; Convert block support into block probability using the full pattern total count.
 (exec (surp s100 block-prob)
-    (, (isurp-pattern $ctx $pattern-id $pattern $pattern-support)
+    (, (isurp-old-pattern $ctx $pattern $pattern-support)
        (isurp-total-count-of $ctx $pattern $total-count)
        (block-support $ctx $partition $indexed-block $support))
     (O
@@ -207,7 +215,7 @@
     (, (partition-product-range $ctx $min $max)))
 
 (exec (surp s140 distance-request)
-    (, (isurp-pattern $ctx $pattern-id $pattern $support)
+    (, (isurp-old-pattern $ctx $pattern $support)
        (partition-product-range $ctx $emin $emax)
        (isurp-prob-of $ctx $pattern $emp)
        ((dst-from-interval $ctx $emin $emax $emp -> isurp-dst-of) $src $sink))
@@ -279,17 +287,17 @@
 
 (exec (surp s180 normalized-result)
     (, (INPUT NORMALIZATION TRUE)
-       (isurp-pattern $ctx $pattern-id $pattern $support)
+       (isurp-old-pattern $ctx $pattern $support)
        (isurp-dst-of $ctx $dst)
        (normalization-denom $ctx $dst $denom)
        (normalization-candidate $ctx $dst $candidate))
     (O
         (pure
-            (surprisingess-of $pattern $value)
+            (isurp-old-of $pattern $value)
             $value
             (min-atom (' ($candidate 1.0))))
         (pure
-            (surprisingess-of $ctx $pattern $value)
+            (isurp-old-of $ctx $pattern $value)
             $value
             (min-atom (' ($candidate 1.0))))
         (- (normalization-denom $ctx $dst $denom))
@@ -301,11 +309,11 @@
 ;; Otherwise, surprisingness is just the distance from the interval.
 (exec (surp s190 raw-result)
     (, (INPUT NORMALIZATION FALSE)
-       (isurp-pattern $ctx $pattern-id $pattern $support)
+       (isurp-old-pattern $ctx $pattern $support)
        (isurp-dst-of $ctx $dst))
     (O
-        (+ (surprisingess-of $pattern $dst))
-        (+ (surprisingess-of $ctx $pattern $dst))
+        (+ (isurp-old-of $pattern $dst))
+        (+ (isurp-old-of $ctx $pattern $dst))
         (- (isurp-dst-of $ctx $dst))))
 
 
@@ -315,7 +323,7 @@
 
 ;; Final cleanup: 
 (exec (surp s900 cleanup-plan)
-    (, (surprisingess-of $ctx $pattern $value))
+    (, (isurp-old-of $ctx $pattern $value))
     (,
         (cleanup $ctx (block $ctx $partition $block))
         (cleanup $ctx (partition $ctx $partition))
@@ -346,11 +354,6 @@
     (O
         (- (cleanup $ctx $fact))
         ))
-
-
-
-
-
 
 
 
