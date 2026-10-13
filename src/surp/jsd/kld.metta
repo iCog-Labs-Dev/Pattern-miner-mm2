@@ -28,7 +28,7 @@
             (jsd-kld-input-right-size $left-cdf $right-cdf $right-size)
             $right-size
             (size-atom (' $right-cdf)))
-        (+ (exec (surp 320 jsd-kld-size-dispatch) $dispatch-p $dispatch-t))))
+        (+ (exec (surp s320 jsd-kld-size-dispatch) $dispatch-p $dispatch-t))))
 
 
 (DEF jsd-kld-size-dispatch
@@ -45,8 +45,8 @@
                 (i32_from_string $right-size)))
         (- (jsd-kld-input-left-size $left-cdf $right-cdf $left-size))
         (- (jsd-kld-input-right-size $left-cdf $right-cdf $right-size))
-        (+ (exec (surp 320 jsd-kld-start) $start-p $start-t))
-        (+ (exec (surp 320 jsd-kld-size-mismatch) $mismatch-p $mismatch-t))))
+        (+ (exec (surp s320 jsd-kld-start) $start-p $start-t))
+        (+ (exec (surp s320 jsd-kld-size-mismatch) $mismatch-p $mismatch-t))))
 
 
 (DEF jsd-kld-size-mismatch

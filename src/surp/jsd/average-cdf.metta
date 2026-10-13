@@ -20,7 +20,7 @@
             (jsd-average-cdf-right-size $left-cdf $right-cdf $right-size)
             $right-size
             (size-atom (' $right-cdf)))
-        (+ (exec (surp 310 jsd-average-cdf-size-dispatch) $dispatch-p $dispatch-t))))
+        (+ (exec (surp s310 jsd-average-cdf-size-dispatch) $dispatch-p $dispatch-t))))
 
 
 (DEF jsd-average-cdf-size-dispatch
@@ -37,8 +37,8 @@
                 (i32_from_string $right-size)))
         (- (jsd-average-cdf-left-size $left-cdf $right-cdf $left-size))
         (- (jsd-average-cdf-right-size $left-cdf $right-cdf $right-size))
-        (+ (exec (surp 310 jsd-average-cdf-start) $start-p $start-t))
-        (+ (exec (surp 310 jsd-average-cdf-size-mismatch) $mismatch-p $mismatch-t))))
+        (+ (exec (surp s310 jsd-average-cdf-start) $start-p $start-t))
+        (+ (exec (surp s310 jsd-average-cdf-size-mismatch) $mismatch-p $mismatch-t))))
 
 
 (DEF jsd-average-cdf-size-mismatch
