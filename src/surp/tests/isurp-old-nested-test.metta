@@ -25,4 +25,4 @@
             (Or (And human man) (And human ugly))))
      1))
 
-(EXPECTED-RESULT isurp-old-nested (surprisingess-of (, (Inheritance (And (And (Person $a) man) (Or human sodaDrinker)) (Or (And human man) (And human sodaDrinker))) (Inheritance (And (And (Person $a) man) (Or human sodaDrinker)) (Or (And human man) (And human ugly)))) 0.003266666666666667))
+(EXPECTED-RESULT isurp-old-nested (isurp-old-of (, (Inheritance (And (And (Person $a) man) (Or human sodaDrinker)) (Or (And human man) (And human sodaDrinker))) (Inheritance (And (And (Person $a) man) (Or human sodaDrinker)) (Or (And human man) (And human ugly)))) 0.003266666666666667))

@@ -35,4 +35,4 @@
 
 (Relation Mike left A tag)
 
-(EXPECTED-RESULT isurp-old-n-tuple (surprisingess-of (, (Relation $a left A tag) (Relation $a right B tag) (Relation $a extra C tag)) 0.016041666666666666))
+(EXPECTED-RESULT isurp-old-n-tuple (isurp-old-of (, (Relation $a left A tag) (Relation $a right B tag) (Relation $a extra C tag)) 0.016041666666666666))
