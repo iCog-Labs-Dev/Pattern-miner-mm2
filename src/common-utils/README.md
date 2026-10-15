@@ -207,5 +207,5 @@ These utilities expect MORK to register:
   and boolean helpers;
 - MM2-Helper for `factorial` and `falling_factorial`.
 
-The current regression example is `tests/surp/isurp-old-test.metta`, which
+The current regression example is `src/surp/tests/isurp-old-test.metta`, which
 loads this file through `TEST-AUX` before loading `src/surp/isurp-old.metta`.

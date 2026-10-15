@@ -78,7 +78,7 @@ The MM2 implementation now stages this as:
 
 - `normalization-denom`
 - `normalization-candidate`
-- final capped `surprisingess-of`
+- final capped `isurp-old-of`
 
 ## Current blockers
 
@@ -109,7 +109,7 @@ Direct support-count probes for N-ary facts work. For example:
 
 produce counts in isolation.
 
-However, the current MM2 `isurp-old.metta` pipeline does not produce all required `block-support`, `block-prob`, and `partition-product` facts for the N-ary PeTTa cases. This blocks final `partition-product-range` and therefore final `surprisingess-of`.
+However, the current MM2 `isurp-old.metta` pipeline does not produce all required `block-support`, `block-prob`, and `partition-product` facts for the N-ary PeTTa cases. This blocks final `partition-product-range` and therefore final `isurp-old-of`.
 
 The likely next area to inspect is the dynamic support query generated in `exec 6`:
 
