@@ -29,7 +29,7 @@
             (exec $priority
                 $query
                 (O
-                    (count-fast
+                    (count-factorized
                         ($out $context $candidate $support)
                         $support)))
             $query
@@ -69,18 +69,13 @@
 ((support-cache-count-miss $priority -> counted)
     (, (support-cache-work $candidate))
     (O
-        ;; Seed zero before running the query. MORK's count sink only fires
-        ;; when the generated query has matches, so this is also the negative
-        ;; cache entry for an unsupported pattern.
-        (+ (support-cache $candidate 0))
         (pure
             (exec $priority
                 $query
                 (O
-                    (count-fast
+                    (count-factorized
                         (support-cache $candidate $support)
-                        $support)
-                    (- (support-cache $candidate 0))))
+                        $support)))
             $query
             (indices_to_vars
                 (cons , (' $candidate))))
@@ -121,9 +116,9 @@
         (+ (exec $deliver-priority $deliver-p $deliver-t))
         (- $fact)))
 
-;; Always count this request.  Seed a zero result first because MORK's count
-;; sink only runs when the query matches; a positive count replaces that zero.
-;; This branch never reads or writes `(support-cache ...)` facts.
+;; Always count this request. `count-factorized` emits exact zero and positive
+;; results directly. This branch never reads or writes `(support-cache ...)`
+;; facts.
 ((support-gate
     uncached
     $fact
@@ -135,15 +130,13 @@
     -> $out)
     (, $fact)
     (O
-        (+ ($out $context $candidate 0))
         (pure
             (exec $count-priority
                 $query
                 (O
-                    (count-fast
+                    (count-factorized
                         ($out $context $candidate $support)
-                        $support)
-                    (- ($out $context $candidate 0))))
+                        $support)))
             $query
             (indices_to_vars
                 (cons , (' $candidate))))
