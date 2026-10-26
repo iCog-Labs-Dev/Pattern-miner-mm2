@@ -6,7 +6,7 @@
 ((count-db $db-name -> $out)
     (, ($db-name $fact))
     (O
-        (count ($out $db-name $count) $count $fact)))
+        (count-fast ($out $db-name $count) $count)))
 
 ;; Count conjuncts in a pattern.
 ((count-conjuncts $pattern -> $out)
