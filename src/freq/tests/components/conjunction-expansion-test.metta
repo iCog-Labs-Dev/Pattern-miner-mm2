@@ -17,4 +17,5 @@
 
 ;; Distinct-variable connected expansion and canonicalization.
 (EXPECTED-RESULT canonical-fan (expanded-conjunct 3 ((Inheritance (var 0) (var 1)) (Inheritance (var 0) (var 2)) (Inheritance (var 0) ugly)) 118))
-(EXPECTED-RESULT canonical-join (expanded-conjunct 3 ((Inheritance (var 0) (var 1)) (Inheritance (var 0) (var 2)) (Inheritance (var 3) (var 1))) 2334))
+(EXPECTED-RESULT canonical-generic-fan (expanded-conjunct 3 ((Inheritance (var 0) (var 1)) (Inheritance (var 0) (var 2)) (Inheritance (var 0) (var 3))) 593))
+;; TEST-ABSENT (expanded-conjunct 3 ((Inheritance (var 0) (var 1)) (Inheritance (var 0) (var 2)) (Inheritance (var 3) (var 1))) 2334)

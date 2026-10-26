@@ -69,6 +69,14 @@ it does not maintain a separate copy of the database.
 The first argument after `EXPECTED-RESULT` is the test identifier. The second
 argument is the fact that must be present in the final MORK output.
 
+For a fact that must be absent, add an exact output fact as metadata:
+
+```metta
+;; TEST-ABSENT (unexpected-result example)
+```
+
+The runner checks `TEST-ABSENT` facts after the positive expectations.
+
 The integrated frequent-miner coverage is intentionally kept in two files:
 
 - `frequent-pattern-miner-test.metta` runs the real iterative miner and
